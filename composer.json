@@ -1,0 +1,14 @@
+{
+    "name": "arnedesmedt/api-platform-event-engine-bundle",
+    "description": "A library that creates a bridge between API Platform and Event Engine.",
+    "type": "symfony-bundle",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Arne De Smedt",
+            "email": "arnedesmdt@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}
