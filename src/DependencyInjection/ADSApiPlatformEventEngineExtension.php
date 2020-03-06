@@ -12,9 +12,9 @@ use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 final class ADSApiPlatformEventEngineExtension extends Extension
 {
     /**
-     * @inheritDoc
+     * @param array<mixed> $configs
      */
-    public function load(array $configs, ContainerBuilder $container)
+    public function load(array $configs, ContainerBuilder $container) : void
     {
         $loader = new YamlFileLoader(
             $container,

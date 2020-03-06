@@ -13,6 +13,7 @@ use EventEngine\Data\ImmutableRecord;
 use Psr\Container\ContainerInterface;
 use RuntimeException;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
+use function sprintf;
 
 final class DocumentStoreItemDataProvider implements ItemDataProviderInterface, RestrictedDataProviderInterface
 {
@@ -31,6 +32,7 @@ final class DocumentStoreItemDataProvider implements ItemDataProviderInterface, 
     }
 
     /**
+     * @param class-string $resourceClass
      * @param mixed $id
      * @param array<mixed> $context
      */
@@ -65,6 +67,7 @@ final class DocumentStoreItemDataProvider implements ItemDataProviderInterface, 
     }
 
     /**
+     * @param class-string $resourceClass
      * @param array<mixed> $context
      */
     public function supports(string $resourceClass, ?string $operationName = null, array $context = []) : bool

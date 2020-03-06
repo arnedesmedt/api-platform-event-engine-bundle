@@ -9,6 +9,8 @@ use ADS\Bundle\EventEngineBundle\Config as EventEngineConfig;
 use ReflectionClass;
 use Symfony\Component\Cache\Adapter\AbstractAdapter;
 use Symfony\Component\HttpKernel\CacheClearer\CacheClearerInterface;
+use function array_filter;
+use function array_reduce;
 
 final class Config implements CacheClearerInterface
 {
@@ -24,7 +26,7 @@ final class Config implements CacheClearerInterface
     }
 
     /**
-     * @return array<array>
+     * @return array<array<array<string>>>
      */
     public function apiPlatformMapping() : array
     {
@@ -42,8 +44,8 @@ final class Config implements CacheClearerInterface
     }
 
     /**
-     * @param array<array> $config
-     * @param array<array> $mapping
+     * @param array<mixed> $config
+     * @param array<array<array<string>>> $mapping
      */
     private function commandMapping(array $config, array &$mapping) : void
     {

@@ -7,6 +7,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Message;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Config;
 use ADS\Bundle\EventEngineBundle\Util;
 use RuntimeException;
+use function sprintf;
 
 final class Finder
 {
@@ -19,8 +20,6 @@ final class Finder
 
     /**
      * @param array<mixed> $context
-     *
-     * @return class-string
      */
     public function byContext(array $context, bool $resourceClassIsState = true) : string
     {

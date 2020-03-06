@@ -15,15 +15,12 @@
         "arnedesmedt/event-engine-symfony-bundle": "dev-master",
         "api-platform/api-pack": "^1.2"
     },
-    "repositories": [
-        {
-            "type": "path",
-            "url": "../../../php/packages/event-engine-symfony-bundle",
-            "options": {
-                "symlink": true
-            }
-        }
-    ],
+    "require-dev": {
+        "phpstan/phpstan": "^0.12.7",
+        "squizlabs/php_codesniffer": "^3.5",
+        "doctrine/coding-standard": "^7.0",
+        "phpro/grumphp": "^0.17.2"
+    },
     "autoload": {
         "psr-4": {
             "ADS\\Bundle\\ApiPlatformEventEngineBundle\\": "src/"

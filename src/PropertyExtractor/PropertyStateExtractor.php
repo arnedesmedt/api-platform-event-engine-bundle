@@ -12,6 +12,10 @@ use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
 use Symfony\Component\PropertyInfo\PropertyListExtractorInterface;
 use Symfony\Component\PropertyInfo\PropertyTypeExtractorInterface;
 use Symfony\Component\PropertyInfo\Type;
+use function array_keys;
+use function array_map;
+use function is_array;
+use function sprintf;
 
 final class PropertyStateExtractor implements PropertyListExtractorInterface, PropertyTypeExtractorInterface
 {

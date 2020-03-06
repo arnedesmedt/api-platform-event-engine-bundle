@@ -37,6 +37,6 @@ services:
         decorates: 'api_platform.serializer.normalizer.item'
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\MessageNormalizer.inner'
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Config'
+            - '@ADS\Bundle\EventEngineBundle\Config'
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder'
             - '@=service("EventEngine\\EventEngine").messageFactory()'

@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Serializer;
 
-use ADS\Bundle\ApiPlatformEventEngineBundle\Config;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder;
+use ADS\Bundle\EventEngineBundle\Config;
+use ArrayObject;
 use EventEngine\Data\ImmutableRecord;
 use EventEngine\Messaging\MessageFactory;
 use RuntimeException;
@@ -14,6 +15,7 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\SerializerAwareInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use function sprintf;
 
 final class MessageNormalizer implements NormalizerInterface, DenormalizerInterface, SerializerAwareInterface
 {
@@ -43,12 +45,18 @@ final class MessageNormalizer implements NormalizerInterface, DenormalizerInterf
     public function denormalize($data, string $type, ?string $format = null, array $context = [])
     {
         try {
+            /** @var class-string $message */
             $message = $this->messageFinder->byContext($context);
         } catch (RuntimeException $exception) {
             return $this->decorated->denormalize($data, $type, $format, $context);
         }
 
-        return $this->messageFactory->createMessageFromArray($message, ['payload' => $this->messageData($message, $data, $context)]);
+        return $this->messageFactory->createMessageFromArray(
+            $message,
+            [
+                'payload' => $this->messageData($message, $data, $context),
+            ]
+        );
     }
 
     /**

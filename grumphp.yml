@@ -1,0 +1,22 @@
+parameters:
+    git_dir: .
+    bin_dir: vendor/bin
+    ascii:
+        succeeded: ~
+        failed: ~
+    tasks:
+        git_blacklist:
+            keywords:
+                - "die("
+                - "var_dump("
+                - "exit;"
+                - " dump("
+                - "echo "
+            triggered_by: ['php']
+        phpcs:
+            warning_severity: 6
+        phpstan:
+            autoload_file: ~
+            configuration: phpstan.neon
+            level: max
+            triggered_by: ['php']

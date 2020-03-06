@@ -10,7 +10,7 @@ use ApiPlatform\Core\DataProvider\RestrictedDataProviderInterface;
 use EventEngine\Data\ImmutableRecord;
 use EventEngine\DocumentStore\Filter\AnyFilter;
 use Psr\Container\ContainerInterface;
-use RuntimeException;
+use function array_map;
 
 final class DocumentStoreCollectionDataProvider implements
     CollectionDataProviderInterface,
@@ -24,6 +24,8 @@ final class DocumentStoreCollectionDataProvider implements
     }
 
     /**
+     * @param class-string $resourceClass
+     *
      * @return array<ImmutableRecord>
      */
     public function getCollection(string $resourceClass, ?string $operationName = null) : array
@@ -39,6 +41,7 @@ final class DocumentStoreCollectionDataProvider implements
     }
 
     /**
+     * @param class-string $resourceClass
      * @param array<mixed> $context
      */
     public function supports(string $resourceClass, ?string $operationName = null, array $context = []) : bool

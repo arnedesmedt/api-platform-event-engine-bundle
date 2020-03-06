@@ -19,6 +19,9 @@ final class ShortNameResourceMetaDataFactory implements ResourceMetadataFactoryI
         $this->decorated = $decorated;
     }
 
+    /**
+     * @param class-string $resourceClass
+     */
     public function create(string $resourceClass) : ResourceMetadata
     {
         $resourceMetadata = $this->decorated->create($resourceClass);
@@ -38,4 +41,3 @@ final class ShortNameResourceMetaDataFactory implements ResourceMetadataFactoryI
         );
     }
 }
-
