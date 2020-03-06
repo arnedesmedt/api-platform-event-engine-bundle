@@ -1,0 +1,42 @@
+services:
+    ADS\Bundle\ApiPlatformEventEngineBundle\Config:
+        arguments:
+            - '@ADS\Bundle\EventEngineBundle\Config'
+            - '@event_engine.cache'
+    ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder:
+        arguments:
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Config'
+    ADS\Bundle\ApiPlatformEventEngineBundle\Persister\CommandPersister:
+        arguments:
+            - '@EventEngine\EventEngine'
+        tags:
+            - 'api_platform.data_persister'
+    ADS\Bundle\ApiPlatformEventEngineBundle\PropertyExtractor\PropertyStateExtractor:
+        arguments:
+            - '@api_platform.property_info'
+        tags:
+            - 'property_info.list_extractor'
+            - 'property_info.type_extractor'
+    ADS\Bundle\ApiPlatformEventEngineBundle\Provider\DocumentStoreCollectionDataProvider:
+        arguments:
+            - '@service_container'
+        tags:
+            - 'api_platform.collection_data_provider'
+    ADS\Bundle\ApiPlatformEventEngineBundle\Provider\DocumentStoreItemDataProvider:
+        arguments:
+            - '@service_container'
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\MessageNormalizer'
+            - '@ADS\Bundle\EventEngineBundle\Config'
+        tags:
+            - 'api_platform.item_data_provider'
+    ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetaDataFactory\ShortNameResourceMetaDataFactory:
+        decorates: 'api_platform.metadata.resource.metadata_factory.short_name'
+        arguments:
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetaDataFactory\ShortNameResourceMetaDataFactory.inner'
+    ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\MessageNormalizer:
+        decorates: 'api_platform.serializer.normalizer.item'
+        arguments:
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\MessageNormalizer.inner'
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Config'
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder'
+            - '@=service("EventEngine\\EventEngine").messageFactory()'

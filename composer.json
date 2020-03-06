@@ -1,14 +1,34 @@
 {
     "name": "arnedesmedt/api-platform-event-engine-bundle",
-    "description": "A library that creates a bridge between API Platform and Event Engine.",
     "type": "symfony-bundle",
+    "description": "A library that creates a bridge between API Platform and Event Engine.",
+    "homepage": "https://github.com/arnedesmedt/api-platform-event-engine-bundle",
     "license": "MIT",
     "authors": [
         {
             "name": "Arne De Smedt",
-            "email": "arnedesmdt@gmail.com"
+            "email": "arnedesmdt@gmail.com",
+            "homepage": "https://github.com/arnedesmedt"
         }
     ],
+    "require": {
+        "arnedesmedt/event-engine-symfony-bundle": "dev-master",
+        "api-platform/api-pack": "^1.2"
+    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../../../php/packages/event-engine-symfony-bundle",
+            "options": {
+                "symlink": true
+            }
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "ADS\\Bundle\\ApiPlatformEventEngineBundle\\": "src/"
+        }
+    },
     "minimum-stability": "dev",
-    "require": {}
+    "prefer-stable": true
 }
