@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Message;
 
+use ADS\Bundle\ApiPlatformEventEngineBundle\Operation\Name;
+use ADS\Bundle\ApiPlatformEventEngineBundle\Operation\Type;
 use ReflectionClass;
 
 trait ApiPlatformMessageLogic
@@ -14,13 +16,13 @@ trait ApiPlatformMessageLogic
             case 'Create':
             case 'Add':
             case 'GetAll':
-                return 'collection';
+                return Type::COLLECTION;
             case 'Update':
             case 'Get':
             case 'Change':
             case 'Delete':
             case 'Remove':
-                return 'item';
+                return Type::ITEM;
         }
 
         return null;
@@ -31,17 +33,17 @@ trait ApiPlatformMessageLogic
         switch (self::shortName()) {
             case 'Create':
             case 'Add':
-                return 'post';
+                return Name::POST;
             case 'GetAll':
             case 'Get':
-                return 'get';
+                return Name::GET;
             case 'Update':
-                return 'put';
+                return Name::PUT;
             case 'Change':
-                return 'patch';
+                return Name::PATCH;
             case 'Delete':
             case 'Remove':
-                return 'delete';
+                return Name::DELETE;
         }
 
         return null;
