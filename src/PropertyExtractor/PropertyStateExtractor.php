@@ -14,6 +14,7 @@ use Symfony\Component\PropertyInfo\PropertyTypeExtractorInterface;
 use Symfony\Component\PropertyInfo\Type;
 use function array_keys;
 use function array_map;
+use function in_array;
 use function is_array;
 use function sprintf;
 
@@ -35,61 +36,6 @@ final class PropertyStateExtractor implements PropertyListExtractorInterface, Pr
     public function __construct(PropertyInfoExtractorInterface $propertyInfo)
     {
         $this->propertyInfo = $propertyInfo;
-    }
-
-    /**
-     * @param class-string $stateClass
-     *
-     * @return array<mixed>
-     */
-    private function schemaFrom(string $stateClass) : ?array
-    {
-        $reflectionClass = new ReflectionClass($stateClass);
-
-        if (! $reflectionClass->implementsInterface(JsonSchemaAwareRecord::class)
-            || $reflectionClass->isInterface()
-        ) {
-            return null;
-        }
-
-        return $stateClass::__schema()->toArray();
-    }
-
-    /**
-     * @param array<string, mixed> $propertySchema
-     *
-     * @return array<Type>
-     */
-    private static function typeMapper(array $propertySchema) : array
-    {
-        if (! isset($propertySchema['type'])) {
-            return [new Type(Type::BUILTIN_TYPE_NULL)];
-        }
-
-        if (is_array($propertySchema['type'])) {
-            return array_map(
-                static fn(string $type) => new Type(self::mapToSymfonyType($type)),
-                $propertySchema['type']
-            );
-        }
-
-        return [new Type(self::mapToSymfonyType($propertySchema['type']))];
-    }
-
-    private static function mapToSymfonyType(string $jsonSchemaType) : string
-    {
-        $symfonyType = self::TYPE_MAPPING[$jsonSchemaType] ?? null;
-
-        if ($symfonyType === null) {
-            throw new RuntimeException(
-                sprintf(
-                    'No type mapping found for JSON Schema type \'%s\'.',
-                    $jsonSchemaType
-                )
-            );
-        }
-
-        return $symfonyType;
     }
 
     /**
@@ -123,12 +69,86 @@ final class PropertyStateExtractor implements PropertyListExtractorInterface, Pr
             return null;
         }
 
+        return self::typeMapper($schema, $property);
+    }
+
+    /**
+     * @param class-string $stateClass
+     *
+     * @return array<mixed>
+     */
+    private function schemaFrom(string $stateClass) : ?array
+    {
+        $reflectionClass = new ReflectionClass($stateClass);
+
+        if (! $reflectionClass->implementsInterface(JsonSchemaAwareRecord::class)
+            || $reflectionClass->isInterface()
+        ) {
+            return null;
+        }
+
+        return $stateClass::__schema()->toArray();
+    }
+
+    /**
+     * @param array<string, mixed> $schema
+     *
+     * @return array<Type>|null
+     */
+    private static function typeMapper(array $schema, string $property) : ?array
+    {
         $propertySchema = $schema['properties'][$property] ?? null;
 
         if ($propertySchema === null) {
             return null;
         }
 
-        return self::typeMapper($propertySchema);
+        if (! isset($propertySchema['type'])) {
+            return [new Type(Type::BUILTIN_TYPE_NULL)];
+        }
+
+        if (is_array($propertySchema['type'])) {
+            return array_map(
+                static function (string $type) use ($schema, $property) {
+                    return self::type($schema, $property, $type);
+                },
+                $propertySchema['type']
+            );
+        }
+
+        return [self::type($schema, $property, $propertySchema['type'])];
+    }
+
+    /**
+     * @param array<string, mixed> $schema
+     */
+    private static function type(array $schema, string $property, string $type) : Type
+    {
+        $symfonyType = self::mapToSymfonyType($type);
+        $nullable = ! in_array($property, $schema['required'] ?? [$property]);
+        $collection = $symfonyType === Type::BUILTIN_TYPE_ARRAY;
+        $collectionKeyType = $collection ? new Type(Type::BUILTIN_TYPE_INT) : null;
+        $collectionValueType = $collection ? new Type($schema['properties'][$property]['items']['type']) : null;
+
+        $type = new Type($symfonyType, $nullable, null, $collection, $collectionKeyType, $collectionValueType);
+
+        return $type;
+    }
+
+    private static function mapToSymfonyType(string $jsonSchemaType) : string
+    {
+        /** @var string|null $symfonyType */
+        $symfonyType = self::TYPE_MAPPING[$jsonSchemaType] ?? null;
+
+        if ($symfonyType === null) {
+            throw new RuntimeException(
+                sprintf(
+                    'No type mapping found for JSON Schema type \'%s\'.',
+                    $jsonSchemaType
+                )
+            );
+        }
+
+        return $symfonyType;
     }
 }
