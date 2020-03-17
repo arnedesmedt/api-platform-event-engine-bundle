@@ -199,18 +199,18 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/arnedesmedt/event-engine-symfony-bundle.git",
-                "reference": "6c607a7305bd75881f4009593d64fa285e1149f7"
+                "reference": "36a8b8ceb711ef16da3dbe6125647f17b59b50d6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/arnedesmedt/event-engine-symfony-bundle/zipball/6c607a7305bd75881f4009593d64fa285e1149f7",
-                "reference": "6c607a7305bd75881f4009593d64fa285e1149f7",
+                "url": "https://api.github.com/repos/arnedesmedt/event-engine-symfony-bundle/zipball/36a8b8ceb711ef16da3dbe6125647f17b59b50d6",
+                "reference": "36a8b8ceb711ef16da3dbe6125647f17b59b50d6",
                 "shasum": ""
             },
             "require": {
                 "arnedesmedt/value-objects": "dev-master",
-                "event-engine/php-engine": "^0.11.0",
-                "event-engine/php-json-schema": "^0.5.0",
+                "event-engine/php-engine": "0.12",
+                "event-engine/php-json-schema": "2.0-beta.1",
                 "event-engine/php-postgres-document-store": "^0.7.0",
                 "event-engine/prooph-v7-event-store": "^0.6.0",
                 "ext-pdo": "*",
@@ -245,7 +245,7 @@
             ],
             "description": "A library that creates a bridge between Event Engine and Symfony.",
             "homepage": "https://github.com/arnedesmedt/event-engine-symfony-bundle",
-            "time": "2020-03-09T08:37:11+00:00"
+            "time": "2020-03-17T17:01:32+00:00"
         },
         {
             "name": "arnedesmedt/value-objects",
@@ -253,17 +253,19 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/arnedesmedt/value-objects.git",
-                "reference": "1fe8a7bf5b63ae275ca7d190d86391e322397d48"
+                "reference": "4dd7011702ce3e0ea3b5c695d25bad428ad5f980"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/arnedesmedt/value-objects/zipball/1fe8a7bf5b63ae275ca7d190d86391e322397d48",
-                "reference": "1fe8a7bf5b63ae275ca7d190d86391e322397d48",
+                "url": "https://api.github.com/repos/arnedesmedt/value-objects/zipball/4dd7011702ce3e0ea3b5c695d25bad428ad5f980",
+                "reference": "4dd7011702ce3e0ea3b5c695d25bad428ad5f980",
                 "shasum": ""
             },
             "require": {
+                "event-engine/php-json-schema": "^2.0",
                 "opis/json-schema": "^1.0",
-                "php": "^7.4"
+                "php": "^7.4",
+                "ramsey/uuid": "^3.9"
             },
             "require-dev": {
                 "doctrine/coding-standard": "^7.0",
@@ -290,7 +292,7 @@
             ],
             "description": "Value objects",
             "homepage": "https://github.com/arnedesmedt/value-objects",
-            "time": "2020-03-06T13:49:41+00:00"
+            "time": "2020-03-17T16:57:15+00:00"
         },
         {
             "name": "beberlei/assert",
@@ -1545,27 +1547,27 @@
         },
         {
             "name": "event-engine/php-data",
-            "version": "v0.1.2",
+            "version": "v2.0-beta.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/event-engine/php-data.git",
-                "reference": "7fbb831b476cb02bbb6b01f8fa68d631ff87791d"
+                "reference": "a6e62d90add6f9aa46c5d827db88b8bcff84bd6c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/event-engine/php-data/zipball/7fbb831b476cb02bbb6b01f8fa68d631ff87791d",
-                "reference": "7fbb831b476cb02bbb6b01f8fa68d631ff87791d",
+                "url": "https://api.github.com/repos/event-engine/php-data/zipball/a6e62d90add6f9aa46c5d827db88b8bcff84bd6c",
+                "reference": "a6e62d90add6f9aa46c5d827db88b8bcff84bd6c",
                 "shasum": ""
             },
             "require": {
-                "php": "^7.2",
+                "php": "^7.4",
                 "roave/security-advisories": "dev-master"
             },
             "require-dev": {
                 "malukenho/docheader": "^0.1.4",
                 "phpunit/phpunit": "^7.0",
                 "prooph/php-cs-fixer-config": "^0.3",
-                "satooshi/php-coveralls": "^1.0"
+                "satooshi/php-coveralls": "^2.2"
             },
             "type": "library",
             "autoload": {
@@ -1591,7 +1593,7 @@
             ],
             "description": "Immutable objects for Event Engine",
             "homepage": "https://event-engine.io/",
-            "time": "2019-12-17T16:30:44+00:00"
+            "time": "2020-03-07T17:40:01+00:00"
         },
         {
             "name": "event-engine/php-document-store",
@@ -1646,21 +1648,21 @@
         },
         {
             "name": "event-engine/php-engine",
-            "version": "v0.11.0",
+            "version": "v0.12",
             "source": {
                 "type": "git",
                 "url": "https://github.com/event-engine/php-engine.git",
-                "reference": "437201beb9f076061a496af16713dd39703c866b"
+                "reference": "15c424a3b880b1b829b758b4cd121db1b39d643b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/event-engine/php-engine/zipball/437201beb9f076061a496af16713dd39703c866b",
-                "reference": "437201beb9f076061a496af16713dd39703c866b",
+                "url": "https://api.github.com/repos/event-engine/php-engine/zipball/15c424a3b880b1b829b758b4cd121db1b39d643b",
+                "reference": "15c424a3b880b1b829b758b4cd121db1b39d643b",
                 "shasum": ""
             },
             "require": {
                 "codeliner/array-reader": "^2.0",
-                "event-engine/php-data": "^0.1",
+                "event-engine/php-data": "^1.0 || ^2.0-dev",
                 "event-engine/php-engine-utils": "^0.1",
                 "event-engine/php-logger": "^0.1",
                 "event-engine/php-messaging": "^0.1",
@@ -1676,7 +1678,7 @@
             },
             "require-dev": {
                 "bookdown/bookdown": "1.x-dev",
-                "event-engine/php-json-schema": "^0.1",
+                "event-engine/php-json-schema": "^1.0",
                 "event-engine/prooph-v7-event-store": "^0.6",
                 "justinrainbow/json-schema": "^5.2",
                 "malukenho/docheader": "^0.1.4",
@@ -1709,7 +1711,7 @@
             ],
             "description": "CQRS / ES PHP SDK for event-engine.io",
             "homepage": "https://event-engine.io/",
-            "time": "2019-11-12T21:48:39+00:00"
+            "time": "2020-02-18T22:36:30+00:00"
         },
         {
             "name": "event-engine/php-engine-utils",
@@ -1814,23 +1816,23 @@
         },
         {
             "name": "event-engine/php-json-schema",
-            "version": "v0.5.0",
+            "version": "v2.0-beta.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/event-engine/php-json-schema.git",
-                "reference": "a28667164f55888ae353cee747facab30215651e"
+                "reference": "a0868e05fbb272f6ec3e04c22ef3bc9d028a3a92"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/event-engine/php-json-schema/zipball/a28667164f55888ae353cee747facab30215651e",
-                "reference": "a28667164f55888ae353cee747facab30215651e",
+                "url": "https://api.github.com/repos/event-engine/php-json-schema/zipball/a0868e05fbb272f6ec3e04c22ef3bc9d028a3a92",
+                "reference": "a0868e05fbb272f6ec3e04c22ef3bc9d028a3a92",
                 "shasum": ""
             },
             "require": {
-                "event-engine/php-data": "^0.1",
+                "event-engine/php-data": "^2.0-dev",
                 "event-engine/php-engine-utils": "^0.1",
                 "event-engine/php-schema": "^0.1",
-                "php": "^7.2",
+                "php": "^7.4",
                 "ramsey/uuid": "^3.6"
             },
             "require-dev": {
@@ -1867,7 +1869,7 @@
             ],
             "description": "Event Engine JSON Schema PHP Package",
             "homepage": "https://event-engine.io/",
-            "time": "2019-10-18T13:46:57+00:00"
+            "time": "2020-02-18T22:15:02+00:00"
         },
         {
             "name": "event-engine/php-logger",
@@ -3714,12 +3716,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Roave/SecurityAdvisories.git",
-                "reference": "f0eca1ac3194cc94726f0bb366672f38629272b4"
+                "reference": "b81a572cb1acffadea621e55c95af4ba94a91624"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/f0eca1ac3194cc94726f0bb366672f38629272b4",
-                "reference": "f0eca1ac3194cc94726f0bb366672f38629272b4",
+                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/b81a572cb1acffadea621e55c95af4ba94a91624",
+                "reference": "b81a572cb1acffadea621e55c95af4ba94a91624",
                 "shasum": ""
             },
             "conflict": {
@@ -3777,6 +3779,7 @@
                 "firebase/php-jwt": "<2",
                 "fooman/tcpdf": "<6.2.22",
                 "fossar/tcpdf-parser": "<6.2.22",
+                "friendsofsymfony/oauth2-php": "<1.3",
                 "friendsofsymfony/rest-bundle": ">=1.2,<1.2.2",
                 "friendsofsymfony/user-bundle": ">=1.2,<1.3.5",
                 "fuel/core": "<1.8.1",
@@ -3788,6 +3791,7 @@
                 "illuminate/cookie": ">=4,<=4.0.11|>=4.1,<=4.1.31|>=4.2,<=4.2.22|>=5,<=5.0.35|>=5.1,<=5.1.46|>=5.2,<=5.2.45|>=5.3,<=5.3.31|>=5.4,<=5.4.36|>=5.5,<5.5.42|>=5.6,<5.6.30",
                 "illuminate/database": ">=4,<4.0.99|>=4.1,<4.1.29",
                 "illuminate/encryption": ">=4,<=4.0.11|>=4.1,<=4.1.31|>=4.2,<=4.2.22|>=5,<=5.0.35|>=5.1,<=5.1.46|>=5.2,<=5.2.45|>=5.3,<=5.3.31|>=5.4,<=5.4.36|>=5.5,<5.5.40|>=5.6,<5.6.15",
+                "illuminate/view": ">=7,<7.1.2",
                 "ivankristianto/phpwhois": "<=4.3",
                 "james-heinrich/getid3": "<1.9.9",
                 "joomla/session": "<1.3.1",
@@ -3795,7 +3799,7 @@
                 "kazist/phpwhois": "<=4.2.6",
                 "kreait/firebase-php": ">=3.2,<3.8.1",
                 "la-haute-societe/tcpdf": "<6.2.22",
-                "laravel/framework": ">=4,<4.0.99|>=4.1,<=4.1.31|>=4.2,<=4.2.22|>=5,<=5.0.35|>=5.1,<=5.1.46|>=5.2,<=5.2.45|>=5.3,<=5.3.31|>=5.4,<=5.4.36|>=5.5,<5.5.42|>=5.6,<5.6.30",
+                "laravel/framework": ">=4,<4.0.99|>=4.1,<=4.1.31|>=4.2,<=4.2.22|>=5,<=5.0.35|>=5.1,<=5.1.46|>=5.2,<=5.2.45|>=5.3,<=5.3.31|>=5.4,<=5.4.36|>=5.5,<5.5.42|>=5.6,<5.6.30|>=7,<7.1.2",
                 "laravel/socialite": ">=1,<1.0.99|>=2,<2.0.10",
                 "league/commonmark": "<0.18.3",
                 "librenms/librenms": "<1.53",
@@ -3859,6 +3863,7 @@
                 "socalnick/scn-social-auth": "<1.15.2",
                 "spoonity/tcpdf": "<6.2.22",
                 "squizlabs/php_codesniffer": ">=1,<2.8.1|>=3,<3.0.1",
+                "ssddanbrown/bookstack": "<0.25.3",
                 "stormpath/sdk": ">=0,<9.9.99",
                 "studio-42/elfinder": "<2.1.49",
                 "swiftmailer/swiftmailer": ">=4,<5.4.5",
@@ -3966,7 +3971,7 @@
                 }
             ],
             "description": "Prevents installation of composer packages with known security vulnerabilities: no API, simply require it",
-            "time": "2020-03-03T17:52:54+00:00"
+            "time": "2020-03-15T11:13:32+00:00"
         },
         {
             "name": "symfony/asset",
@@ -7440,16 +7445,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "0.12.14",
+            "version": "0.12.17",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "37bdd26a80235d0f9045b49f4151102b7831cbe2"
+                "reference": "b2c37bda79fdb11d801ce208ce391cffc0f572e6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/37bdd26a80235d0f9045b49f4151102b7831cbe2",
-                "reference": "37bdd26a80235d0f9045b49f4151102b7831cbe2",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/b2c37bda79fdb11d801ce208ce391cffc0f572e6",
+                "reference": "b2c37bda79fdb11d801ce208ce391cffc0f572e6",
                 "shasum": ""
             },
             "require": {
@@ -7475,7 +7480,7 @@
                 "MIT"
             ],
             "description": "PHPStan - PHP Static Analysis Tool",
-            "time": "2020-03-02T22:29:43+00:00"
+            "time": "2020-03-17T15:39:11+00:00"
         },
         {
             "name": "seld/jsonlint",

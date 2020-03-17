@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\PropertyExtractor;
 
+use ADS\ValueObjects\ListValue;
 use EventEngine\JsonSchema\JsonSchema;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use ReflectionClass;
+use ReflectionException;
+use ReflectionNamedType;
+use ReflectionProperty;
 use RuntimeException;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
 use Symfony\Component\PropertyInfo\PropertyListExtractorInterface;
@@ -14,6 +18,7 @@ use Symfony\Component\PropertyInfo\PropertyTypeExtractorInterface;
 use Symfony\Component\PropertyInfo\Type;
 use function array_keys;
 use function array_map;
+use function array_reduce;
 use function in_array;
 use function is_array;
 use function sprintf;
@@ -87,7 +92,19 @@ final class PropertyStateExtractor implements PropertyListExtractorInterface, Pr
             return null;
         }
 
-        return $stateClass::__schema()->toArray();
+        $schema = $stateClass::__schema()->toArray();
+
+        $schema['reflectionProperties'] = array_reduce(
+            array_keys($schema['properties']),
+            static function ($reflectionProperties, $property) use ($reflectionClass) {
+                $reflectionProperties[$property] = $reflectionClass->getProperty($property);
+
+                return $reflectionProperties;
+            },
+            []
+        );
+
+        return $schema;
     }
 
     /**
@@ -128,11 +145,44 @@ final class PropertyStateExtractor implements PropertyListExtractorInterface, Pr
         $nullable = ! in_array($property, $schema['required'] ?? [$property]);
         $collection = $symfonyType === Type::BUILTIN_TYPE_ARRAY;
         $collectionKeyType = $collection ? new Type(Type::BUILTIN_TYPE_INT) : null;
-        $collectionValueType = $collection ? new Type($schema['properties'][$property]['items']['type']) : null;
+        $collectionValueType = $collection ? self::collectionValueType($schema, $property) : null;
 
         $type = new Type($symfonyType, $nullable, null, $collection, $collectionKeyType, $collectionValueType);
 
         return $type;
+    }
+
+    /**
+     * @param array<string, mixed> $schema
+     */
+    private static function collectionValueType(array $schema, string $property) : Type
+    {
+        /** @var ReflectionProperty|null $reflectionProperty */
+        $reflectionProperty = $schema['reflectionProperties'][$property] ?? null;
+
+        if ($reflectionProperty === null) {
+            return new Type(Type::BUILTIN_TYPE_OBJECT);
+        }
+
+        /** @var ReflectionNamedType|null $type */
+        $type = $reflectionProperty->getType();
+
+        if ($type === null) {
+            return new Type(Type::BUILTIN_TYPE_OBJECT);
+        }
+
+        /** @var class-string $valueObjectClass */
+        $valueObjectClass = $type->getName();
+
+        try {
+            $reflectionClass = new ReflectionClass($valueObjectClass);
+        } catch (ReflectionException $exception) {
+            return new Type(Type::BUILTIN_TYPE_OBJECT);
+        }
+
+        $typeClass = $reflectionClass->implementsInterface(ListValue::class) ? $valueObjectClass::itemType() : $valueObjectClass;
+
+        return new Type(Type::BUILTIN_TYPE_OBJECT, false, $typeClass);
     }
 
     private static function mapToSymfonyType(string $jsonSchemaType) : string
