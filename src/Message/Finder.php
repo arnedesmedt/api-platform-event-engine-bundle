@@ -20,6 +20,8 @@ final class Finder
 
     /**
      * @param array<mixed> $context
+     *
+     * @return string|class-string
      */
     public function byContext(array $context, bool $resourceClassIsState = true) : string
     {

@@ -40,3 +40,8 @@ services:
             - '@ADS\Bundle\EventEngineBundle\Config'
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder'
             - '@=service("EventEngine\\EventEngine").messageFactory()'
+    ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageSchemaFactory:
+        decorates: 'api_platform.json_schema.schema_factory'
+        arguments:
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageSchemaFactory.inner'
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder'
