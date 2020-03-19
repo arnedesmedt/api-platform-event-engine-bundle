@@ -23,11 +23,11 @@ final class Finder
      *
      * @return string|class-string
      */
-    public function byContext(array $context, bool $resourceClassIsState = true) : string
+    public function byContext(array $context, bool $resourceClassHasLinkedAggregate = true) : string
     {
         $resourceClass = $context['resource_class'];
 
-        if ($resourceClassIsState) {
+        if ($resourceClassHasLinkedAggregate) {
             $resourceClass = Util::fromStateToAggregateClass($resourceClass);
         }
 

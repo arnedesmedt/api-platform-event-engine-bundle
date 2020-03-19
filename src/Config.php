@@ -68,20 +68,20 @@ final class Config implements CacheClearerInterface
             static function (array $mapping, array $config) {
                 /** @var ApiPlatformMessage $command */
                 $command = $config['commandName'];
-                $aggregateType = $config['aggregateType'];
+                $entity = $command::entity() ?? $config['aggregateType'];
 
                 $operationType = $command::operationType();
                 $operationName = $command::operationName();
 
-                if (! isset($mapping[$aggregateType])) {
-                    $mapping[$aggregateType] = [];
+                if (! isset($mapping[$entity])) {
+                    $mapping[$entity] = [];
                 }
 
-                if (! isset($mapping[$aggregateType][$operationType])) {
-                    $mapping[$aggregateType][$operationType] = [];
+                if (! isset($mapping[$entity][$operationType])) {
+                    $mapping[$entity][$operationType] = [];
                 }
 
-                $mapping[$aggregateType][$operationType][$operationName] = $command;
+                $mapping[$entity][$operationType][$operationName] = $command;
 
                 return $mapping;
             },
