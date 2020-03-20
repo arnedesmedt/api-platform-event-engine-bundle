@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Message;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Config;
-use ADS\Bundle\EventEngineBundle\Util;
+use ADS\Bundle\EventEngineBundle\Aggregate\HasAggregateRoot;
+use ReflectionClass;
 use RuntimeException;
 use function sprintf;
 
@@ -23,12 +24,13 @@ final class Finder
      *
      * @return string|class-string
      */
-    public function byContext(array $context, bool $resourceClassHasLinkedAggregate = true) : string
+    public function byContext(array $context) : string
     {
         $resourceClass = $context['resource_class'];
+        $reflectionClass = new ReflectionClass($resourceClass);
 
-        if ($resourceClassHasLinkedAggregate) {
-            $resourceClass = Util::fromStateToAggregateClass($resourceClass);
+        if ($reflectionClass->implementsInterface(HasAggregateRoot::class)) {
+            $resourceClass = $resourceClass::aggregateRoot();
         }
 
         $operationType = $context['operation_type'];
