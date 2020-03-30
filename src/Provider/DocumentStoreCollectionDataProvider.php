@@ -4,25 +4,25 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Provider;
 
-use ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder;
 use ApiPlatform\Core\DataProvider\ContextAwareCollectionDataProviderInterface;
 use ApiPlatform\Core\DataProvider\RestrictedDataProviderInterface;
 use EventEngine\Data\ImmutableRecord;
 use EventEngine\EventEngine;
-use RuntimeException;
+use EventEngine\Messaging\Message;
+use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 final class DocumentStoreCollectionDataProvider implements
     ContextAwareCollectionDataProviderInterface,
     RestrictedDataProviderInterface
 {
-    private Finder $messageFinder;
+    private DenormalizerInterface $denormalizer;
     private EventEngine $eventEngine;
 
     public function __construct(
-        Finder $messageFinder,
+        DenormalizerInterface $denormalizer,
         EventEngine $eventEngine
     ) {
-        $this->messageFinder = $messageFinder;
+        $this->denormalizer = $denormalizer;
         $this->eventEngine = $eventEngine;
     }
 
@@ -34,12 +34,10 @@ final class DocumentStoreCollectionDataProvider implements
      */
     public function getCollection(string $resourceClass, ?string $operationName = null, array $context = []) : array
     {
-        $message = $this->messageFinder->byContext($context);
+        /** @var Message $message */
+        $message = $this->denormalizer->denormalize([], $resourceClass, null, $context);
 
-        return $this->eventEngine->dispatch(
-            $message,
-            []
-        );
+        return $this->eventEngine->dispatch($message);
     }
 
     /**
@@ -48,13 +46,6 @@ final class DocumentStoreCollectionDataProvider implements
      */
     public function supports(string $resourceClass, ?string $operationName = null, array $context = []) : bool
     {
-        try {
-            /** @var class-string $message */
-            $message = $this->messageFinder->byContext($context);
-
-            return true;
-        } catch (RuntimeException $exception) {
-            return false;
-        }
+        return $this->denormalizer->supportsDenormalization([], $resourceClass, null);
     }
 }

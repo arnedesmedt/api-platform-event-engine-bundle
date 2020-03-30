@@ -19,14 +19,14 @@ services:
             - 'property_info.type_extractor'
     ADS\Bundle\ApiPlatformEventEngineBundle\Provider\DocumentStoreCollectionDataProvider:
         arguments:
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder'
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\MessageNormalizer'
             - '@EventEngine\EventEngine'
         tags:
             - 'api_platform.collection_data_provider'
     ADS\Bundle\ApiPlatformEventEngineBundle\Provider\DocumentStoreItemDataProvider:
         arguments:
-            - '@service_container'
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\MessageNormalizer'
+            - '@EventEngine\EventEngine'
             - '@ADS\Bundle\EventEngineBundle\Config'
         tags:
             - 'api_platform.item_data_provider'

@@ -4,30 +4,29 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Provider;
 
+use ADS\Bundle\EventEngineBundle\Aggregate\HasAggregateRoot;
 use ADS\Bundle\EventEngineBundle\Config;
-use ADS\Bundle\EventEngineBundle\Repository\Repository;
-use ADS\Bundle\EventEngineBundle\Util;
 use ApiPlatform\Core\DataProvider\ItemDataProviderInterface;
 use ApiPlatform\Core\DataProvider\RestrictedDataProviderInterface;
 use EventEngine\Data\ImmutableRecord;
-use Psr\Container\ContainerInterface;
-use RuntimeException;
+use EventEngine\EventEngine;
+use EventEngine\Messaging\Message;
+use ReflectionClass;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
-use function sprintf;
 
 final class DocumentStoreItemDataProvider implements ItemDataProviderInterface, RestrictedDataProviderInterface
 {
-    private ContainerInterface $container;
     private DenormalizerInterface $denormalizer;
+    private EventEngine $eventEngine;
     private Config $eventEngineConfig;
 
     public function __construct(
-        ContainerInterface $container,
         DenormalizerInterface $denormalizer,
+        EventEngine $eventEngine,
         Config $eventEngineConfig
     ) {
-        $this->container = $container;
         $this->denormalizer = $denormalizer;
+        $this->eventEngine = $eventEngine;
         $this->eventEngineConfig = $eventEngineConfig;
     }
 
@@ -42,28 +41,19 @@ final class DocumentStoreItemDataProvider implements ItemDataProviderInterface, 
         ?string $operationName = null,
         array $context = []
     ) : ?ImmutableRecord {
-        if ($operationName === 'delete') {
-            $aggregateIdentifiers = $this->eventEngineConfig->aggregateIdentifiers();
-            $identifier = $aggregateIdentifiers[Util::fromStateToAggregateClass($resourceClass)] ?? null;
+        $reflectionClass = new ReflectionClass($resourceClass);
 
-            $result = $this->denormalizer->denormalize([$identifier => $id], $resourceClass, null, $context);
-
-            if ($result !== null && ! $result instanceof ImmutableRecord) {
-                throw new RuntimeException(
-                    sprintf(
-                        'Could not denormalize request into delete command \'%s\'.',
-                        $resourceClass
-                    )
-                );
-            }
-
-            return $result;
+        if ($reflectionClass->implementsInterface(HasAggregateRoot::class)) {
+            $resourceClass = $resourceClass::__aggregateRoot();
         }
 
-        /** @var Repository $repository */
-        $repository = $this->container->get(Util::fromStateToRepositoryId($resourceClass));
+        /** @var string $identifier */
+        $identifier = $this->eventEngineConfig->aggregateIdentifiers($resourceClass);
 
-        return $repository->findDocumentState((string) $id);
+        /** @var Message $message */
+        $message = $this->denormalizer->denormalize([$identifier => $id], $resourceClass, null, $context);
+
+        return $this->eventEngine->dispatch($message);
     }
 
     /**
@@ -72,6 +62,6 @@ final class DocumentStoreItemDataProvider implements ItemDataProviderInterface, 
      */
     public function supports(string $resourceClass, ?string $operationName = null, array $context = []) : bool
     {
-        return $this->container->has(Util::fromStateToRepositoryId($resourceClass));
+        return $this->denormalizer->supportsDenormalization([], $resourceClass, null);
     }
 }
