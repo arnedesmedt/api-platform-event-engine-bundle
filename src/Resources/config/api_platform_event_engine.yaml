@@ -19,7 +19,8 @@ services:
             - 'property_info.type_extractor'
     ADS\Bundle\ApiPlatformEventEngineBundle\Provider\DocumentStoreCollectionDataProvider:
         arguments:
-            - '@service_container'
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder'
+            - '@EventEngine\EventEngine'
         tags:
             - 'api_platform.collection_data_provider'
     ADS\Bundle\ApiPlatformEventEngineBundle\Provider\DocumentStoreItemDataProvider:

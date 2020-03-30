@@ -4,39 +4,41 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Provider;
 
-use ADS\Bundle\EventEngineBundle\Util;
-use ApiPlatform\Core\DataProvider\CollectionDataProviderInterface;
+use ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder;
+use ApiPlatform\Core\DataProvider\ContextAwareCollectionDataProviderInterface;
 use ApiPlatform\Core\DataProvider\RestrictedDataProviderInterface;
 use EventEngine\Data\ImmutableRecord;
-use EventEngine\DocumentStore\Filter\AnyFilter;
-use Psr\Container\ContainerInterface;
-use function array_map;
+use EventEngine\EventEngine;
+use RuntimeException;
 
 final class DocumentStoreCollectionDataProvider implements
-    CollectionDataProviderInterface,
+    ContextAwareCollectionDataProviderInterface,
     RestrictedDataProviderInterface
 {
-    private ContainerInterface $container;
+    private Finder $messageFinder;
+    private EventEngine $eventEngine;
 
-    public function __construct(ContainerInterface $container)
-    {
-        $this->container = $container;
+    public function __construct(
+        Finder $messageFinder,
+        EventEngine $eventEngine
+    ) {
+        $this->messageFinder = $messageFinder;
+        $this->eventEngine = $eventEngine;
     }
 
     /**
      * @param class-string $resourceClass
+     * @param array<mixed> $context
      *
      * @return array<ImmutableRecord>
      */
-    public function getCollection(string $resourceClass, ?string $operationName = null) : array
+    public function getCollection(string $resourceClass, ?string $operationName = null, array $context = []) : array
     {
-        $repository = $this->container->get(Util::fromStateToRepositoryId($resourceClass));
+        $message = $this->messageFinder->byContext($context);
 
-        return array_map(
-            static function (ImmutableRecord $state) {
-                return $state->toArray();
-            },
-            $repository->findDocumentStates(new AnyFilter())
+        return $this->eventEngine->dispatch(
+            $message,
+            []
         );
     }
 
@@ -46,6 +48,13 @@ final class DocumentStoreCollectionDataProvider implements
      */
     public function supports(string $resourceClass, ?string $operationName = null, array $context = []) : bool
     {
-        return $this->container->has(Util::fromStateToRepositoryId($resourceClass));
+        try {
+            /** @var class-string $message */
+            $message = $this->messageFinder->byContext($context);
+
+            return true;
+        } catch (RuntimeException $exception) {
+            return false;
+        }
     }
 }
