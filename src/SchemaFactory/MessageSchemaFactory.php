@@ -85,7 +85,7 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
             static function ($property) {
                 return $property;
             },
-            $eventEngineSchema['properties']
+            $eventEngineSchema['properties'] ?? []
         );
 
         return $schema;
