@@ -30,7 +30,7 @@ final class Finder
         $reflectionClass = new ReflectionClass($resourceClass);
 
         if ($reflectionClass->implementsInterface(HasAggregateRoot::class)) {
-            $resourceClass = $resourceClass::aggregateRoot();
+            $resourceClass = $resourceClass::__aggregateRoot();
         }
 
         $operationType = $context['operation_type'];
