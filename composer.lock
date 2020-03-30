@@ -199,20 +199,20 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/arnedesmedt/event-engine-symfony-bundle.git",
-                "reference": "d5b0a14737ba16b0ccb1dae17f55f505c5ffe88a"
+                "reference": "b6cf20d3d9fcf3a81ad6ca4e0be2e258f0d6cc34"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/arnedesmedt/event-engine-symfony-bundle/zipball/d5b0a14737ba16b0ccb1dae17f55f505c5ffe88a",
-                "reference": "d5b0a14737ba16b0ccb1dae17f55f505c5ffe88a",
+                "url": "https://api.github.com/repos/arnedesmedt/event-engine-symfony-bundle/zipball/b6cf20d3d9fcf3a81ad6ca4e0be2e258f0d6cc34",
+                "reference": "b6cf20d3d9fcf3a81ad6ca4e0be2e258f0d6cc34",
                 "shasum": ""
             },
             "require": {
                 "arnedesmedt/value-objects": "dev-master",
-                "event-engine/php-engine": "0.12",
+                "event-engine/php-engine": "^0.13",
                 "event-engine/php-json-schema": "2.0-beta.1",
-                "event-engine/php-postgres-document-store": "^0.7.0",
-                "event-engine/prooph-v7-event-store": "^0.6.0",
+                "event-engine/php-postgres-document-store": "^0.8.0",
+                "event-engine/prooph-v7-event-store": "^0.7.0",
                 "ext-pdo": "*",
                 "opis/json-schema": "^1.0",
                 "php": "^7.4",
