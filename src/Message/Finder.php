@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Message;
 
+use ADS\Bundle\ApiPlatformEventEngineBundle\ApiResource\ChangeApiResource;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Config;
-use ADS\Bundle\EventEngineBundle\Aggregate\HasAggregateRoot;
 use ReflectionClass;
 use RuntimeException;
 use function sprintf;
@@ -29,8 +29,8 @@ final class Finder
         $resourceClass = $context['resource_class'];
         $reflectionClass = new ReflectionClass($resourceClass);
 
-        if ($reflectionClass->implementsInterface(HasAggregateRoot::class)) {
-            $resourceClass = $resourceClass::__aggregateRoot();
+        if ($reflectionClass->implementsInterface(ChangeApiResource::class)) {
+            $resourceClass = $resourceClass::__newApiResource();
         }
 
         $operationType = $context['operation_type'];

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Provider;
 
-use ADS\Bundle\EventEngineBundle\Aggregate\HasAggregateRoot;
+use ADS\Bundle\ApiPlatformEventEngineBundle\ApiResource\ChangeApiResource;
 use ADS\Bundle\EventEngineBundle\Config;
 use ApiPlatform\Core\DataProvider\ItemDataProviderInterface;
 use ApiPlatform\Core\DataProvider\RestrictedDataProviderInterface;
@@ -43,8 +43,8 @@ final class DocumentStoreItemDataProvider implements ItemDataProviderInterface, 
     ) : ?ImmutableRecord {
         $reflectionClass = new ReflectionClass($resourceClass);
 
-        if ($reflectionClass->implementsInterface(HasAggregateRoot::class)) {
-            $resourceClass = $resourceClass::__aggregateRoot();
+        if ($reflectionClass->implementsInterface(ChangeApiResource::class)) {
+            $resourceClass = $resourceClass::__newApiResource();
         }
 
         /** @var string $identifier */
