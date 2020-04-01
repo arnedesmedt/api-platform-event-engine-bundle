@@ -27,7 +27,6 @@ services:
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\MessageNormalizer'
             - '@EventEngine\EventEngine'
-            - '@ADS\Bundle\EventEngineBundle\Config'
         tags:
             - 'api_platform.item_data_provider'
     ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetaDataFactory\ShortNameResourceMetaDataFactory:

@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Provider;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\ApiResource\ChangeApiResource;
-use ADS\Bundle\EventEngineBundle\Config;
-use ApiPlatform\Core\DataProvider\ItemDataProviderInterface;
+use ApiPlatform\Core\DataProvider\DenormalizedIdentifiersAwareItemDataProviderInterface;
 use ApiPlatform\Core\DataProvider\RestrictedDataProviderInterface;
 use EventEngine\Data\ImmutableRecord;
 use EventEngine\EventEngine;
@@ -14,20 +13,19 @@ use EventEngine\Messaging\Message;
 use ReflectionClass;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
-final class DocumentStoreItemDataProvider implements ItemDataProviderInterface, RestrictedDataProviderInterface
+final class DocumentStoreItemDataProvider implements
+    DenormalizedIdentifiersAwareItemDataProviderInterface,
+    RestrictedDataProviderInterface
 {
     private DenormalizerInterface $denormalizer;
     private EventEngine $eventEngine;
-    private Config $eventEngineConfig;
 
     public function __construct(
         DenormalizerInterface $denormalizer,
-        EventEngine $eventEngine,
-        Config $eventEngineConfig
+        EventEngine $eventEngine
     ) {
         $this->denormalizer = $denormalizer;
         $this->eventEngine = $eventEngine;
-        $this->eventEngineConfig = $eventEngineConfig;
     }
 
     /**
@@ -47,11 +45,8 @@ final class DocumentStoreItemDataProvider implements ItemDataProviderInterface, 
             $resourceClass = $resourceClass::__newApiResource();
         }
 
-        /** @var string $identifier */
-        $identifier = $this->eventEngineConfig->aggregateIdentifiers($resourceClass);
-
         /** @var Message $message */
-        $message = $this->denormalizer->denormalize([$identifier => $id], $resourceClass, null, $context);
+        $message = $this->denormalizer->denormalize($id, $resourceClass, null, $context);
 
         return $this->eventEngine->dispatch($message);
     }
