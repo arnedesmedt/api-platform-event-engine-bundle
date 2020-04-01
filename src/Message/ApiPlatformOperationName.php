@@ -14,7 +14,7 @@ trait ApiPlatformOperationName
         switch (true) {
             case preg_match('/(Create|Add)/', self::shortName()):
                 return Name::POST;
-            case preg_match('/(Get|GetAll|All)/', self::shortName()):
+            case preg_match('/(Get|GetAll|All|ById)/', self::shortName()):
                 return Name::GET;
             case preg_match('/(Update)/', self::shortName()):
                 return Name::PUT;

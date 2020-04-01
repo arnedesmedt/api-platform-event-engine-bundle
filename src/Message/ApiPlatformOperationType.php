@@ -14,7 +14,7 @@ trait ApiPlatformOperationType
         switch (true) {
             case preg_match('/(Create|Add|GetAll|All)/', self::shortName()):
                 return Type::COLLECTION;
-            case preg_match('/(Update|Get|Change|Delete|Remove)/', self::shortName()):
+            case preg_match('/(Update|Get|Change|Delete|Remove|ById)/', self::shortName()):
                 return Type::ITEM;
         }
 
