@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Persister;
 
-use ADS\Bundle\EventEngineBundle\Message\AggregateCommand;
+use ADS\Bundle\EventEngineBundle\Message\Command;
 use ApiPlatform\Core\DataPersister\ContextAwareDataPersisterInterface;
 use EventEngine\EventEngine;
 use EventEngine\Messaging\MessageBag;
@@ -24,7 +24,7 @@ final class CommandPersister implements ContextAwareDataPersisterInterface
      */
     public function supports($data, array $context = []) : bool
     {
-        return $data instanceof MessageBag && $data->get('message') instanceof AggregateCommand;
+        return $data instanceof MessageBag && $data->get('message') instanceof Command;
     }
 
     /**
