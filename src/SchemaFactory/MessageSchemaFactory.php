@@ -11,6 +11,10 @@ use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use ReflectionClass;
 use RuntimeException;
 use function array_map;
+use function array_search;
+use function count;
+use function is_array;
+use function reset;
 use function sprintf;
 
 final class MessageSchemaFactory implements SchemaFactoryInterface
@@ -80,13 +84,31 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
         $schema = $schema ?? new Schema();
         $eventEngineSchema = $message::__schema()->toArray();
 
+        // TODO write library that converts php json schema array to open api schema array
         $schema['type'] = $eventEngineSchema['type'];
         $schema['properties'] = array_map(
-            static function ($property) {
+            static function (array $property) {
+                if (is_array($property['type'])) {
+                    $key = array_search('null', $property['type']);
+
+                    if ($key !== false) {
+                        $property['nullable'] = true;
+
+                        unset($property['type'][$key]);
+                    }
+
+                    if (count($property['type']) === 1) {
+                        $property['type'] = reset($property['type']);
+                    }
+
+                    // TODO use oneOf if multiple types exists
+                }
+
                 return $property;
             },
             $eventEngineSchema['properties'] ?? []
         );
+        $schema['required'] = $eventEngineSchema['required'];
 
         return $schema;
     }
