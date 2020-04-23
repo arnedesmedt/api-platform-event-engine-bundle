@@ -92,7 +92,8 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
                     $key = array_search('null', $property['type']);
 
                     if ($key !== false) {
-                        $property['nullable'] = true;
+                        // TODO add a config to make the property nullable if it has a null type.
+                        // $property['nullable'] = true;
 
                         unset($property['type'][$key]);
                     }
