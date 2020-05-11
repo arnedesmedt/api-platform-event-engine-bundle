@@ -199,12 +199,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/arnedesmedt/event-engine-symfony-bundle.git",
-                "reference": "e6c583456ab7a1f2b9e6da51c2a3266057de9598"
+                "reference": "d3f703b8509f359306c72825647428966dd021da"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/arnedesmedt/event-engine-symfony-bundle/zipball/e6c583456ab7a1f2b9e6da51c2a3266057de9598",
-                "reference": "e6c583456ab7a1f2b9e6da51c2a3266057de9598",
+                "url": "https://api.github.com/repos/arnedesmedt/event-engine-symfony-bundle/zipball/d3f703b8509f359306c72825647428966dd021da",
+                "reference": "d3f703b8509f359306c72825647428966dd021da",
                 "shasum": ""
             },
             "require": {
@@ -246,7 +246,7 @@
             ],
             "description": "A library that creates a bridge between Event Engine and Symfony.",
             "homepage": "https://github.com/arnedesmedt/event-engine-symfony-bundle",
-            "time": "2020-04-27T08:06:36+00:00"
+            "time": "2020-05-11T13:44:08+00:00"
         },
         {
             "name": "arnedesmedt/value-objects",
