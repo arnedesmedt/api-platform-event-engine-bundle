@@ -17,11 +17,11 @@ use function preg_match;
 use function sprintf;
 
 /**
- * @method static string|null customOperationName()
+ * @method static string|null __customOperationName()
  */
 trait DefaultApiPlatformMessage
 {
-    public static function entity() : ?string
+    public static function __entity() : string
     {
         $parts = explode('\\', static::class);
         array_pop($parts);
@@ -31,7 +31,7 @@ trait DefaultApiPlatformMessage
         return sprintf('%s\\%s', $namespace, $parts[count($parts) - 1]);
     }
 
-    public static function operationType() : string
+    public static function __operationType() : string
     {
         $shortName = self::shortName();
 
@@ -45,7 +45,7 @@ trait DefaultApiPlatformMessage
         throw InvalidApiPlatformMapping::noOperationTypeFound(static::class);
     }
 
-    public static function operationName() : string
+    public static function __operationName() : string
     {
         $shortName = self::shortName();
 
@@ -62,8 +62,8 @@ trait DefaultApiPlatformMessage
                 return Name::DELETE;
         }
 
-        if (method_exists(static::class, 'customOperationName')) {
-            $customOperationName = static::customOperationName();
+        if (method_exists(static::class, '__customOperationName')) {
+            $customOperationName = static::__customOperationName();
 
             if ($customOperationName !== null) {
                 return $customOperationName;

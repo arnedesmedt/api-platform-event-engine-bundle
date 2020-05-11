@@ -73,9 +73,9 @@ final class Config implements CacheClearerInterface
                 /** @var class-string $command */
                 $command = $config[$classKey];
 
-                $entity = $command::entity();
-                $operationType = $command::operationType();
-                $operationName = $command::operationName();
+                $entity = $command::__entity();
+                $operationType = $command::__operationType();
+                $operationName = $command::__operationName();
 
                 return $this->addToMapping($mapping, $entity, $operationType, $operationName, $command);
             },

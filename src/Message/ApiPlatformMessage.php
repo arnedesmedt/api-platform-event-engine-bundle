@@ -9,9 +9,9 @@ interface ApiPlatformMessage
     /**
      * @return class-string
      */
-    public static function entity() : string;
+    public static function __entity() : string;
 
-    public static function operationType() : string;
+    public static function __operationType() : string;
 
-    public static function operationName() : string;
+    public static function __operationName() : string;
 }
