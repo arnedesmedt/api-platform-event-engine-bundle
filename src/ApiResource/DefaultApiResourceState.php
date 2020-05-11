@@ -6,7 +6,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\ApiResource;
 
 use ADS\Bundle\EventEngineBundle\Util;
 
-trait ChangeApiResourceByNamespace
+trait DefaultApiResourceState
 {
     public static function __newApiResource() : string
     {

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Serializer;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder;
-use ADS\Bundle\EventEngineBundle\Config;
 use ArrayObject;
 use EventEngine\Data\ImmutableRecord;
 use EventEngine\Messaging\MessageFactory;
@@ -15,23 +14,19 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\SerializerAwareInterface;
 use Symfony\Component\Serializer\SerializerInterface;
-use function sprintf;
 
 final class MessageNormalizer implements NormalizerInterface, DenormalizerInterface, SerializerAwareInterface
 {
     private AbstractNormalizer $decorated;
-    private Config $eventEngineConfig;
     private Finder $messageFinder;
     private MessageFactory $messageFactory;
 
     public function __construct(
         AbstractNormalizer $decorated,
-        Config $eventEngineConfig,
         Finder $messageFinder,
         MessageFactory $messageFactory
     ) {
         $this->decorated = $decorated;
-        $this->eventEngineConfig = $eventEngineConfig;
         $this->messageFinder = $messageFinder;
         $this->messageFactory = $messageFactory;
     }
@@ -108,21 +103,20 @@ final class MessageNormalizer implements NormalizerInterface, DenormalizerInterf
      */
     private function messageData(string $message, $data, array $context) : array
     {
-        if ($context['object_to_populate'] ?? false) {
-            $identifier = $this->eventEngineConfig->aggregateIdentifiers()[$message] ?? null;
-
-            if ($identifier === null) {
-                throw new RuntimeException(
-                    sprintf(
-                        'No identifier found for aggregate root class \'%s\'.',
-                        $message
-                    )
-                );
-            }
-
-            $data[$identifier] = $context['object_to_populate']->{$identifier}();
-        }
-
+//        if ($context['object_to_populate'] ?? false) {
+//            $identifier = $this->eventEngineConfig->aggregateIdentifiers()[$message] ?? null;
+//
+//            if ($identifier === null) {
+//                throw new RuntimeException(
+//                    sprintf(
+//                        'No identifier found for aggregate root class \'%s\'.',
+//                        $message
+//                    )
+//                );
+//            }
+//
+//            $data[$identifier] = $context['object_to_populate']->{$identifier}();
+//        }
         return $data;
     }
 }

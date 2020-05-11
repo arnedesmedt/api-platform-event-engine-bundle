@@ -10,6 +10,7 @@ use ReflectionClass;
 use Symfony\Component\Cache\Adapter\AbstractAdapter;
 use Symfony\Component\HttpKernel\CacheClearer\CacheClearerInterface;
 use function array_filter;
+use function array_merge_recursive;
 use function array_reduce;
 
 final class Config implements CacheClearerInterface
@@ -34,90 +35,51 @@ final class Config implements CacheClearerInterface
             self::API_PLATFORM_MAPPING,
             function () {
                 $config = $this->config->config();
-                $apiPlatformMapping = [];
+                $commandMapping = $this->messageMapping(
+                    $config['compiledCommandRouting'],
+                    'commandName'
+                );
 
-                $this->commandMapping($config, $apiPlatformMapping);
-                $this->queryMapping($config, $apiPlatformMapping);
+                $queryMapping = $this->messageMapping(
+                    $config['compiledQueryDescriptions'],
+                    'name'
+                );
 
-                return $apiPlatformMapping;
+                return array_merge_recursive($commandMapping, $queryMapping);
             }
         );
     }
 
     /**
-     * @param array<mixed> $config
-     * @param array<array<array<string>>> $mapping
+     * @param array<mixed> $messageConfig
+     *
+     * @return array<mixed>
      */
-    private function commandMapping(array $config, array &$mapping) : void
+    private function messageMapping(array $messageConfig, string $classKey) : array
     {
-        $commandsConfig = $config['compiledCommandRouting'];
-
         $apiPlatformCommandsConfig = array_filter(
-            $commandsConfig,
+            $messageConfig,
             static function (array $config) {
                 $command = $config['commandName'];
                 $reflectionClass = new ReflectionClass($command);
 
-                return $reflectionClass->implementsInterface(ApiPlatformMessage::class)
-                    && $command::operationType() !== null
-                    && $command::operationName() !== null;
+                return $reflectionClass->implementsInterface(ApiPlatformMessage::class);
             }
         );
 
-        $mapping = array_reduce(
+        return array_reduce(
             $apiPlatformCommandsConfig,
-            function (array $mapping, array $config) {
+            function (array $mapping, array $config) use ($classKey) {
                 /** @var class-string $command */
-                $command = $config['commandName'];
+                $command = $config[$classKey];
 
-                $entity = $command::entity() ?? $config['aggregateType'];
-                /** @var string $operationType */
+                $entity = $command::entity();
                 $operationType = $command::operationType();
-                /** @var string $operationName */
                 $operationName = $command::operationName();
 
                 return $this->addToMapping($mapping, $entity, $operationType, $operationName, $command);
             },
-            $mapping
-        );
-    }
-
-    /**
-     * @param array<mixed> $config
-     * @param array<array<array<string>>> $mapping
-     */
-    private function queryMapping(array $config, array &$mapping) : void
-    {
-        $queriesConfig = $config['compiledQueryDescriptions'];
-
-        $apiPlatformQueriesConfig = array_filter(
-            $queriesConfig,
-            static function (array $config) {
-                $query = $config['name'];
-                $reflectionClass = new ReflectionClass($query);
-
-                return $reflectionClass->implementsInterface(ApiPlatformMessage::class)
-                    && $query::operationType() !== null
-                    && $query::operationName() !== null
-                    && $query::entity() !== null;
-            }
-        );
-
-        $mapping = array_reduce(
-            $apiPlatformQueriesConfig,
-            function (array $mapping, array $config) {
-                /** @var class-string $query */
-                $query = $config['name'];
-                /** @var class-string $entity */
-                $entity = $query::entity();
-                /** @var string $operationType */
-                $operationType = $query::operationType();
-                /** @var string $operationName */
-                $operationName = $query::operationName();
-
-                return $this->addToMapping($mapping, $entity, $operationType, $operationName, $query);
-            },
-            $mapping
+            []
         );
     }
 

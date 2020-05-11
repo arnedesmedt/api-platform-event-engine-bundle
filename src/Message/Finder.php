@@ -26,11 +26,11 @@ final class Finder
      */
     public function byContext(array $context) : string
     {
-        $resourceClass = $context['resource_class'];
-        $reflectionClass = new ReflectionClass($resourceClass);
+        $entity = $context['resource_class'];
+        $reflectionClass = new ReflectionClass($entity);
 
         if ($reflectionClass->implementsInterface(ChangeApiResource::class)) {
-            $resourceClass = $resourceClass::__newApiResource();
+            $entity = $entity::__newApiResource();
         }
 
         $operationType = $context['operation_type'];
@@ -38,18 +38,18 @@ final class Finder
 
         $mapping = $this->config->apiPlatformMapping();
 
-        if (! isset($mapping[$resourceClass][$operationType][$operationName])) {
+        if (! isset($mapping[$entity][$operationType][$operationName])) {
             throw new RuntimeException(
                 sprintf(
                     'Could not find an event engine message that is mapped with the API platform call ' .
                     '(resource: \'%s\', operation type: \'%s\', operation name: \'%s\').',
-                    $resourceClass,
+                    $entity,
                     $operationType,
                     $operationName
                 )
             );
         }
 
-        return $mapping[$resourceClass][$operationType][$operationName];
+        return $mapping[$entity][$operationType][$operationName];
     }
 }
