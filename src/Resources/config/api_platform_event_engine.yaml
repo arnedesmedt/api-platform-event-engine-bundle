@@ -29,14 +29,14 @@ services:
             - '@EventEngine\EventEngine'
         tags:
             - 'api_platform.item_data_provider'
-    ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetaDataFactory\ShortNameResourceMetaDataFactory:
+    ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory\ShortNameResourceMetadataFactory:
         decorates: 'api_platform.metadata.resource.metadata_factory.short_name'
         arguments:
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetaDataFactory\ShortNameResourceMetaDataFactory.inner'
-    ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetaDataFactory\MessageResourceMetaDataFactory:
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory\ShortNameResourceMetadataFactory.inner'
+    ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory\MessageResourceMetadataFactory:
         decorates: 'api_platform.metadata.resource.metadata_factory.operation'
         arguments:
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetaDataFactory\MessageResourceMetaDataFactory.inner'
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory\MessageResourceMetadataFactory.inner'
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Config'
     ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\MessageNormalizer:
         decorates: 'api_platform.serializer.normalizer.item'

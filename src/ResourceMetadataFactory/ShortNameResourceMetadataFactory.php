@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetaDataFactory;
+namespace ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory;
 
 use ADS\Bundle\EventEngineBundle\Util;
 use ApiPlatform\Core\Metadata\Resource\Factory\ResourceMetadataFactoryInterface;
@@ -11,7 +11,7 @@ use ReflectionClass;
 use ReflectionException;
 use RuntimeException;
 
-final class ShortNameResourceMetaDataFactory implements ResourceMetadataFactoryInterface
+final class ShortNameResourceMetadataFactory implements ResourceMetadataFactoryInterface
 {
     private ResourceMetadataFactoryInterface $decorated;
 
