@@ -92,8 +92,7 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
                     $key = array_search('null', $property['type']);
 
                     if ($key !== false) {
-                        // TODO add a config to make the property nullable if it has a null type.
-                        // $property['nullable'] = true;
+                        $property['nullable'] = true;
 
                         unset($property['type'][$key]);
                     }
@@ -103,6 +102,12 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
                     }
 
                     // TODO use oneOf if multiple types exists
+                }
+
+                if ($property['examples'] ?? false) {
+                    $property['example'] = reset($property['examples']);
+
+                    unset($property['examples']);
                 }
 
                 return $property;
