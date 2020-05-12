@@ -59,8 +59,8 @@ final class Config implements CacheClearerInterface
     {
         $apiPlatformCommandsConfig = array_filter(
             $messageConfig,
-            static function (array $config) {
-                $command = $config['commandName'];
+            static function (array $config) use ($classKey) {
+                $command = $config[$classKey];
                 $reflectionClass = new ReflectionClass($command);
 
                 return $reflectionClass->implementsInterface(ApiPlatformMessage::class);

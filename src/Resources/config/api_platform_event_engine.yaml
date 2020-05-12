@@ -33,6 +33,11 @@ services:
         decorates: 'api_platform.metadata.resource.metadata_factory.short_name'
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetaDataFactory\ShortNameResourceMetaDataFactory.inner'
+    ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetaDataFactory\MessageResourceMetaDataFactory:
+        decorates: 'api_platform.metadata.resource.metadata_factory.operation'
+        arguments:
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetaDataFactory\MessageResourceMetaDataFactory.inner'
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Config'
     ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\MessageNormalizer:
         decorates: 'api_platform.serializer.normalizer.item'
         arguments:
