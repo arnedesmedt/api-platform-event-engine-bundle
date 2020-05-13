@@ -74,4 +74,19 @@ final class ArrayUtil
             $recursive
         );
     }
+
+    /**
+     * @param array<int|string, mixed> $array
+     *
+     * @return array<int|string, mixed>
+     */
+    public static function toSnakeCasedValues(array $array, bool $recursive = false) : array
+    {
+        return self::process(
+            $array,
+            null,
+            static fn($value) => is_int($value) ? $value : StringUtil::decamilize($value),
+            $recursive
+        );
+    }
 }

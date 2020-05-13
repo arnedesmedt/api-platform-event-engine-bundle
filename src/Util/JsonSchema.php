@@ -41,12 +41,7 @@ final class JsonSchema
             return;
         }
 
-        $schema['required'] = array_map(
-            static function ($property) {
-                return StringUtil::decamilize($property);
-            },
-            $jsonSchema['required']
-        );
+        $schema['required'] = ArrayUtil::toSnakeCasedValues($jsonSchema['required']);
     }
 
     /**
