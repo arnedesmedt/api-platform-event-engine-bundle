@@ -5,16 +5,12 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder;
+use ADS\Bundle\ApiPlatformEventEngineBundle\Util\JsonSchema;
 use ApiPlatform\Core\JsonSchema\Schema;
 use ApiPlatform\Core\JsonSchema\SchemaFactoryInterface;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use ReflectionClass;
 use RuntimeException;
-use function array_map;
-use function array_search;
-use function count;
-use function is_array;
-use function reset;
 use function sprintf;
 
 final class MessageSchemaFactory implements SchemaFactoryInterface
@@ -30,9 +26,9 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
 
     /**
      * @param array<mixed>|null $serializerContext
-     * @param Schema<string> $schema
+     * @param Schema<mixed> $schema
      *
-     * @return Schema<string>
+     * @return Schema<mixed>
      */
     public function buildSchema(
         string $className,
@@ -81,41 +77,8 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
             );
         }
 
-        $schema = $schema ?? new Schema();
         $eventEngineSchema = $message::__schema()->toArray();
 
-        // TODO write library that converts php json schema array to open api schema array
-        $schema['type'] = $eventEngineSchema['type'];
-        $schema['properties'] = array_map(
-            static function (array $property) {
-                if (is_array($property['type'])) {
-                    $key = array_search('null', $property['type']);
-
-                    if ($key !== false) {
-                        $property['nullable'] = true;
-
-                        unset($property['type'][$key]);
-                    }
-
-                    if (count($property['type']) === 1) {
-                        $property['type'] = reset($property['type']);
-                    }
-
-                    // TODO use oneOf if multiple types exists
-                }
-
-                if ($property['examples'] ?? false) {
-                    $property['example'] = reset($property['examples']);
-
-                    unset($property['examples']);
-                }
-
-                return $property;
-            },
-            $eventEngineSchema['properties'] ?? []
-        );
-        $schema['required'] = $eventEngineSchema['required'];
-
-        return $schema;
+        return JsonSchema::toApiPlatformSchema($eventEngineSchema, $schema);
     }
 }

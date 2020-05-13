@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Serializer;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder;
+use ADS\Bundle\ApiPlatformEventEngineBundle\Util\ArrayUtil;
 use ArrayObject;
 use EventEngine\Data\ImmutableRecord;
 use EventEngine\Messaging\MessageFactory;
@@ -103,6 +104,8 @@ final class MessageNormalizer implements NormalizerInterface, DenormalizerInterf
      */
     private function messageData(string $message, $data, array $context) : array
     {
+        $data = ArrayUtil::toCamelCasedKeys($data, true);
+
 //        if ($context['object_to_populate'] ?? false) {
 //            $identifier = $this->eventEngineConfig->aggregateIdentifiers()[$message] ?? null;
 //
@@ -117,6 +120,7 @@ final class MessageNormalizer implements NormalizerInterface, DenormalizerInterf
 //
 //            $data[$identifier] = $context['object_to_populate']->{$identifier}();
 //        }
+
         return $data;
     }
 }

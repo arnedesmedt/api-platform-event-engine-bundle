@@ -199,12 +199,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/arnedesmedt/event-engine-symfony-bundle.git",
-                "reference": "d3f703b8509f359306c72825647428966dd021da"
+                "reference": "14ed8205389bb1154225862fff7ae6f412004fc9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/arnedesmedt/event-engine-symfony-bundle/zipball/d3f703b8509f359306c72825647428966dd021da",
-                "reference": "d3f703b8509f359306c72825647428966dd021da",
+                "url": "https://api.github.com/repos/arnedesmedt/event-engine-symfony-bundle/zipball/14ed8205389bb1154225862fff7ae6f412004fc9",
+                "reference": "14ed8205389bb1154225862fff7ae6f412004fc9",
                 "shasum": ""
             },
             "require": {
@@ -246,7 +246,7 @@
             ],
             "description": "A library that creates a bridge between Event Engine and Symfony.",
             "homepage": "https://github.com/arnedesmedt/event-engine-symfony-bundle",
-            "time": "2020-05-11T13:44:08+00:00"
+            "time": "2020-05-13T06:32:30+00:00"
         },
         {
             "name": "arnedesmedt/value-objects",
@@ -254,16 +254,18 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/arnedesmedt/value-objects.git",
-                "reference": "01d57834ddffae5178a9ab97a7a4e349ac7cbe03"
+                "reference": "24f59dacc2a40930183ebcbdcd524fdbbdd593ef"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/arnedesmedt/value-objects/zipball/01d57834ddffae5178a9ab97a7a4e349ac7cbe03",
-                "reference": "01d57834ddffae5178a9ab97a7a4e349ac7cbe03",
+                "url": "https://api.github.com/repos/arnedesmedt/value-objects/zipball/24f59dacc2a40930183ebcbdcd524fdbbdd593ef",
+                "reference": "24f59dacc2a40930183ebcbdcd524fdbbdd593ef",
                 "shasum": ""
             },
             "require": {
                 "event-engine/php-json-schema": "^2.0",
+                "ext-intl": "*",
+                "fzaninotto/faker": "^1.9",
                 "opis/json-schema": "^1.0",
                 "php": "^7.4",
                 "ramsey/uuid": "^3.9"
@@ -293,7 +295,7 @@
             ],
             "description": "Value objects",
             "homepage": "https://github.com/arnedesmedt/value-objects",
-            "time": "2020-04-06T08:49:58+00:00"
+            "time": "2020-05-13T06:25:40+00:00"
         },
         {
             "name": "beberlei/assert",
@@ -2346,6 +2348,56 @@
                 "rest"
             ],
             "time": "2019-12-18T15:40:05+00:00"
+        },
+        {
+            "name": "fzaninotto/faker",
+            "version": "v1.9.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/fzaninotto/Faker.git",
+                "reference": "fc10d778e4b84d5bd315dad194661e091d307c6f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/fzaninotto/Faker/zipball/fc10d778e4b84d5bd315dad194661e091d307c6f",
+                "reference": "fc10d778e4b84d5bd315dad194661e091d307c6f",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^5.3.3 || ^7.0"
+            },
+            "require-dev": {
+                "ext-intl": "*",
+                "phpunit/phpunit": "^4.8.35 || ^5.7",
+                "squizlabs/php_codesniffer": "^2.9.2"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.9-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Faker\\": "src/Faker/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "François Zaninotto"
+                }
+            ],
+            "description": "Faker is a PHP library that generates fake data for you.",
+            "keywords": [
+                "data",
+                "faker",
+                "fixtures"
+            ],
+            "time": "2019-12-12T13:22:17+00:00"
         },
         {
             "name": "jdorn/sql-formatter",

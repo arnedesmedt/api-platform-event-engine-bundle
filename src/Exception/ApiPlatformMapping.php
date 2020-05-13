@@ -7,7 +7,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Exception;
 use Exception;
 use function sprintf;
 
-final class InvalidApiPlatformMapping extends Exception
+final class ApiPlatformMapping extends Exception
 {
     /**
      * @param class-string $class
