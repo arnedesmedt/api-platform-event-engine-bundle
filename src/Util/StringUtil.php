@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Util;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\StringUtilException;
+use function lcfirst;
 use function preg_replace;
 use function sprintf;
 use function str_replace;
 use function strtolower;
-use function ucfirst;
 use function ucwords;
 
 final class StringUtil
@@ -18,7 +18,7 @@ final class StringUtil
     {
         $result = str_replace($delimiter, '', ucwords($string, $delimiter));
 
-        return $pascal ? ucfirst($result) : $result;
+        return $pascal ? $result : lcfirst($result);
     }
 
     public static function decamilize(string $string, string $delimiter = '_') : string
