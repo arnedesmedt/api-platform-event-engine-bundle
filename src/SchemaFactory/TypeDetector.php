@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\ClassException;
-use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\TypeException;
 use ADS\ValueObjects\BoolValue;
 use ADS\ValueObjects\EnumValue;
 use ADS\ValueObjects\FloatValue;
@@ -25,7 +24,6 @@ use ReflectionClass;
 use function array_map;
 use function call_user_func;
 use function class_exists;
-use function get_class;
 use function is_callable;
 use function strrchr;
 use function substr;
@@ -89,9 +87,8 @@ final class TypeDetector
             return null;
         }
 
-        $toMethod = self::toMethod($schemaType);
         if ($refObj->implementsInterface(HasDefault::class) && $schemaType instanceof AnnotatedType) {
-            $schemaType = $schemaType->withDefault($class::defaultValue()->{$toMethod}());
+            $schemaType = $schemaType->withDefault($class::defaultValue()->toValue());
         }
 
         if (! $refObj->implementsInterface(HasExamples::class)
@@ -102,8 +99,8 @@ final class TypeDetector
 
         return $schemaType->withExamples(
             ...array_map(
-                static function (ValueObject $valueObject) use ($toMethod) {
-                    return $valueObject->{$toMethod}();
+                static function (ValueObject $valueObject) {
+                    return $valueObject->toValue();
                 },
                 $class::examples()
             )
@@ -146,26 +143,6 @@ final class TypeDetector
         }
 
         return null;
-    }
-
-    private static function toMethod(Type $scalarSchemaType) : string
-    {
-        $type = $scalarSchemaType->toArray()['type'];
-
-        switch ($type) {
-            case JsonSchema::TYPE_ARRAY:
-                return 'toArray';
-            case JsonSchema::TYPE_STRING:
-                return 'toString';
-            case JsonSchema::TYPE_INT:
-                return 'toInt';
-            case JsonSchema::TYPE_FLOAT:
-                return 'toFloat';
-            case JsonSchema::TYPE_BOOL:
-                return 'toBool';
-            default:
-                throw TypeException::noToMethodForSchemaType(get_class($scalarSchemaType));
-        }
     }
 
     private static function convertClassToType(string $class) : Type

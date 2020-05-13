@@ -14,6 +14,7 @@ use ReflectionClass;
 use function array_key_exists;
 use function array_map;
 use function count;
+use function is_string;
 use function sprintf;
 
 // phpcs:disable Squiz.NamingConventions.ValidVariableName.NotCamelCaps
@@ -22,11 +23,6 @@ trait JsonSchemaAwareRecordLogic
     use \EventEngine\JsonSchema\JsonSchemaAwareRecordLogic {
         getTypeFromClass as notUsedGetTypeFromClass;
         generateSchemaFromPropTypeMap as parentGenerateSchemaFromPropTypeMap;
-    }
-
-    private static function getTypeFromClass(string $classOrType) : Type
-    {
-        return TypeDetector::getTypeFromClass($classOrType, self::__allowNestedSchema());
     }
 
     /**
@@ -124,15 +120,35 @@ trait JsonSchemaAwareRecordLogic
                 );
             }
 
-            $optionalProps = [];
-            foreach (self::__optionalProperties() as $optProp) {
-                $optionalProps[$optProp] = $props[$optProp];
-                unset($props[$optProp]);
+            $optionalProperties = [];
+            foreach (self::__optionalProperties() as $optionalPropertyNameOrKey => $optionalPropertyNameOrDefault) {
+                $keyIsName = is_string($optionalPropertyNameOrKey);
+                $optionalPropertyName = $keyIsName
+                    ? $optionalPropertyNameOrKey
+                    : $optionalPropertyNameOrDefault;
+
+                $optionalProperties[$optionalPropertyName] = $props[$optionalPropertyName];
+
+                unset($props[$optionalPropertyName]);
+
+                if (! $keyIsName) {
+                    continue;
+                }
+
+                $optionalProperties[$optionalPropertyName] = $optionalProperties[$optionalPropertyName]
+                    ->withDefault(
+                        $optionalPropertyNameOrDefault->toValue()
+                    );
             }
 
-            self::$__schema = JsonSchema::object($props, $optionalProps);
+            self::$__schema = JsonSchema::object($props, $optionalProperties);
         }
 
         return self::$__schema;
+    }
+
+    private static function getTypeFromClass(string $classOrType) : Type
+    {
+        return TypeDetector::getTypeFromClass($classOrType, self::__allowNestedSchema());
     }
 }
