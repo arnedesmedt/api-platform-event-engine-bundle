@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Message;
 
-use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\ApiPlatformMapping;
+use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\ApiPlatformMappingException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Operation\Name;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Operation\Type;
 use ReflectionClass;
@@ -42,7 +42,7 @@ trait DefaultApiPlatformMessage
                 return Type::ITEM;
         }
 
-        throw ApiPlatformMapping::noOperationTypeFound(static::class);
+        throw ApiPlatformMappingException::noOperationTypeFound(static::class);
     }
 
     public static function __operationName() : string
@@ -70,7 +70,7 @@ trait DefaultApiPlatformMessage
             }
         }
 
-        throw ApiPlatformMapping::noOperationNameFound(static::class);
+        throw ApiPlatformMappingException::noOperationNameFound(static::class);
     }
 
     /**

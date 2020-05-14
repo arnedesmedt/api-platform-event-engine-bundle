@@ -6,8 +6,8 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Message;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\ApiResource\ChangeApiResource;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Config;
+use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\FinderException;
 use ReflectionClass;
-use RuntimeException;
 use function sprintf;
 
 final class Finder
@@ -39,15 +39,7 @@ final class Finder
         $mapping = $this->config->apiPlatformMapping();
 
         if (! isset($mapping[$entity][$operationType][$operationName])) {
-            throw new RuntimeException(
-                sprintf(
-                    'Could not find an event engine message that is mapped with the API platform call ' .
-                    '(resource: \'%s\', operation type: \'%s\', operation name: \'%s\').',
-                    $entity,
-                    $operationType,
-                    $operationName
-                )
-            );
+            throw FinderException::noMessageFound($entity, $operationType, $operationName);
         }
 
         return $mapping[$entity][$operationType][$operationName];
