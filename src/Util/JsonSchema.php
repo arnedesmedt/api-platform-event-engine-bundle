@@ -10,25 +10,71 @@ use function array_search;
 use function count;
 use function is_array;
 use function reset;
+use function str_replace;
 
 final class JsonSchema
 {
     /**
      * @param array<mixed> $jsonSchema
      * @param Schema<mixed>|null $schema
+     * @param Schema<mixed>|null $rootSchema
      *
      * @return Schema<mixed> $schema
      */
-    public static function toApiPlatformSchema(array $jsonSchema, ?Schema $schema) : Schema
+    public static function toApiPlatformSchema(array $jsonSchema, ?Schema $schema = null, ?Schema $rootSchema = null) : Schema
     {
-        $schema ??= new Schema();
+        $version = $rootSchema ? $rootSchema->getVersion() : Schema::VERSION_OPENAPI;
+        $schema ??= new Schema($version);
+        $rootSchema ??= $schema;
 
-        $schema['type'] = $jsonSchema['type'];
-
+        self::handleType($jsonSchema, $schema);
         self::handleRequired($jsonSchema, $schema);
-        self::handleProperties($jsonSchema, $schema);
+        self::handleRef($jsonSchema, $schema, $rootSchema);
+        self::handleExamples($jsonSchema, $schema);
+        self::handleItems($jsonSchema, $schema, $rootSchema);
+        self::handleProperties($jsonSchema, $schema, $rootSchema);
 
         return $schema;
+    }
+
+    /**
+     * @param array<mixed> $jsonSchema
+     * @param Schema<mixed> $schema
+     */
+    private static function handleType(array $jsonSchema, Schema $schema) : void
+    {
+        if (! isset($jsonSchema['type'])) {
+            return;
+        }
+
+        if (is_array($jsonSchema['type'])) {
+            $key = array_search('null', $jsonSchema['type']);
+
+            if ($key !== false) {
+                $schema['nullable'] = true;
+            }
+
+            if (count($jsonSchema['type']) === 1) {
+                $jsonSchema['type'] = reset($jsonSchema['type']);
+            }
+
+            // TODO use oneOf if multiple types exists
+        }
+
+        $schema['type'] = $jsonSchema['type'];
+    }
+
+    /**
+     * @param array<mixed> $jsonSchema
+     * @param Schema<mixed> $schema
+     */
+    private static function handleExamples(array $jsonSchema, Schema $schema) : void
+    {
+        if (! isset($jsonSchema['examples'])) {
+            return;
+        }
+
+        $schema['example'] = reset($jsonSchema['examples']);
     }
 
     /**
@@ -47,38 +93,56 @@ final class JsonSchema
     /**
      * @param array<mixed> $jsonSchema
      * @param Schema<mixed> $schema
+     * @param Schema<mixed> $rootSchema
      */
-    private static function handleProperties(array $jsonSchema, Schema $schema) : void
+    private static function handleRef(array $jsonSchema, Schema $schema, Schema $rootSchema) : void
+    {
+        if (! isset($jsonSchema['$ref'])) {
+            return;
+        }
+
+        $ref = $jsonSchema['$ref'];
+
+        if ($schema->getVersion() === Schema::VERSION_OPENAPI) {
+            $ref = str_replace('#/definitions/', '#/components/schemas/', $ref);
+        }
+
+        $schema['$ref'] = $ref;
+
+        $definitionName = $schema->getRootDefinitionKey();
+        $definitions = $rootSchema->getDefinitions();
+
+        $definitions[$definitionName] = $definitionName;
+    }
+
+    /**
+     * @param array<mixed> $jsonSchema
+     * @param Schema<mixed> $schema
+     * @param Schema<mixed> $rootSchema
+     */
+    private static function handleItems(array $jsonSchema, Schema $schema, Schema $rootSchema) : void
+    {
+        if (! isset($jsonSchema['items'])) {
+            return;
+        }
+
+        $schema['items'] = self::toApiPlatformSchema($jsonSchema['items'], null, $rootSchema);
+    }
+
+    /**
+     * @param array<mixed> $jsonSchema
+     * @param Schema<mixed> $schema
+     * @param Schema<mixed> $rootSchema
+     */
+    private static function handleProperties(array $jsonSchema, Schema $schema, Schema $rootSchema) : void
     {
         if (! isset($jsonSchema['properties'])) {
             return;
         }
 
         $properties = array_map(
-            static function (array $property) {
-                if (is_array($property['type'])) {
-                    $key = array_search('null', $property['type']);
-
-                    if ($key !== false) {
-                        $property['nullable'] = true;
-
-                        unset($property['type'][$key]);
-                    }
-
-                    if (count($property['type']) === 1) {
-                        $property['type'] = reset($property['type']);
-                    }
-
-                    // TODO use oneOf if multiple types exists
-                }
-
-                if ($property['examples'] ?? false) {
-                    $property['example'] = reset($property['examples']);
-
-                    unset($property['examples']);
-                }
-
-                return $property;
+            static function (array $property) use ($rootSchema) {
+                return self::toApiPlatformSchema($property, null, $rootSchema);
             },
             $jsonSchema['properties']
         );

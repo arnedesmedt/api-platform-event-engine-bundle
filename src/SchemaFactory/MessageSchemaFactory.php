@@ -8,30 +8,34 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\FinderException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Util\JsonSchema;
 use ADS\Bundle\EventEngineBundle\Message\HasResponses;
-use ApiPlatform\Core\Api\OperationMethodResolverInterface;
 use ApiPlatform\Core\JsonSchema\Schema;
 use ApiPlatform\Core\JsonSchema\SchemaFactoryInterface;
+use ApiPlatform\Core\Metadata\Resource\Factory\ResourceMetadataFactoryInterface;
+use EventEngine\EventEngine;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use ReflectionClass;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use function is_string;
 use function sprintf;
-use function ucfirst;
 
 final class MessageSchemaFactory implements SchemaFactoryInterface
 {
     private SchemaFactoryInterface $schemaFactory;
     private Finder $messageFinder;
-    private OperationMethodResolverInterface $operationMethodResolver;
+    private ResourceMetadataFactoryInterface $resourceMetaDataFactory;
+    private EventEngine $eventEngine;
 
     public function __construct(
         SchemaFactoryInterface $schemaFactory,
         Finder $messageFinder,
-        OperationMethodResolverInterface $operationMethodResolver
+        ResourceMetadataFactoryInterface $resourceMetaDataFactory,
+        EventEngine $eventEngine
     ) {
         $this->schemaFactory = $schemaFactory;
         $this->messageFinder = $messageFinder;
-        $this->operationMethodResolver = $operationMethodResolver;
+        $this->resourceMetaDataFactory = $resourceMetaDataFactory;
+        $this->eventEngine = $eventEngine;
     }
 
     /**
@@ -65,23 +69,48 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
             );
         }
 
-        if ($type === Schema::TYPE_INPUT) {
-            return JsonSchema::toApiPlatformSchema($message::__schema()->toArray(), $schema);
-        }
-
+        $schema ??= new Schema();
         $reflectionClass = new ReflectionClass($message);
 
-        if (! $reflectionClass->implementsInterface(HasResponses::class)) {
-            return new Schema();
+        if ($type === Schema::TYPE_OUTPUT && ! $reflectionClass->implementsInterface(HasResponses::class)) {
+            return $schema;
         }
 
-        return JsonSchema::toApiPlatformSchema(
-            $message::__responseSchemaForStatusCode(
-                $message::__defaultStatusCode() ?? $this->defaultStatusCode($className, $operationType, $operationName)
-            )
-                ->toArray(),
-            $schema
-        );
+        if ($type === Schema::TYPE_INPUT) {
+            JsonSchema::toApiPlatformSchema($message::__schema()->toArray(), $schema);
+        } else {
+            JsonSchema::toApiPlatformSchema(
+                $message::__responseSchemaForStatusCode(
+                    $message::__defaultStatusCode() ?? $this->defaultStatusCode($className, $operationType, $operationName)
+                )
+                    ->toArray(),
+                $schema
+            );
+        }
+
+        $definitions = $schema->getDefinitions();
+
+        if ($definitions->count() === 0) {
+            return $schema;
+        }
+
+        $responseTypes = $this->eventEngine->compileCacheableConfig()['responseTypes'];
+
+        $iterator = $definitions->getIterator();
+
+        while ($iterator->valid()) {
+            $definitionName = $iterator->current();
+
+            if (! is_string($definitionName) || ! $this->eventEngine->isKnownType($definitionName)) {
+                $iterator->next();
+                continue;
+            }
+
+            $definitions[$definitionName] = $responseTypes[$definitionName];
+            $iterator->next();
+        }
+
+        return $schema;
     }
 
     /**
@@ -109,9 +138,8 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
 
     private function defaultStatusCode(string $className, string $operationType, string $operationName) : int
     {
-        $method = sprintf('get%sOperationMethod', ucfirst($operationType));
-
-        $httpMethod = $this->operationMethodResolver->{$method}($className, $operationName);
+        $resourceMetaData = $this->resourceMetaDataFactory->create($className);
+        $httpMethod = $resourceMetaData->getTypedOperationAttribute($operationType, $operationName, 'method');
 
         switch ($httpMethod) {
             case Request::METHOD_POST:

@@ -49,4 +49,5 @@ services:
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageSchemaFactory.inner'
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder'
-            - '@api_platform.operation_method_resolver'
+            - '@api_platform.metadata.resource.metadata_factory'
+            - '@EventEngine\EventEngine'
