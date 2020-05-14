@@ -13,9 +13,11 @@ use EventEngine\JsonSchema\Type;
 use phpDocumentor\Reflection\DocBlock\Tags\Generic;
 use phpDocumentor\Reflection\DocBlockFactory;
 use ReflectionClass;
+use function array_filter;
 use function array_key_exists;
 use function array_map;
 use function count;
+use function implode;
 use function is_string;
 use function sprintf;
 
@@ -106,8 +108,19 @@ trait JsonSchemaAwareRecordLogic
 
                 $reflectionProperty = $reflectionClass->getProperty($propName);
                 $docBlock = $docBlockFactory->create($reflectionProperty);
-                $examples = $docBlock->getTagsByName('example');
-                $description = $docBlock->getSummary() . '<br/>' . $docBlock->getDescription()->render();
+                $docBlockExamples = $docBlock->getTagsByName('example');
+                $docBlockDescription =  implode(
+                    '<br/>',
+                    array_filter(
+                        [
+                            $docBlock->getSummary(),
+                            $docBlock->getDescription()->render(),
+                        ],
+                        static function ($part) {
+                            return $part !== '';
+                        }
+                    )
+                );
 
                 if ($examples[$propName] ?? false) {
                     $example = $examples[$propName];
@@ -117,18 +130,18 @@ trait JsonSchemaAwareRecordLogic
                     }
 
                     $prop = $prop->withExamples($example);
-                } elseif (! empty($examples)) {
+                } elseif (! empty($docBlockExamples)) {
                     $prop = $prop->withExamples(
                         ...array_map(
                             static function (Generic $generic) {
                                 return $generic->getDescription()->getBodyTemplate();
                             },
-                            $examples
+                            $docBlockExamples
                         )
                     );
                 }
 
-                $props[$propName] = $prop->describedAs($description);
+                $props[$propName] = $prop->describedAs($docBlockDescription);
             }
 
             $optionalProperties = [];
