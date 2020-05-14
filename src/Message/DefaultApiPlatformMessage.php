@@ -73,6 +73,14 @@ trait DefaultApiPlatformMessage
         throw ApiPlatformMapping::noOperationNameFound(static::class);
     }
 
+    /**
+     * @inheritDoc
+     */
+    public static function __examples() : ?array
+    {
+        return null;
+    }
+
     private static function shortName() : string
     {
         $reflectionClass = new ReflectionClass(static::class);

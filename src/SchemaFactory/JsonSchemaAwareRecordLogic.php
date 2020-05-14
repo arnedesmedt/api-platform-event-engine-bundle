@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory;
 
+use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
+use ADS\ValueObjects\ValueObject;
 use EventEngine\Data\ImmutableRecord;
 use EventEngine\JsonSchema\Exception\InvalidArgumentException;
 use EventEngine\JsonSchema\JsonSchema;
@@ -47,6 +49,10 @@ trait JsonSchemaAwareRecordLogic
         if (self::$__schema === null) {
             $props = [];
             $docBlockFactory = DocBlockFactory::createInstance();
+            $reflectionClass = new ReflectionClass(static::class);
+            $examples = $reflectionClass->implementsInterface(ApiPlatformMessage::class)
+                ? (static::__examples() ?? [])
+                : [];
 
             foreach (self::$__propTypeMap as $prop => [$type, $isScalar, $isNullable]) {
                 if ($isScalar) {
@@ -93,7 +99,6 @@ trait JsonSchemaAwareRecordLogic
                 $props[$prop] = JsonSchema::nullOr($props[$prop]);
             }
 
-            $reflectionClass = new ReflectionClass(static::class);
             foreach ($props as $propName => $prop) {
                 if (! $reflectionClass->hasProperty($propName)) {
                     continue;
@@ -101,10 +106,18 @@ trait JsonSchemaAwareRecordLogic
 
                 $reflectionProperty = $reflectionClass->getProperty($propName);
                 $docBlock = $docBlockFactory->create($reflectionProperty);
-
                 $examples = $docBlock->getTagsByName('example');
+                $description = $docBlock->getSummary() . '<br/>' . $docBlock->getDescription()->render();
 
-                if (! empty($examples)) {
+                if ($examples[$propName] ?? false) {
+                    $example = $examples[$propName];
+
+                    if ($example instanceof ValueObject) {
+                        $example = $example->toValue();
+                    }
+
+                    $prop = $prop->withExamples($example);
+                } elseif (! empty($examples)) {
                     $prop = $prop->withExamples(
                         ...array_map(
                             static function (Generic $generic) {
@@ -115,9 +128,7 @@ trait JsonSchemaAwareRecordLogic
                     );
                 }
 
-                $props[$propName] = $prop->describedAs(
-                    $docBlock->getSummary() . '<br/>' . $docBlock->getDescription()->render()
-                );
+                $props[$propName] = $prop->describedAs($description);
             }
 
             $optionalProperties = [];

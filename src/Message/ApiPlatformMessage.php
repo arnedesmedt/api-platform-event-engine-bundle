@@ -14,4 +14,9 @@ interface ApiPlatformMessage
     public static function __operationType() : string;
 
     public static function __operationName() : string;
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    public static function __examples() : ?array;
 }
