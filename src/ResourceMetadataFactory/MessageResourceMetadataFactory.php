@@ -60,7 +60,7 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
 
         if ($itemOperations) {
             $itemOperations = $this->extractMessageDoc($itemOperations, $resourceClass, OperationType::ITEM);
-            $resourceMetadata = $resourceMetadata->withCollectionOperations($itemOperations);
+            $resourceMetadata = $resourceMetadata->withItemOperations($itemOperations);
         }
 
         return $resourceMetadata;
