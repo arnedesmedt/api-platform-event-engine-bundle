@@ -106,7 +106,7 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
                 continue;
             }
 
-            $definitions[$definitionName] = $responseTypes[$definitionName];
+            $definitions[$definitionName] = JsonSchema::toApiPlatformSchema($responseTypes[$definitionName]);
             $iterator->next();
         }
 
