@@ -52,6 +52,8 @@ final class JsonSchema
 
             if ($key !== false) {
                 $schema['nullable'] = true;
+
+                unset($jsonSchema['type'][$key]);
             }
 
             if (count($jsonSchema['type']) === 1) {
