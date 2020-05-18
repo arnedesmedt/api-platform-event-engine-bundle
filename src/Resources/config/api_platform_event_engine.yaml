@@ -51,3 +51,8 @@ services:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder'
             - '@api_platform.metadata.resource.metadata_factory'
             - '@EventEngine\EventEngine'
+    ADS\Bundle\ApiPlatformEventEngineBundle\Command\ApiMappingMessageCommand:
+        arguments:
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Config'
+        tags:
+            - console.command
