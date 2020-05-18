@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Util;
 
+use ADS\Bundle\EventEngineBundle\Util\ArrayUtil;
 use ApiPlatform\Core\JsonSchema\Schema;
 use function array_map;
 use function array_search;

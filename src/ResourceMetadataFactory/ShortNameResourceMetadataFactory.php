@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory;
 
-use ADS\Bundle\EventEngineBundle\Util;
+use ADS\Bundle\EventEngineBundle\Util\EventEngineUtil;
 use ApiPlatform\Core\Metadata\Resource\Factory\ResourceMetadataFactoryInterface;
 use ApiPlatform\Core\Metadata\Resource\ResourceMetadata;
 use ReflectionClass;
@@ -32,7 +32,7 @@ final class ShortNameResourceMetadataFactory implements ResourceMetadataFactoryI
         }
 
         try {
-            $aggregateRootClass = Util::fromStateToAggregateClass($resourceClass);
+            $aggregateRootClass = EventEngineUtil::fromStateToAggregateClass($resourceClass);
         } catch (RuntimeException | ReflectionException $e) {
             return $resourceMetadata;
         }
