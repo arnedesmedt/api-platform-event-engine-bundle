@@ -13,7 +13,8 @@
     ],
     "require": {
         "arnedesmedt/event-engine-symfony-bundle": "dev-master",
-        "api-platform/api-pack": "^1.2"
+        "api-platform/api-pack": "^1.2",
+        "api-platform/core": "dev-master"
     },
     "require-dev": {
         "phpstan/phpstan": "^0.12.7",
@@ -26,6 +27,12 @@
             "ADS\\Bundle\\ApiPlatformEventEngineBundle\\": "src/"
         }
     },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/arnedesmedt/core"
+        }
+    ],
     "minimum-stability": "dev",
     "prefer-stable": true
 }

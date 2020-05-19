@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "435490a35edc6d7ca3d4b6fa68803332",
+    "content-hash": "e5fce5527e2f68702ed2c4fa937b7d11",
     "packages": [
         {
             "name": "api-platform/api-pack",
@@ -44,16 +44,16 @@
         },
         {
             "name": "api-platform/core",
-            "version": "v2.5.5",
+            "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "https://github.com/api-platform/core.git",
-                "reference": "fa9d8cac13a9a232eff738c6818499b07304ba21"
+                "url": "https://github.com/arnedesmedt/core.git",
+                "reference": "5b2184f8f0ea1e866bf0c47357955541aebfc41e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/api-platform/core/zipball/fa9d8cac13a9a232eff738c6818499b07304ba21",
-                "reference": "fa9d8cac13a9a232eff738c6818499b07304ba21",
+                "url": "https://api.github.com/repos/arnedesmedt/core/zipball/5b2184f8f0ea1e866bf0c47357955541aebfc41e",
+                "reference": "5b2184f8f0ea1e866bf0c47357955541aebfc41e",
                 "shasum": ""
             },
             "require": {
@@ -90,7 +90,7 @@
                 "doctrine/mongodb-odm-bundle": "^4.0",
                 "doctrine/orm": "^2.6.4",
                 "elasticsearch/elasticsearch": "^6.0",
-                "friendsofsymfony/user-bundle": "2.2.x-dev#157b53bd7d6c347148a90e723981a43f9c897bf5",
+                "friendsofsymfony/user-bundle": "^2.2@dev",
                 "guzzlehttp/guzzle": "^6.0",
                 "jangregor/phpstan-prophecy": "^0.6",
                 "justinrainbow/json-schema": "^5.2.1",
@@ -134,13 +134,13 @@
                 "symfony/validator": "^3.4 || ^4.0 || ^5.0",
                 "symfony/web-profiler-bundle": "^4.2 || ^5.0",
                 "symfony/yaml": "^3.4 || ^4.0 || ^5.0",
-                "teohhanhui/stubs-mongodb": "@dev",
                 "twig/twig": "^1.42.3 || ^2.12",
                 "webonyx/graphql-php": ">=0.13.1 <1.0"
             },
             "suggest": {
                 "doctrine/mongodb-odm-bundle": "To support MongoDB. Only versions 4.0 and later are supported.",
                 "elasticsearch/elasticsearch": "To support Elasticsearch.",
+                "friendsofsymfony/user-bundle": "To use the FOSUserBundle bridge.",
                 "guzzlehttp/guzzle": "To use the HTTP cache invalidation system.",
                 "phpdocumentor/reflection-docblock": "To support extracting metadata from PHPDoc.",
                 "psr/cache-implementation": "To use metadata caching.",
@@ -156,7 +156,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "2.5.x-dev"
+                    "dev-master": "2.6.x-dev"
                 },
                 "symfony": {
                     "require": "^3.4 || ^4.0 || ^5.0"
@@ -167,7 +167,11 @@
                     "ApiPlatform\\Core\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "ApiPlatform\\Core\\Tests\\": "tests/"
+                }
+            },
             "license": [
                 "MIT"
             ],
@@ -181,17 +185,20 @@
             "description": "Build a fully-featured hypermedia or GraphQL API in minutes",
             "homepage": "https://api-platform.com",
             "keywords": [
+                "API",
+                "GraphQL",
+                "HAL",
                 "Hydra",
                 "JSON-LD",
-                "api",
-                "graphql",
-                "hal",
-                "jsonapi",
-                "openapi",
-                "rest",
-                "swagger"
+                "JSONAPI",
+                "OpenAPI",
+                "REST",
+                "Swagger"
             ],
-            "time": "2020-04-21T14:00:17+00:00"
+            "support": {
+                "source": "https://github.com/arnedesmedt/core/tree/master"
+            },
+            "time": "2020-02-20T17:11:19+00:00"
         },
         {
             "name": "arnedesmedt/event-engine-symfony-bundle",
@@ -8036,7 +8043,8 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "arnedesmedt/event-engine-symfony-bundle": 20
+        "arnedesmedt/event-engine-symfony-bundle": 20,
+        "api-platform/core": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,
