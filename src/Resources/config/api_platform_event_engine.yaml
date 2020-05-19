@@ -56,3 +56,7 @@ services:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Config'
         tags:
             - console.command
+    ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\ValueObjectSubresourceMetadataFactory:
+        decorates: 'api_platform.metadata.property.metadata_factory.annotation'
+            arguments:
+                - '@ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\ValueObjectSubresourceMetadataFactory.inner'
