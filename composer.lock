@@ -48,12 +48,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/arnedesmedt/core.git",
-                "reference": "5b2184f8f0ea1e866bf0c47357955541aebfc41e"
+                "reference": "b36426fa3232090a422fc6044157cbeb846ef336"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/arnedesmedt/core/zipball/5b2184f8f0ea1e866bf0c47357955541aebfc41e",
-                "reference": "5b2184f8f0ea1e866bf0c47357955541aebfc41e",
+                "url": "https://api.github.com/repos/arnedesmedt/core/zipball/b36426fa3232090a422fc6044157cbeb846ef336",
+                "reference": "b36426fa3232090a422fc6044157cbeb846ef336",
                 "shasum": ""
             },
             "require": {
@@ -90,7 +90,7 @@
                 "doctrine/mongodb-odm-bundle": "^4.0",
                 "doctrine/orm": "^2.6.4",
                 "elasticsearch/elasticsearch": "^6.0",
-                "friendsofsymfony/user-bundle": "^2.2@dev",
+                "friendsofsymfony/user-bundle": "2.2.x-dev#157b53bd7d6c347148a90e723981a43f9c897bf5",
                 "guzzlehttp/guzzle": "^6.0",
                 "jangregor/phpstan-prophecy": "^0.6",
                 "justinrainbow/json-schema": "^5.2.1",
@@ -134,13 +134,13 @@
                 "symfony/validator": "^3.4 || ^4.0 || ^5.0",
                 "symfony/web-profiler-bundle": "^4.2 || ^5.0",
                 "symfony/yaml": "^3.4 || ^4.0 || ^5.0",
+                "teohhanhui/stubs-mongodb": "@dev",
                 "twig/twig": "^1.42.3 || ^2.12",
                 "webonyx/graphql-php": ">=0.13.1 <1.0"
             },
             "suggest": {
                 "doctrine/mongodb-odm-bundle": "To support MongoDB. Only versions 4.0 and later are supported.",
                 "elasticsearch/elasticsearch": "To support Elasticsearch.",
-                "friendsofsymfony/user-bundle": "To use the FOSUserBundle bridge.",
                 "guzzlehttp/guzzle": "To use the HTTP cache invalidation system.",
                 "phpdocumentor/reflection-docblock": "To support extracting metadata from PHPDoc.",
                 "psr/cache-implementation": "To use metadata caching.",
@@ -198,7 +198,7 @@
             "support": {
                 "source": "https://github.com/arnedesmedt/core/tree/master"
             },
-            "time": "2020-02-20T17:11:19+00:00"
+            "time": "2020-05-19T15:24:39+00:00"
         },
         {
             "name": "arnedesmedt/event-engine-symfony-bundle",

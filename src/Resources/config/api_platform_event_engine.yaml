@@ -60,12 +60,3 @@ services:
         decorates: 'api_platform.metadata.property.metadata_factory.annotation'
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\ValueObjectSubresourceMetadataFactory.inner'
-
-    api_platform.action.post_subresource:
-        alias: 'api_platform.action.get_subresource'
-        public: true
-
-    ADS\Bundle\ApiPlatformEventEngineBundle\SubresourceOperationFactory\SubresourcePostOperationFactory:
-        decorates: 'api_platform.subresource_operation_factory'
-        arguments:
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\SubresourceOperationFactory\SubresourcePostOperationFactory.inner'
