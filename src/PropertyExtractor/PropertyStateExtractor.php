@@ -57,7 +57,7 @@ final class PropertyStateExtractor implements PropertyListExtractorInterface, Pr
             return null;
         }
 
-        return array_keys($schema['properties']);
+        return array_keys($schema['properties'] ?? []);
     }
 
     /**
@@ -95,7 +95,7 @@ final class PropertyStateExtractor implements PropertyListExtractorInterface, Pr
         $schema = $stateClass::__schema()->toArray();
 
         $schema['reflectionProperties'] = array_reduce(
-            array_keys($schema['properties']),
+            array_keys($schema['properties'] ?? []),
             static function ($reflectionProperties, $property) use ($reflectionClass) {
                 $reflectionProperties[$property] = $reflectionClass->getProperty($property);
 
