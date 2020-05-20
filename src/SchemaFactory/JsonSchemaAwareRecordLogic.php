@@ -106,9 +106,13 @@ trait JsonSchemaAwareRecordLogic
                 }
 
                 $reflectionProperty = $reflectionClass->getProperty($propName);
-                $docBlock = $docBlockFactory->create($reflectionProperty);
-                $docBlockExamples = $docBlock->getTagsByName('example');
-                $docBlockDescription = DocBlockUtil::summaryAndDescription($docBlock);
+
+                if ($reflectionProperty->getDocComment() !== false) {
+                    $docBlock = $docBlockFactory->create($reflectionProperty);
+                    $docBlockExamples = $docBlock->getTagsByName('example');
+
+                    $prop = $prop->describedAs(DocBlockUtil::summaryAndDescription($docBlock));
+                }
 
                 if ($examples[$propName] ?? false) {
                     $example = $examples[$propName];
@@ -118,7 +122,7 @@ trait JsonSchemaAwareRecordLogic
                     }
 
                     $prop = $prop->withExamples($example);
-                } elseif (! empty($docBlockExamples)) {
+                } elseif (! empty($docBlockExamples ?? null)) {
                     $prop = $prop->withExamples(
                         ...array_map(
                             static function (Generic $generic) {
@@ -129,7 +133,7 @@ trait JsonSchemaAwareRecordLogic
                     );
                 }
 
-                $props[$propName] = $prop->describedAs($docBlockDescription);
+                $props[$propName] = $prop;
             }
 
             $optionalProperties = [];
