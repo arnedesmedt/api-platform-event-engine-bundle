@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
+use ADS\Bundle\ApiPlatformEventEngineBundle\Util\DocBlockUtil;
 use ADS\ValueObjects\ValueObject;
 use EventEngine\Data\ImmutableRecord;
 use EventEngine\JsonSchema\Exception\InvalidArgumentException;
@@ -13,11 +14,9 @@ use EventEngine\JsonSchema\Type;
 use phpDocumentor\Reflection\DocBlock\Tags\Generic;
 use phpDocumentor\Reflection\DocBlockFactory;
 use ReflectionClass;
-use function array_filter;
 use function array_key_exists;
 use function array_map;
 use function count;
-use function implode;
 use function is_string;
 use function sprintf;
 
@@ -109,18 +108,7 @@ trait JsonSchemaAwareRecordLogic
                 $reflectionProperty = $reflectionClass->getProperty($propName);
                 $docBlock = $docBlockFactory->create($reflectionProperty);
                 $docBlockExamples = $docBlock->getTagsByName('example');
-                $docBlockDescription =  implode(
-                    '<br/>',
-                    array_filter(
-                        [
-                            $docBlock->getSummary(),
-                            $docBlock->getDescription()->render(),
-                        ],
-                        static function ($part) {
-                            return $part !== '';
-                        }
-                    )
-                );
+                $docBlockDescription = DocBlockUtil::summaryAndDescription($docBlock);
 
                 if ($examples[$propName] ?? false) {
                     $example = $examples[$propName];
@@ -134,7 +122,7 @@ trait JsonSchemaAwareRecordLogic
                     $prop = $prop->withExamples(
                         ...array_map(
                             static function (Generic $generic) {
-                                return $generic->getDescription()->getBodyTemplate();
+                                return $generic->getDescription()->render();
                             },
                             $docBlockExamples
                         )

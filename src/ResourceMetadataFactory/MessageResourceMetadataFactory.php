@@ -6,6 +6,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\ApiResource\ChangeApiResource;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Config;
+use ADS\Bundle\ApiPlatformEventEngineBundle\Util\DocBlockUtil;
 use ADS\Bundle\EventEngineBundle\Util\EventEngineUtil;
 use ApiPlatform\Core\Api\OperationType;
 use ApiPlatform\Core\Metadata\Resource\Factory\ResourceMetadataFactoryInterface;
@@ -80,10 +81,7 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
                 $reflectionClass = new ReflectionClass($this->mapping[$entity][$operationType][$operationName]);
 
                 $docBlock = $this->docBlockFactory->create($reflectionClass);
-
-                if (! empty($docBlock->getSummary())) {
-                    $operation['openapi_context']['summary'] = $docBlock->getSummary();
-                }
+                $operation['openapi_context']['summary'] = DocBlockUtil::summaryAndDescription($docBlock);
             }
 
             $newOperations[$operationName] = $operation;
