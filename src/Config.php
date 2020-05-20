@@ -40,12 +40,14 @@ final class Config implements CacheClearerInterface
                     'commandName'
                 );
 
+                $controllerMapping = $this->messageMapping($config['commandControllers']);
+
                 $queryMapping = $this->messageMapping(
                     $config['compiledQueryDescriptions'],
                     'name'
                 );
 
-                return array_merge_recursive($commandMapping, $queryMapping);
+                return array_merge_recursive($commandMapping, $controllerMapping, $queryMapping);
             }
         );
     }
@@ -55,12 +57,12 @@ final class Config implements CacheClearerInterface
      *
      * @return array<mixed>
      */
-    private function messageMapping(array $messageConfig, string $classKey) : array
+    private function messageMapping(array $messageConfig, ?string $classKey = null) : array
     {
         $apiPlatformMessageConfig = array_filter(
             $messageConfig,
-            static function (array $config) use ($classKey) {
-                $message = $config[$classKey];
+            static function ($config) use ($classKey) {
+                $message = $classKey === null ? $config : $config[$classKey];
                 $reflectionClass = new ReflectionClass($message);
 
                 return $reflectionClass->implementsInterface(ApiPlatformMessage::class);
@@ -69,9 +71,9 @@ final class Config implements CacheClearerInterface
 
         return array_reduce(
             $apiPlatformMessageConfig,
-            function (array $mapping, array $config) use ($classKey) {
+            function (array $mapping, $config) use ($classKey) {
                 /** @var class-string $message */
-                $message = $config[$classKey];
+                $message = $classKey === null ? $config : $config[$classKey];
 
                 $entity = $message::__entity();
                 $operationType = $message::__operationType();
