@@ -36,7 +36,7 @@ final class Finder
         $operationType = $context['operation_type'];
         $operationName = $context[sprintf('%s_operation_name', $operationType)];
 
-        $mapping = $this->config->apiPlatformMapping();
+        $mapping = $this->config->messageMapping();
 
         if (! isset($mapping[$entity][$operationType][$operationName])) {
             throw FinderException::noMessageFound($entity, $operationType, $operationName);

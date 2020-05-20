@@ -27,7 +27,7 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
         Config $config
     ) {
         $this->decorated = $decorated;
-        $this->mapping = $config->apiPlatformMapping();
+        $this->mapping = $config->messageMapping();
         $this->docBlockFactory = DocBlockFactory::createInstance();
     }
 

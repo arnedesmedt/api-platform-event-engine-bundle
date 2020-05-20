@@ -6,7 +6,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Message;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\ApiPlatformMappingException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Operation\Name;
-use ADS\Bundle\ApiPlatformEventEngineBundle\Operation\Type;
+use ApiPlatform\Core\Api\OperationType;
 use ReflectionClass;
 use function array_pop;
 use function class_exists;
@@ -44,9 +44,9 @@ trait DefaultApiPlatformMessage
 
         switch (true) {
             case preg_match('/(Create|Add|GetAll|All)/', $shortName):
-                return Type::COLLECTION;
+                return OperationType::COLLECTION;
             case preg_match('/(Update|Get|Change|Delete|Remove|ById)/', $shortName):
-                return Type::ITEM;
+                return OperationType::ITEM;
         }
 
         throw ApiPlatformMappingException::noOperationTypeFound(static::class);

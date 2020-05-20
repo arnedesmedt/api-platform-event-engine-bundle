@@ -11,6 +11,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use function array_keys;
 use function array_map;
+use function array_merge;
 use function reset;
 
 class ApiMappingMessageCommand extends Command
@@ -33,7 +34,7 @@ class ApiMappingMessageCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output) : int
     {
-        $mapping = $this->config->apiPlatformMapping();
+        $mapping = $this->config->operationMapping();
         $io = new SymfonyStyle($input, $output);
 
         $table = $this->mappingToTable($mapping);
@@ -61,17 +62,11 @@ class ApiMappingMessageCommand extends Command
     {
         $table = [];
 
-        foreach ($mapping as $resource => $types) {
-            foreach ($types as $type => $messages) {
-                foreach ($messages as $name => $message) {
-                    $table[] = [
-                        'resource' => $resource,
-                        'type' => $type,
-                        'name' => $name,
-                        'message' => $message,
-                    ];
-                }
-            }
+        foreach ($mapping as $messageClass => $operationData) {
+            $table[] = array_merge(
+                $operationData,
+                ['message' => $messageClass]
+            );
         }
 
         return $table;

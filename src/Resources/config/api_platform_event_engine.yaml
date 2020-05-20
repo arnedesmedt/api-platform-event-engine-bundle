@@ -63,3 +63,8 @@ services:
 
     api_platform.swagger.normalizer.documentation:
         class: 'ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\DocumentationNormalizer'
+        arguments:
+            - '@api_platform.metadata.resource.metadata_factory'
+            - '@api_platform.operation_path_resolver'
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Config'
+            - '%env(APP_URL)%'
