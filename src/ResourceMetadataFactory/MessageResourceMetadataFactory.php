@@ -7,7 +7,6 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory;
 use ADS\Bundle\ApiPlatformEventEngineBundle\ApiResource\ChangeApiResource;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Config;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Util\DocBlockUtil;
-use ADS\Bundle\EventEngineBundle\Util\EventEngineUtil;
 use ApiPlatform\Core\Api\OperationType;
 use ApiPlatform\Core\Metadata\Resource\Factory\ResourceMetadataFactoryInterface;
 use ApiPlatform\Core\Metadata\Resource\ResourceMetadata;
@@ -51,7 +50,7 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
         $reflectionClass = new ReflectionClass($resourceClass);
 
         if ($reflectionClass->implementsInterface(ChangeApiResource::class)) {
-            $resourceClass = EventEngineUtil::fromStateToAggregateClass($resourceClass);
+            $resourceClass = $resourceClass::__newApiResource();
         }
 
         if ($collectionOperations) {

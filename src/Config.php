@@ -57,27 +57,27 @@ final class Config implements CacheClearerInterface
      */
     private function messageMapping(array $messageConfig, string $classKey) : array
     {
-        $apiPlatformCommandsConfig = array_filter(
+        $apiPlatformMessageConfig = array_filter(
             $messageConfig,
             static function (array $config) use ($classKey) {
-                $command = $config[$classKey];
-                $reflectionClass = new ReflectionClass($command);
+                $message = $config[$classKey];
+                $reflectionClass = new ReflectionClass($message);
 
                 return $reflectionClass->implementsInterface(ApiPlatformMessage::class);
             }
         );
 
         return array_reduce(
-            $apiPlatformCommandsConfig,
+            $apiPlatformMessageConfig,
             function (array $mapping, array $config) use ($classKey) {
-                /** @var class-string $command */
-                $command = $config[$classKey];
+                /** @var class-string $message */
+                $message = $config[$classKey];
 
-                $entity = $command::__entity();
-                $operationType = $command::__operationType();
-                $operationName = $command::__operationName();
+                $entity = $message::__entity();
+                $operationType = $message::__operationType();
+                $operationName = $message::__operationName();
 
-                return $this->addToMapping($mapping, $entity, $operationType, $operationName, $command);
+                return $this->addToMapping($mapping, $entity, $operationType, $operationName, $message);
             },
             []
         );

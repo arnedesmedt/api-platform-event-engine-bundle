@@ -9,6 +9,7 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\Operation\Name;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Operation\Type;
 use ReflectionClass;
 use function array_pop;
+use function class_exists;
 use function count;
 use function explode;
 use function implode;
@@ -28,7 +29,13 @@ trait DefaultApiPlatformMessage
         array_pop($parts);
         $namespace = implode('\\', $parts);
 
-        return sprintf('%s\\%s', $namespace, $parts[count($parts) - 1]);
+        $entityClass = sprintf('%s\\%s', $namespace, $parts[count($parts) - 1]);
+
+        if (! class_exists($entityClass)) {
+            throw ApiPlatformMappingException::noEntityFound(static::class);
+        }
+
+        return $entityClass;
     }
 
     public static function __operationType() : string

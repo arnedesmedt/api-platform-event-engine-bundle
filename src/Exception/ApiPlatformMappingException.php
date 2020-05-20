@@ -34,4 +34,17 @@ final class ApiPlatformMappingException extends Exception
             )
         );
     }
+
+    /**
+     * @param class-string $class
+     */
+    public static function noEntityFound(string $class) : self
+    {
+        return new self(
+            sprintf(
+                'No api-platform entity found for message \'%s\'.',
+                $class
+            )
+        );
+    }
 }
