@@ -60,3 +60,6 @@ services:
         decorates: 'api_platform.metadata.property.metadata_factory.annotation'
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\ValueObjectSubresourceMetadataFactory.inner'
+
+    api_platform.swagger.normalizer.documentation:
+        class: 'ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\DocumentationNormalizer'
