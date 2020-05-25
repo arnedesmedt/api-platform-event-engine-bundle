@@ -8,6 +8,9 @@
     <arg name="colors"/>
     <arg name="extensions" value="php"/>
 
+    <!--Show progress of the run and show sniff names -->
+    <arg value="ps"/>
+
     <file>src/</file>
 
     <rule ref="Doctrine">

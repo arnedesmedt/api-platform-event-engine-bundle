@@ -61,10 +61,14 @@ services:
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\ValueObjectSubresourceMetadataFactory.inner'
 
+    api_platform.schema.factory:
+        class: 'ADS\Bundle\ApiPlatformEventEngineBundle\Documentation\OpenApiSchemaFactory'
+
     api_platform.swagger.normalizer.documentation:
         class: 'ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\DocumentationNormalizer'
         arguments:
             - '@api_platform.metadata.resource.metadata_factory'
             - '@api_platform.operation_path_resolver'
+            - '@EventEngine\EventEngine'
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Config'
-            - '%env(APP_URL)%'
+            - '@api_platform.schema.factory'
