@@ -214,6 +214,8 @@ final class DocumentationNormalizer implements NormalizerInterface
     {
         $reflectionClass = new ReflectionClass($messageClass);
         $operation = array_filter([
+            'summary' => $operation['openapi_context']['summary'] ?? null,
+            'description' => $operation['openapi_context']['description'] ?? null,
             'tags' => $operation['tags'] ?? [$operation['resourceShortName']],
             'operationId' => $operation['operationId']
                     ?? lcfirst($operation['operationName'])
