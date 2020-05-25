@@ -11,4 +11,11 @@ interface OpenApiSchemaFactoryInterface
      * @return array<mixed>
      */
     public function create() : array;
+
+    /**
+     * @param array<string, string> $tags
+     *
+     * @return array<array<string, string>>
+     */
+    public function createTags(array $tags) : array;
 }

@@ -75,12 +75,12 @@ final class DocumentationNormalizer implements NormalizerInterface
      */
     public function normalize($object, ?string $format = null, array $context = [])
     {
-        $messages = $this->messages($object);
+        [$tags, $messages] = $this->messages($object);
 
         $paths = $this->paths($messages);
         $components = $this->components();
 
-        return $this->buildSchema($paths, $components);
+        return $this->buildSchema($paths, $tags, $components);
     }
 
     /**
@@ -92,25 +92,27 @@ final class DocumentationNormalizer implements NormalizerInterface
     }
 
     /**
-     * @return array<class-string, mixed>
+     * @return array<mixed>
      */
     private function messages(Documentation $documentation) : array
     {
+        $tags = [];
         $messages = [];
-        foreach ($documentation->getResourceNameCollection() as $class) {
-            /** @var class-string $class */
-            $resourceMetadata = $this->resourceMetadataFactory->create($class);
+        foreach ($documentation->getResourceNameCollection() as $resourceClass) {
+            /** @var class-string $resourceClass */
+            $resourceMetadata = $this->resourceMetadataFactory->create($resourceClass);
 
-            $reflectionClass = new ReflectionClass($class);
+            $reflectionClass = new ReflectionClass($resourceClass);
 
             $resourceClass = $reflectionClass->implementsInterface(ChangeApiResource::class)
-                ? $class::__newApiResource()
-                : $class;
+                ? $resourceClass::__newApiResource()
+                : $resourceClass;
 
+            $tags[$resourceMetadata->getShortName()] = $resourceMetadata->getDescription();
             $messages = array_merge($messages, $this->resourceMessages($resourceClass, $resourceMetadata));
         }
 
-        return $messages;
+        return [$tags, $messages];
     }
 
     /**
@@ -412,16 +414,18 @@ final class DocumentationNormalizer implements NormalizerInterface
 
     /**
      * @param array<mixed> $paths
+     * @param array<string, string> $tags
      * @param array<mixed> $components
      *
      * @return array<mixed>
      */
-    private function buildSchema(array $paths, array $components) : array
+    private function buildSchema(array $paths, array $tags, array $components) : array
     {
         return array_merge_recursive(
             $this->schemaFactory->create(),
             [
                 'paths' => $paths,
+                'tags' => $this->schemaFactory->createTags($tags),
                 'components' => ['schemas' => $components],
             ]
         );

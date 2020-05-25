@@ -80,7 +80,7 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
 
                 $docBlock = $this->docBlockFactory->create($reflectionClass);
                 $operation['openapi_context']['summary'] = $docBlock->getSummary();
-                $operation['openapi_context']['description'] = $docBlock->getDescription();
+                $operation['openapi_context']['description'] = $docBlock->getDescription()->render();
             }
 
             $newOperations[$operationName] = $operation;

@@ -6,6 +6,8 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Documentation;
 
 final class OpenApiSchemaFactory implements OpenApiSchemaFactoryInterface
 {
+    use OpenApiSchemaLogic;
+
     /**
      * @inheritDoc
      */
