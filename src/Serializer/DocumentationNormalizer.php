@@ -210,6 +210,7 @@ final class DocumentationNormalizer implements NormalizerInterface
      */
     private function operation(Uri $path, array $schema, array $operation, string $messageClass) : array
     {
+        $reflectionClass = new ReflectionClass($messageClass);
         $operation = array_filter([
             'tags' => $operation['tags'] ?? [$operation['resourceShortName']],
             'operationId' => $operation['operationId']
@@ -219,7 +220,7 @@ final class DocumentationNormalizer implements NormalizerInterface
             'parameters' => array_merge(
                 $this->pathParameters($path, $schema)
             ),
-            'responses' => (new ReflectionClass($messageClass))->implementsInterface(HasResponses::class)
+            'responses' => $reflectionClass->implementsInterface(HasResponses::class)
                     ? $this->responses($messageClass)
                     : null,
         ]);
@@ -420,7 +421,6 @@ final class DocumentationNormalizer implements NormalizerInterface
         return array_merge_recursive(
             $this->schemaFactory->create(),
             [
-                'tags' => [],
                 'paths' => $paths,
                 'components' => ['schemas' => $components],
             ]
