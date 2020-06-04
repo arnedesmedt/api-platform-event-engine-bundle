@@ -10,6 +10,7 @@ use ReflectionClass;
 use Symfony\Component\Cache\Adapter\AbstractAdapter;
 use Symfony\Component\HttpKernel\CacheClearer\CacheClearerInterface;
 use function array_filter;
+use function array_keys;
 use function array_merge_recursive;
 use function array_reduce;
 
@@ -41,7 +42,7 @@ final class Config implements CacheClearerInterface
                     'commandName'
                 );
 
-                $controllerMapping = $this->specificMessageMapping($config['commandControllers']);
+                $controllerMapping = $this->specificMessageMapping(array_keys($config['commandControllers']));
 
                 $queryMapping = $this->specificMessageMapping(
                     $config['compiledQueryDescriptions'],

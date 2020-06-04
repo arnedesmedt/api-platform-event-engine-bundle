@@ -8,6 +8,7 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Util\DocBlockUtil;
 use ADS\ValueObjects\ValueObject;
 use EventEngine\Data\ImmutableRecord;
+use EventEngine\JsonSchema\AnnotatedType;
 use EventEngine\JsonSchema\Exception\InvalidArgumentException;
 use EventEngine\JsonSchema\JsonSchema;
 use EventEngine\JsonSchema\Type;
@@ -101,7 +102,7 @@ trait JsonSchemaAwareRecordLogic
             }
 
             foreach ($props as $propName => $prop) {
-                if (! $reflectionClass->hasProperty($propName)) {
+                if (! $reflectionClass->hasProperty($propName) || ! $prop instanceof AnnotatedType) {
                     continue;
                 }
 

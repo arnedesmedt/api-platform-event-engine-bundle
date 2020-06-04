@@ -11,6 +11,7 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\ApiPlatformMappingExceptio
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\DocumentationException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
 use ADS\Bundle\EventEngineBundle\Message\HasResponses;
+use ADS\Bundle\EventEngineBundle\Util\StringUtil;
 use ApiPlatform\Core\Api\OperationType;
 use ApiPlatform\Core\Documentation\Documentation;
 use ApiPlatform\Core\Metadata\Resource\Factory\ResourceMetadataFactoryInterface;
@@ -250,12 +251,13 @@ final class DocumentationNormalizer implements NormalizerInterface
      */
     public function pathParameters(Uri $path, array &$schema) : array
     {
-        $pathParameterNames = $path->toPathParameterNames();
+        $pathParameterNames = array_map([StringUtil::class, 'camelize'], $path->toPathParameterNames());
+
         $pathParameters = array_map(
             static function (string $parameterName) use ($schema) {
                 return [
-                    'name' => $parameterName,
-                    'schema' => self::convertSchema($schema['properties'][$parameterName]),
+                    'name' => StringUtil::decamilize($parameterName),
+                    'schema' => self::convertSchema($schema['properties'][StringUtil::camelize($parameterName)]),
                     'required' => in_array($parameterName, $schema['required']),
                     'in' => 'path',
                 ];
@@ -369,7 +371,7 @@ final class DocumentationNormalizer implements NormalizerInterface
 
         if (isset($jsonSchema['properties']) && is_array($jsonSchema['properties'])) {
             foreach ($jsonSchema['properties'] as $propName => $propSchema) {
-                $jsonSchema['properties'][$propName] = self::convertSchema($propSchema);
+                $jsonSchema['properties'][StringUtil::decamilize($propName)] = self::convertSchema($propSchema);
             }
         }
 
