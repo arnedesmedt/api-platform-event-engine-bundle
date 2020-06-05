@@ -15,11 +15,14 @@ use EventEngine\JsonSchema\Type;
 use phpDocumentor\Reflection\DocBlock\Tags\Generic;
 use phpDocumentor\Reflection\DocBlockFactory;
 use ReflectionClass;
+use function array_filter;
 use function array_key_exists;
 use function array_map;
+use function array_merge;
 use function count;
 use function is_string;
 use function sprintf;
+use const ARRAY_FILTER_USE_KEY;
 
 // phpcs:disable Squiz.NamingConventions.ValidVariableName.NotCamelCaps
 trait JsonSchemaAwareRecordLogic
@@ -137,10 +140,21 @@ trait JsonSchemaAwareRecordLogic
                 $props[$propName] = $prop;
             }
 
+            $defaultProperties = array_merge(
+                array_filter(
+                    $reflectionClass->getDefaultProperties(),
+                    static function ($propertyName) use ($props) {
+                        return isset($props[$propertyName]);
+                    },
+                    ARRAY_FILTER_USE_KEY
+                ),
+                self::__optionalProperties()
+            );
+
             $optionalProperties = [];
-            foreach (self::__optionalProperties() as $optionalPropertyNameOrKey => $optionalPropertyNameOrDefault) {
-                $keyIsName = is_string($optionalPropertyNameOrKey);
-                $optionalPropertyName = $keyIsName
+            foreach ($defaultProperties as $optionalPropertyNameOrKey => $optionalPropertyNameOrDefault) {
+                $keyIsPropertyName = is_string($optionalPropertyNameOrKey);
+                $optionalPropertyName = $keyIsPropertyName
                     ? $optionalPropertyNameOrKey
                     : $optionalPropertyNameOrDefault;
 
@@ -148,13 +162,16 @@ trait JsonSchemaAwareRecordLogic
 
                 unset($props[$optionalPropertyName]);
 
-                if (! $keyIsName) {
+                // No default value is set. The property is just added as optional property.
+                if (! $keyIsPropertyName) {
                     continue;
                 }
 
                 $optionalProperties[$optionalPropertyName] = $optionalProperties[$optionalPropertyName]
                     ->withDefault(
-                        $optionalPropertyNameOrDefault->toValue()
+                        $optionalPropertyNameOrDefault instanceof ValueObject ?
+                            $optionalPropertyNameOrDefault->toValue() :
+                            $optionalPropertyNameOrDefault
                     );
             }
 
