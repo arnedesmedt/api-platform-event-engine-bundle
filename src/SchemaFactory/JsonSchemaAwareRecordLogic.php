@@ -162,8 +162,10 @@ trait JsonSchemaAwareRecordLogic
 
                 unset($props[$optionalPropertyName]);
 
-                // No default value is set. The property is just added as optional property.
-                if (! $keyIsPropertyName) {
+                // No default value is set. The property is just added as optional property
+                // Or the scheme doesn't support defaults.
+                if (! $keyIsPropertyName
+                    || ! $optionalProperties[$optionalPropertyName] instanceof AnnotatedType) {
                     continue;
                 }
 
