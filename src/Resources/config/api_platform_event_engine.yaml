@@ -72,3 +72,7 @@ services:
             - '@EventEngine\EventEngine'
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Config'
             - '@api_platform.schema.factory'
+
+    api_platform.serializer.context_builder:
+        class: ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\SerializerPathParameters
+        decorates: 'api_platform.serializer.context_builder'

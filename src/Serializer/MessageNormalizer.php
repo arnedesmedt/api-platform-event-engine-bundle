@@ -15,6 +15,7 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\SerializerAwareInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use function array_merge;
 
 final class MessageNormalizer implements NormalizerInterface, DenormalizerInterface, SerializerAwareInterface
 {
@@ -104,6 +105,11 @@ final class MessageNormalizer implements NormalizerInterface, DenormalizerInterf
      */
     private function messageData(string $message, $data, array $context) : array
     {
+        $data = array_merge(
+            $data,
+            $context['pathParameters'] ?? []
+        );
+
         $data = ArrayUtil::toCamelCasedKeys($data, true);
 
 //        if ($context['object_to_populate'] ?? false) {
