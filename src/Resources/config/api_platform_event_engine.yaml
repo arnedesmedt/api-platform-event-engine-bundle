@@ -75,4 +75,9 @@ services:
 
     api_platform.serializer.context_builder:
         class: ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\SerializerPathParameters
-        decorates: 'api_platform.serializer.context_builder'
+        arguments:
+            - '@ApiPlatform\Core\Serializer\SerializerContextBuilder'
+
+    ApiPlatform\Core\Serializer\SerializerContextBuilder:
+        arguments:
+            - '@api_platform.metadata.resource.metadata_factory'

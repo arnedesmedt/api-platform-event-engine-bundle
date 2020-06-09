@@ -6,6 +6,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Util\DocBlockUtil;
+use ADS\Bundle\ApiPlatformEventEngineBundle\Util\Util;
 use ADS\ValueObjects\ValueObject;
 use EventEngine\Data\ImmutableRecord;
 use EventEngine\JsonSchema\AnnotatedType;
@@ -130,7 +131,7 @@ trait JsonSchemaAwareRecordLogic
                     $prop = $prop->withExamples(
                         ...array_map(
                             static function (Generic $generic) {
-                                return $generic->getDescription()->render();
+                                return Util::castFromString($generic->getDescription()->render());
                             },
                             $docBlockExamples
                         )
