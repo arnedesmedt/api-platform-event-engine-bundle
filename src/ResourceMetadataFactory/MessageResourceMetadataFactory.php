@@ -85,9 +85,9 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
         $newOperations = [];
 
         foreach ($operations as $operationName => $operation) {
-            /** @var class-string<ApiPlatformMessage> $messageClass */
-            $messageClass = $this->mapping[$entity][$operationType][$operationName];
-            if ($messageClass ?? false) {
+            /** @var class-string<ApiPlatformMessage>|false $messageClass */
+            $messageClass = $this->mapping[$entity][$operationType][$operationName] ?? false;
+            if ($messageClass) {
                 $reflectionClass = new ReflectionClass($messageClass);
 
                 $this->addDocumentation($operation, $reflectionClass);
