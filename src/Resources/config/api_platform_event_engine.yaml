@@ -81,3 +81,8 @@ services:
     ApiPlatform\Core\Serializer\SerializerContextBuilder:
         arguments:
             - '@api_platform.metadata.resource.metadata_factory'
+
+    ADS\Bundle\ApiPlatformEventEngineBundle\EventSubscriber\DeleteDeserializeSubscriber:
+        arguments:
+            - '@api_platform.serializer'
+            - '@api_platform.serializer.context_builder'
