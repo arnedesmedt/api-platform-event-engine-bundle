@@ -22,6 +22,7 @@ use EventEngine\EventEngine;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use EventEngine\Schema\TypeSchema;
 use ReflectionClass;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use function array_diff;
 use function array_diff_key;
@@ -30,20 +31,32 @@ use function array_flip;
 use function array_map;
 use function array_merge;
 use function array_merge_recursive;
+use function array_search;
 use function array_values;
 use function count;
 use function in_array;
 use function is_array;
+use function ksort;
 use function lcfirst;
 use function mb_strtolower;
 use function reset;
 use function str_replace;
 use function strtolower;
+use function strtoupper;
 use function substr;
 use function ucfirst;
+use function uksort;
 
 final class DocumentationNormalizer implements NormalizerInterface
 {
+    private const METHOD_SORT = [
+        Request::METHOD_POST,
+        Request::METHOD_DELETE,
+        Request::METHOD_PUT,
+        Request::METHOD_PATCH,
+        Request::METHOD_GET,
+    ];
+
     private ResourceMetadataFactoryInterface $resourceMetadataFactory;
     private OperationPathResolverInterface $operationPathResolver;
     private EventEngine $eventEngine;
@@ -183,7 +196,22 @@ final class DocumentationNormalizer implements NormalizerInterface
             $paths[$path->toString()][$method] = $operation;
         }
 
-        return $paths;
+        ksort($paths);
+
+        return array_map(
+            static function (array $methods) {
+                uksort(
+                    $methods,
+                    static function (string $methodA, string $methodB) {
+                        return (int) array_search(strtoupper($methodA), self::METHOD_SORT)
+                            - (int) array_search(strtoupper($methodB), self::METHOD_SORT);
+                    }
+                );
+
+                return $methods;
+            },
+            $paths
+        );
     }
 
     /**
@@ -219,15 +247,15 @@ final class DocumentationNormalizer implements NormalizerInterface
             'description' => $operation['openapi_context']['description'] ?? null,
             'tags' => $operation['tags'] ?? [$operation['resourceShortName']],
             'operationId' => $operation['operationId']
-                    ?? lcfirst($operation['operationName'])
-                    . ucfirst($operation['resourceShortName'])
-                    . ucfirst($operation['operationType']),
+                ?? lcfirst($operation['operationName'])
+                . ucfirst($operation['resourceShortName'])
+                . ucfirst($operation['operationType']),
             'parameters' => array_merge(
                 $this->pathParameters($path, $schema)
             ),
             'responses' => $reflectionClass->implementsInterface(HasResponses::class)
-                    ? $this->responses($messageClass)
-                    : null,
+                ? $this->responses($messageClass)
+                : null,
         ]);
 
         if ($schema !== null) {

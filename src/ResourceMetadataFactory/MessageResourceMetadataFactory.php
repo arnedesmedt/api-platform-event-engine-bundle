@@ -10,6 +10,7 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
 use ApiPlatform\Core\Api\OperationType;
 use ApiPlatform\Core\Metadata\Resource\Factory\ResourceMetadataFactoryInterface;
 use ApiPlatform\Core\Metadata\Resource\ResourceMetadata;
+use InvalidArgumentException;
 use phpDocumentor\Reflection\DocBlockFactory;
 use ReflectionClass;
 use Symfony\Component\HttpFoundation\Request;
@@ -106,9 +107,12 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
      */
     private function addDocumentation(array &$operation, ReflectionClass $reflectionClass) : void
     {
-        $docBlock = $this->docBlockFactory->create($reflectionClass);
-        $operation['openapi_context']['summary'] = $docBlock->getSummary();
-        $operation['openapi_context']['description'] = $docBlock->getDescription()->render();
+        try {
+            $docBlock = $this->docBlockFactory->create($reflectionClass);
+            $operation['openapi_context']['summary'] = $docBlock->getSummary();
+            $operation['openapi_context']['description'] = $docBlock->getDescription()->render();
+        } catch (InvalidArgumentException $exception) {
+        }
     }
 
     /**
