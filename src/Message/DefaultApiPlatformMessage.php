@@ -56,6 +56,14 @@ trait DefaultApiPlatformMessage
     {
         $shortName = self::shortName();
 
+        if (method_exists(static::class, '__customOperationName')) {
+            $customOperationName = static::__customOperationName();
+
+            if ($customOperationName !== null) {
+                return $customOperationName;
+            }
+        }
+
         switch (true) {
             case preg_match('/(Create|Add|Enable)/', $shortName):
                 return Name::POST;
@@ -67,14 +75,6 @@ trait DefaultApiPlatformMessage
                 return Name::PATCH;
             case preg_match('/(Delete|Remove|Disable)/', $shortName):
                 return Name::DELETE;
-        }
-
-        if (method_exists(static::class, '__customOperationName')) {
-            $customOperationName = static::__customOperationName();
-
-            if ($customOperationName !== null) {
-                return $customOperationName;
-            }
         }
 
         throw ApiPlatformMappingException::noOperationNameFound(static::class);
