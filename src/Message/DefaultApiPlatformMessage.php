@@ -43,9 +43,9 @@ trait DefaultApiPlatformMessage
         $shortName = self::shortName();
 
         switch (true) {
-            case preg_match('/(Create|Add|GetAll|All)/', $shortName):
+            case preg_match('/(Create|Add|GetAll|All|Enable)/', $shortName):
                 return OperationType::COLLECTION;
-            case preg_match('/(Update|Get|Change|Delete|Remove|ById)/', $shortName):
+            case preg_match('/(Update|Get|Change|Delete|Remove|ById|Disable)/', $shortName):
                 return OperationType::ITEM;
         }
 
@@ -57,7 +57,7 @@ trait DefaultApiPlatformMessage
         $shortName = self::shortName();
 
         switch (true) {
-            case preg_match('/(Create|Add)/', $shortName):
+            case preg_match('/(Create|Add|Enable)/', $shortName):
                 return Name::POST;
             case preg_match('/(Get|GetAll|All|ById)/', $shortName):
                 return Name::GET;
@@ -65,7 +65,7 @@ trait DefaultApiPlatformMessage
                 return Name::PUT;
             case preg_match('/(Change)/', $shortName):
                 return Name::PATCH;
-            case preg_match('/(Delete|Remove)/', $shortName):
+            case preg_match('/(Delete|Remove|Disable)/', $shortName):
                 return Name::DELETE;
         }
 
