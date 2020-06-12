@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Message;
 
-use ADS\Bundle\ApiPlatformEventEngineBundle\ApiResource\ChangeApiResource;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Config;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\FinderException;
-use ReflectionClass;
 use function sprintf;
 
 final class Finder
@@ -26,13 +24,7 @@ final class Finder
      */
     public function byContext(array $context) : string
     {
-        $entity = $context['resource_class'];
-        $reflectionClass = new ReflectionClass($entity);
-
-        if ($reflectionClass->implementsInterface(ChangeApiResource::class)) {
-            $entity = $entity::__newApiResource();
-        }
-
+        $entity = $context['changed_resource_class'] ?? $context['resource_class'];
         $operationType = $context['operation_type'];
         $operationName = $context[sprintf('%s_operation_name', $operationType)];
 

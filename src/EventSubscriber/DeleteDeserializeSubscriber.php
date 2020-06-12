@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Serializer\SerializerInterface;
+use function json_encode;
 
 final class DeleteDeserializeSubscriber implements EventSubscriberInterface
 {
@@ -57,7 +58,7 @@ final class DeleteDeserializeSubscriber implements EventSubscriberInterface
         $request->attributes->set(
             'data',
             $this->serializer->deserialize(
-                $request->getContent(),
+                (string) json_encode($context['pathParameters']),
                 $context['resource_class'],
                 'json',
                 $context

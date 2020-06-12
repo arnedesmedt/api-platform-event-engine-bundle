@@ -74,9 +74,10 @@ services:
             - '@api_platform.schema.factory'
 
     api_platform.serializer.context_builder:
-        class: ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\SerializerPathParameters
+        class: ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\CustomContextBuilder
         arguments:
             - '@ApiPlatform\Core\Serializer\SerializerContextBuilder'
+            - '@api_platform.identifiers_extractor.cached'
 
     ApiPlatform\Core\Serializer\SerializerContextBuilder:
         arguments:
