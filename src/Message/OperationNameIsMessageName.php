@@ -11,7 +11,7 @@ use function lcfirst;
  */
 trait OperationNameIsMessageName
 {
-    public static function __customOperationName() : string
+    public static function __customOperationName() : ?string
     {
         return lcfirst(static::shortName());
     }

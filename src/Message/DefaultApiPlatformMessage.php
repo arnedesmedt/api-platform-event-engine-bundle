@@ -17,13 +17,18 @@ use function method_exists;
 use function preg_match;
 use function sprintf;
 
-/**
- * @method static string|null __customOperationName()
- */
 trait DefaultApiPlatformMessage
 {
     public static function __entity() : string
     {
+        if (method_exists(static::class, '__customEntity')) {
+            $customEntity = static::__customEntity();
+
+            if ($customEntity !== null) {
+                return $customEntity;
+            }
+        }
+
         $parts = explode('\\', static::class);
         array_pop($parts);
         array_pop($parts);
@@ -40,6 +45,14 @@ trait DefaultApiPlatformMessage
 
     public static function __operationType() : string
     {
+        if (method_exists(static::class, '__customOperationType')) {
+            $customOperationType = static::__customOperationType();
+
+            if ($customOperationType !== null) {
+                return $customOperationType;
+            }
+        }
+
         $shortName = self::shortName();
 
         switch (true) {
@@ -54,8 +67,6 @@ trait DefaultApiPlatformMessage
 
     public static function __operationName() : string
     {
-        $shortName = self::shortName();
-
         if (method_exists(static::class, '__customOperationName')) {
             $customOperationName = static::__customOperationName();
 
@@ -63,6 +74,8 @@ trait DefaultApiPlatformMessage
                 return $customOperationName;
             }
         }
+
+        $shortName = self::shortName();
 
         switch (true) {
             case preg_match('/(Create|Add|Enable)/', $shortName):
