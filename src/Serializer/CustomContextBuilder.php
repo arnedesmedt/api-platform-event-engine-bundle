@@ -100,6 +100,11 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
         }
 
         $identifiers = $this->identifiersExtractor->getIdentifiersFromResourceClass($context['resource_class']);
+
+        if (empty($identifiers)) {
+            return $context;
+        }
+
         $identifier = reset($identifiers);
         $identifier = StringUtil::decamilize($identifier);
 

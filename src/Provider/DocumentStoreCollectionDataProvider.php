@@ -6,7 +6,6 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Provider;
 
 use ApiPlatform\Core\DataProvider\ContextAwareCollectionDataProviderInterface;
 use ApiPlatform\Core\DataProvider\RestrictedDataProviderInterface;
-use EventEngine\Data\ImmutableRecord;
 use EventEngine\EventEngine;
 use EventEngine\Messaging\Message;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
@@ -30,7 +29,7 @@ final class DocumentStoreCollectionDataProvider implements
      * @param class-string $resourceClass
      * @param array<mixed> $context
      *
-     * @return array<ImmutableRecord>
+     * @return array<mixed>
      */
     public function getCollection(string $resourceClass, ?string $operationName = null, array $context = []) : array
     {

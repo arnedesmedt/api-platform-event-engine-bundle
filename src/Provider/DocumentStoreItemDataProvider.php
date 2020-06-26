@@ -7,7 +7,6 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Provider;
 use ADS\Bundle\ApiPlatformEventEngineBundle\ApiResource\ChangeApiResource;
 use ApiPlatform\Core\DataProvider\DenormalizedIdentifiersAwareItemDataProviderInterface;
 use ApiPlatform\Core\DataProvider\RestrictedDataProviderInterface;
-use EventEngine\Data\ImmutableRecord;
 use EventEngine\EventEngine;
 use EventEngine\Messaging\Message;
 use ReflectionClass;
@@ -32,13 +31,15 @@ final class DocumentStoreItemDataProvider implements
      * @param class-string $resourceClass
      * @param mixed $id
      * @param array<mixed> $context
+     *
+     * @return mixed
      */
     public function getItem(
         string $resourceClass,
         $id,
         ?string $operationName = null,
         array $context = []
-    ) : ?ImmutableRecord {
+    ) {
         $reflectionClass = new ReflectionClass($resourceClass);
 
         if ($reflectionClass->implementsInterface(ChangeApiResource::class)) {
