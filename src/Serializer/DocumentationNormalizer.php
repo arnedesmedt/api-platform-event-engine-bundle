@@ -14,6 +14,7 @@ use ADS\Bundle\EventEngineBundle\Message\HasResponses;
 use ADS\Bundle\EventEngineBundle\Util\StringUtil;
 use ApiPlatform\Core\Api\OperationType;
 use ApiPlatform\Core\Documentation\Documentation;
+use ApiPlatform\Core\Exception\ResourceClassNotFoundException;
 use ApiPlatform\Core\Metadata\Resource\Factory\ResourceMetadataFactoryInterface;
 use ApiPlatform\Core\Metadata\Resource\ResourceMetadata;
 use ApiPlatform\Core\PathResolver\OperationPathResolverInterface;
@@ -183,7 +184,13 @@ final class DocumentationNormalizer implements NormalizerInterface
                 $this->operationMapping[$messageClass],
                 $operation
             );
-            $operation['resourceShortName'] = (new ReflectionClass($operation['resource']))->getShortName();
+            try {
+                $shortName = $this->resourceMetadataFactory->create($operation['resource'])->getShortName();
+            } catch (ResourceClassNotFoundException $exception) {
+                $shortName = (new ReflectionClass($operation['resource']))->getShortName();
+            }
+
+            $operation['resourceShortName'] = $shortName;
             $schema = $schemas[$messageClass];
             $method = strtolower($operation['method']);
             $path = $this->path($operation);
