@@ -6,13 +6,16 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Command;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Config;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use function array_keys;
 use function array_map;
 use function array_merge;
+use function preg_grep;
 use function reset;
+use function sprintf;
 
 class ApiMappingMessageCommand extends Command
 {
@@ -29,15 +32,18 @@ class ApiMappingMessageCommand extends Command
     {
         $this
             ->setName('api:mapping:message')
-            ->setDescription('List the mapping of the api platform calls with the event engine messages.');
+            ->setDescription('List the mapping of the api platform calls with the event engine messages.')
+            ->addArgument('filter', InputArgument::OPTIONAL, 'Filter the output table.');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output) : int
     {
         $mapping = $this->config->operationMapping();
         $io = new SymfonyStyle($input, $output);
+        /** @var string|null $filter */
+        $filter = $input->getArgument('filter');
 
-        $table = $this->mappingToTable($mapping);
+        $table = $this->mappingToTable($mapping, $filter);
 
         $firstRow = reset($table);
 
@@ -58,11 +64,20 @@ class ApiMappingMessageCommand extends Command
      *
      * @return array<array<string, string>>
      */
-    private function mappingToTable(array $mapping) : array
+    private function mappingToTable(array $mapping, ?string $filter = null) : array
     {
         $table = [];
 
         foreach ($mapping as $messageClass => $operationData) {
+            if ($filter !== null) {
+                $allData = array_merge($operationData, [$messageClass]);
+                $matches = preg_grep(sprintf('/%s/i', $filter), $allData);
+
+                if (empty($matches)) {
+                    continue;
+                }
+            }
+
             $table[] = array_merge(
                 $operationData,
                 ['message' => $messageClass]
