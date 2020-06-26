@@ -90,10 +90,10 @@ final class DocumentationNormalizer implements NormalizerInterface
      */
     public function normalize($object, ?string $format = null, array $context = [])
     {
-        [$tags, $messages] = $this->messages($object);
+        [$tags, $messages, $components] = $this->messages($object);
 
         $paths = $this->paths($messages);
-        $components = $this->components();
+        $components = $this->components($components);
 
         return $this->buildSchema($paths, $tags, $components);
     }
@@ -113,21 +113,27 @@ final class DocumentationNormalizer implements NormalizerInterface
     {
         $tags = [];
         $messages = [];
+        $components = [];
+
         foreach ($documentation->getResourceNameCollection() as $resourceClass) {
             /** @var class-string $resourceClass */
             $resourceMetadata = $this->resourceMetadataFactory->create($resourceClass);
-
             $reflectionClass = new ReflectionClass($resourceClass);
+
+            $tags[$resourceMetadata->getShortName()] = $resourceMetadata->getDescription();
+
+            if ($reflectionClass->implementsInterface(JsonSchemaAwareRecord::class)) {
+                $components[$resourceMetadata->getShortName()] = $resourceClass::__schema()->toArray();
+            }
 
             $resourceClass = $reflectionClass->implementsInterface(ChangeApiResource::class)
                 ? $resourceClass::__newApiResource()
                 : $resourceClass;
 
-            $tags[$resourceMetadata->getShortName()] = $resourceMetadata->getDescription();
             $messages = array_merge($messages, $this->resourceMessages($resourceClass, $resourceMetadata));
         }
 
-        return [$tags, $messages];
+        return [$tags, $messages, $components];
     }
 
     /**
@@ -184,6 +190,7 @@ final class DocumentationNormalizer implements NormalizerInterface
                 $this->operationMapping[$messageClass],
                 $operation
             );
+
             try {
                 $shortName = $this->resourceMetadataFactory->create($operation['resource'])->getShortName();
             } catch (ResourceClassNotFoundException $exception) {
@@ -370,13 +377,18 @@ final class DocumentationNormalizer implements NormalizerInterface
     }
 
     /**
+     * @param array<string, array<mixed>>  $components
+     *
      * @return array<mixed>
      */
-    private function components() : array
+    private function components(array $components) : array
     {
         return array_map(
             [self::class, 'convertSchema'],
-            $this->eventEngine->compileCacheableConfig()['responseTypes']
+            array_merge(
+                $this->eventEngine->compileCacheableConfig()['responseTypes'],
+                $components
+            )
         );
     }
 
