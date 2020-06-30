@@ -10,6 +10,8 @@ use ApiPlatform\Core\Metadata\Resource\ResourceMetadata;
 use ReflectionClass;
 use ReflectionException;
 use RuntimeException;
+use function array_search;
+use function explode;
 
 final class ShortNameResourceMetadataFactory implements ResourceMetadataFactoryInterface
 {
@@ -29,6 +31,15 @@ final class ShortNameResourceMetadataFactory implements ResourceMetadataFactoryI
 
         if ($resourceMetadata->getShortName() !== 'State') {
             return $resourceMetadata;
+        }
+
+        $parts = explode('\\', $resourceClass);
+        /** @var int $position */
+        $position = array_search('Entity', $parts);
+        $shortName = $parts[$position + 1] ?? null;
+
+        if ($shortName) {
+            return $resourceMetadata->withShortName($shortName);
         }
 
         try {
