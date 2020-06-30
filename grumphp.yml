@@ -1,6 +1,10 @@
 parameters:
     git_dir: .
     bin_dir: vendor/bin
+grumphp:
+    fixer:
+        enabled: true
+        fix_by_default: true
     ascii:
         succeeded: ~
         failed: ~
