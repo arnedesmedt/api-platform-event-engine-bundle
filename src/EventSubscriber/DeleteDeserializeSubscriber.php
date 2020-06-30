@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Serializer\SerializerInterface;
+
 use function json_encode;
 
 final class DeleteDeserializeSubscriber implements EventSubscriberInterface
@@ -30,14 +31,14 @@ final class DeleteDeserializeSubscriber implements EventSubscriberInterface
     /**
      * @return array<string, array<mixed>>
      */
-    public static function getSubscribedEvents() : array
+    public static function getSubscribedEvents(): array
     {
         return [
             KernelEvents::REQUEST => ['deserializeForDelete', EventPriorities::POST_DESERIALIZE],
         ];
     }
 
-    public function deserializeForDelete(RequestEvent $requestEvent) : void
+    public function deserializeForDelete(RequestEvent $requestEvent): void
     {
         $request = $requestEvent->getRequest();
         $method = $request->getMethod();

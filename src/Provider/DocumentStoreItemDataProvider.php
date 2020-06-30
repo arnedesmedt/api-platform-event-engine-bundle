@@ -56,7 +56,7 @@ final class DocumentStoreItemDataProvider implements
      * @param class-string $resourceClass
      * @param array<mixed> $context
      */
-    public function supports(string $resourceClass, ?string $operationName = null, array $context = []) : bool
+    public function supports(string $resourceClass, ?string $operationName = null, array $context = []): bool
     {
         return $this->denormalizer->supportsDenormalization([], $resourceClass, null);
     }

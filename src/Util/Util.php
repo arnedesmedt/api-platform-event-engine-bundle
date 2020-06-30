@@ -19,12 +19,16 @@ final class Util
         switch (true) {
             case $string === 'false':
                 return false;
+
             case $string === 'true':
                 return true;
+
             case is_numeric($string) && strpos($string, '.') !== false:
                 return floatval($string);
+
             case is_numeric($string):
                 return intval($string);
+
             default:
                 return $string;
         }

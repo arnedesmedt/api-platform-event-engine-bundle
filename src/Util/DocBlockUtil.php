@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Util;
 
 use phpDocumentor\Reflection\DocBlock;
+
 use function array_filter;
 use function implode;
 
 final class DocBlockUtil
 {
-    public static function summaryAndDescription(DocBlock $docBlock) : string
+    public static function summaryAndDescription(DocBlock $docBlock): string
     {
         return implode(
             '<br/>',

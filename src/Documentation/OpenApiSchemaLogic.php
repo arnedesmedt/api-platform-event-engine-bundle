@@ -13,7 +13,7 @@ trait OpenApiSchemaLogic
     /**
      * @inheritDoc
      */
-    public function createTags(array $tags) : array
+    public function createTags(array $tags): array
     {
         return array_map(
             static function ($name, $description) {

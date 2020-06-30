@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Exception;
 
 use Exception;
+
 use function sprintf;
 
 final class ApiPlatformMappingException extends Exception
@@ -12,7 +13,7 @@ final class ApiPlatformMappingException extends Exception
     /**
      * @param class-string $class
      */
-    public static function noOperationNameFound(string $class) : self
+    public static function noOperationNameFound(string $class): self
     {
         return new self(
             sprintf(
@@ -25,7 +26,7 @@ final class ApiPlatformMappingException extends Exception
     /**
      * @param class-string $class
      */
-    public static function noOperationFound(string $class) : self
+    public static function noOperationFound(string $class): self
     {
         return new self(
             sprintf(
@@ -38,7 +39,7 @@ final class ApiPlatformMappingException extends Exception
     /**
      * @param class-string $class
      */
-    public static function noOperationTypeFound(string $class) : self
+    public static function noOperationTypeFound(string $class): self
     {
         return new self(
             sprintf(
@@ -51,7 +52,7 @@ final class ApiPlatformMappingException extends Exception
     /**
      * @param class-string $class
      */
-    public static function noEntityFound(string $class) : self
+    public static function noEntityFound(string $class): self
     {
         return new self(
             sprintf(

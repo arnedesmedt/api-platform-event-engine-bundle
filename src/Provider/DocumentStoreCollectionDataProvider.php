@@ -31,7 +31,7 @@ final class DocumentStoreCollectionDataProvider implements
      *
      * @return array<mixed>
      */
-    public function getCollection(string $resourceClass, ?string $operationName = null, array $context = []) : array
+    public function getCollection(string $resourceClass, ?string $operationName = null, array $context = []): array
     {
         /** @var Message $message */
         $message = $this->denormalizer->denormalize([], $resourceClass, null, $context);
@@ -43,7 +43,7 @@ final class DocumentStoreCollectionDataProvider implements
      * @param class-string $resourceClass
      * @param array<mixed> $context
      */
-    public function supports(string $resourceClass, ?string $operationName = null, array $context = []) : bool
+    public function supports(string $resourceClass, ?string $operationName = null, array $context = []): bool
     {
         return $this->denormalizer->supportsDenormalization([], $resourceClass, null);
     }

@@ -15,6 +15,7 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\SerializerAwareInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+
 use function array_merge;
 
 final class MessageNormalizer implements NormalizerInterface, DenormalizerInterface, SerializerAwareInterface
@@ -59,7 +60,7 @@ final class MessageNormalizer implements NormalizerInterface, DenormalizerInterf
     /**
      * @param mixed $data
      */
-    public function supportsDenormalization($data, string $type, ?string $format = null) : bool
+    public function supportsDenormalization($data, string $type, ?string $format = null): bool
     {
         return $this->decorated->supportsDenormalization($data, $type, $format);
     }
@@ -82,12 +83,12 @@ final class MessageNormalizer implements NormalizerInterface, DenormalizerInterf
     /**
      * @param mixed $data
      */
-    public function supportsNormalization($data, ?string $format = null) : bool
+    public function supportsNormalization($data, ?string $format = null): bool
     {
         return $this->decorated->supportsNormalization($data, $format);
     }
 
-    public function setSerializer(SerializerInterface $serializer) : void
+    public function setSerializer(SerializerInterface $serializer): void
     {
         if (! ($this->decorated instanceof SerializerAwareInterface)) {
             return;
@@ -103,7 +104,7 @@ final class MessageNormalizer implements NormalizerInterface, DenormalizerInterf
      *
      * @return array<mixed>
      */
-    private function messageData(string $message, $data, array $context) : array
+    private function messageData(string $message, $data, array $context): array
     {
         $data = array_merge(
             $data,

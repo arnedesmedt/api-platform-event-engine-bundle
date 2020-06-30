@@ -6,6 +6,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Util;
 
 use ADS\Bundle\EventEngineBundle\Util\ArrayUtil;
 use ApiPlatform\Core\JsonSchema\Schema;
+
 use function array_map;
 use function array_search;
 use function count;
@@ -22,7 +23,7 @@ final class JsonSchema
      *
      * @return Schema<mixed> $schema
      */
-    public static function toApiPlatformSchema(array $jsonSchema, ?Schema $schema = null, ?Schema $rootSchema = null) : Schema
+    public static function toApiPlatformSchema(array $jsonSchema, ?Schema $schema = null, ?Schema $rootSchema = null): Schema
     {
         $version = $rootSchema ? $rootSchema->getVersion() : Schema::VERSION_OPENAPI;
         $schema ??= new Schema($version);
@@ -42,7 +43,7 @@ final class JsonSchema
      * @param array<mixed> $jsonSchema
      * @param Schema<mixed> $schema
      */
-    private static function handleType(array $jsonSchema, Schema $schema) : void
+    private static function handleType(array $jsonSchema, Schema $schema): void
     {
         if (! isset($jsonSchema['type'])) {
             return;
@@ -71,7 +72,7 @@ final class JsonSchema
      * @param array<mixed> $jsonSchema
      * @param Schema<mixed> $schema
      */
-    private static function handleExamples(array $jsonSchema, Schema $schema) : void
+    private static function handleExamples(array $jsonSchema, Schema $schema): void
     {
         if (! isset($jsonSchema['examples'])) {
             return;
@@ -84,7 +85,7 @@ final class JsonSchema
      * @param array<mixed> $jsonSchema
      * @param Schema<mixed> $schema
      */
-    private static function handleRequired(array $jsonSchema, Schema $schema) : void
+    private static function handleRequired(array $jsonSchema, Schema $schema): void
     {
         if (! isset($jsonSchema['required'])) {
             return;
@@ -98,7 +99,7 @@ final class JsonSchema
      * @param Schema<mixed> $schema
      * @param Schema<mixed> $rootSchema
      */
-    private static function handleRef(array $jsonSchema, Schema $schema, Schema $rootSchema) : void
+    private static function handleRef(array $jsonSchema, Schema $schema, Schema $rootSchema): void
     {
         if (! isset($jsonSchema['$ref'])) {
             return;
@@ -123,7 +124,7 @@ final class JsonSchema
      * @param Schema<mixed> $schema
      * @param Schema<mixed> $rootSchema
      */
-    private static function handleItems(array $jsonSchema, Schema $schema, Schema $rootSchema) : void
+    private static function handleItems(array $jsonSchema, Schema $schema, Schema $rootSchema): void
     {
         if (! isset($jsonSchema['items'])) {
             return;
@@ -137,7 +138,7 @@ final class JsonSchema
      * @param Schema<mixed> $schema
      * @param Schema<mixed> $rootSchema
      */
-    private static function handleProperties(array $jsonSchema, Schema $schema, Schema $rootSchema) : void
+    private static function handleProperties(array $jsonSchema, Schema $schema, Schema $rootSchema): void
     {
         if (! isset($jsonSchema['properties'])) {
             return;

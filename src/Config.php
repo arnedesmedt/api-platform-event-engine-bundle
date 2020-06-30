@@ -9,6 +9,7 @@ use ADS\Bundle\EventEngineBundle\Config as EventEngineConfig;
 use ReflectionClass;
 use Symfony\Component\Cache\Adapter\AbstractAdapter;
 use Symfony\Component\HttpKernel\CacheClearer\CacheClearerInterface;
+
 use function array_filter;
 use function array_keys;
 use function array_merge_recursive;
@@ -31,7 +32,7 @@ final class Config implements CacheClearerInterface
     /**
      * @return array<array<array<string>>>
      */
-    public function messageMapping() : array
+    public function messageMapping(): array
     {
         return $this->cache->get(
             self::API_PLATFORM_MAPPING,
@@ -57,7 +58,7 @@ final class Config implements CacheClearerInterface
     /**
      * @return array<string, array<string, string>>
      */
-    public function operationMapping() : array
+    public function operationMapping(): array
     {
         return $this->cache->get(
             self::OPERATION_MAPPING,
@@ -88,7 +89,7 @@ final class Config implements CacheClearerInterface
      *
      * @return array<mixed>
      */
-    private function specificMessageMapping(array $messageConfig, ?string $classKey = null) : array
+    private function specificMessageMapping(array $messageConfig, ?string $classKey = null): array
     {
         $apiPlatformMessageConfig = array_filter(
             $messageConfig,
@@ -128,7 +129,7 @@ final class Config implements CacheClearerInterface
         string $type,
         string $name,
         $apiPlatformMessage
-    ) : array {
+    ): array {
         if (! isset($mapping[$entity])) {
             $mapping[$entity] = [];
         }
@@ -142,7 +143,7 @@ final class Config implements CacheClearerInterface
         return $mapping;
     }
 
-    public function clear(string $cacheDir) : void
+    public function clear(string $cacheDir): void
     {
         $this->cache->clear();
     }

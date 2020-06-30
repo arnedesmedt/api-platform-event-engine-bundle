@@ -23,7 +23,7 @@ final class CommandPersister implements ContextAwareDataPersisterInterface
      * @param mixed $data
      * @param array<mixed> $context
      */
-    public function supports($data, array $context = []) : bool
+    public function supports($data, array $context = []): bool
     {
         return $data instanceof MessageBag && $data->get('message') instanceof Command;
     }
@@ -32,7 +32,7 @@ final class CommandPersister implements ContextAwareDataPersisterInterface
      * @param mixed $data
      * @param array<mixed> $context
      */
-    public function persist($data, array $context = []) : stdClass
+    public function persist($data, array $context = []): stdClass
     {
         $this->eventEngine->dispatch($data);
 
@@ -43,7 +43,7 @@ final class CommandPersister implements ContextAwareDataPersisterInterface
      * @param mixed $data
      * @param array<mixed> $context
      */
-    public function remove($data, array $context = []) : void
+    public function remove($data, array $context = []): void
     {
         $this->eventEngine->dispatch($data);
     }

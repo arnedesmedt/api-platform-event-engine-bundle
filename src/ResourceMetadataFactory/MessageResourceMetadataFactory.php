@@ -14,6 +14,7 @@ use InvalidArgumentException;
 use phpDocumentor\Reflection\DocBlockFactory;
 use ReflectionClass;
 use Symfony\Component\HttpFoundation\Request;
+
 use function in_array;
 
 final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInterface
@@ -44,7 +45,7 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
     /**
      * @param class-string $resourceClass
      */
-    public function create(string $resourceClass) : ResourceMetadata
+    public function create(string $resourceClass): ResourceMetadata
     {
         $resourceMetadata = $this->decorated->create($resourceClass);
 
@@ -81,7 +82,7 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
      *
      * @return array<string, array<mixed>>
      */
-    private function handleMessageOperations(array $operations, string $entity, string $operationType) : array
+    private function handleMessageOperations(array $operations, string $entity, string $operationType): array
     {
         $newOperations = [];
 
@@ -105,7 +106,7 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
      * @param array<mixed> $operation
      * @param ReflectionClass<ApiPlatformMessage> $reflectionClass
      */
-    private function addDocumentation(array &$operation, ReflectionClass $reflectionClass) : void
+    private function addDocumentation(array &$operation, ReflectionClass $reflectionClass): void
     {
         try {
             $docBlock = $this->docBlockFactory->create($reflectionClass);
@@ -118,7 +119,7 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
     /**
      * @param array<mixed> $operation
      */
-    private function needRead(array &$operation) : void
+    private function needRead(array &$operation): void
     {
         if (! in_array($operation['method'], self::COMMAND_METHODS)) {
             return;

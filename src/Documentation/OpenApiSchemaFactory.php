@@ -11,7 +11,7 @@ final class OpenApiSchemaFactory implements OpenApiSchemaFactoryInterface
     /**
      * @inheritDoc
      */
-    public function create() : array
+    public function create(): array
     {
         return ['openapi' => '3.0.3'];
     }

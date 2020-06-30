@@ -14,7 +14,7 @@ final class ADSApiPlatformEventEngineExtension extends Extension
     /**
      * @param array<mixed> $configs
      */
-    public function load(array $configs, ContainerBuilder $container) : void
+    public function load(array $configs, ContainerBuilder $container): void
     {
         $loader = new YamlFileLoader(
             $container,

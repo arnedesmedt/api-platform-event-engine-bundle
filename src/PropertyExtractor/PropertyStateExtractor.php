@@ -16,6 +16,7 @@ use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
 use Symfony\Component\PropertyInfo\PropertyListExtractorInterface;
 use Symfony\Component\PropertyInfo\PropertyTypeExtractorInterface;
 use Symfony\Component\PropertyInfo\Type;
+
 use function array_keys;
 use function array_map;
 use function array_reduce;
@@ -49,7 +50,7 @@ final class PropertyStateExtractor implements PropertyListExtractorInterface, Pr
      *
      * @return array<int, int|string>|null
      */
-    public function getProperties(string $class, array $context = []) : ?array
+    public function getProperties(string $class, array $context = []): ?array
     {
         $schema = $this->schemaFrom($class);
 
@@ -66,7 +67,7 @@ final class PropertyStateExtractor implements PropertyListExtractorInterface, Pr
      *
      * @return array<Type>|null
      */
-    public function getTypes(string $class, string $property, array $context = []) : ?array
+    public function getTypes(string $class, string $property, array $context = []): ?array
     {
         $schema = $this->schemaFrom($class);
 
@@ -82,11 +83,12 @@ final class PropertyStateExtractor implements PropertyListExtractorInterface, Pr
      *
      * @return array<mixed>
      */
-    private function schemaFrom(string $stateClass) : ?array
+    private function schemaFrom(string $stateClass): ?array
     {
         $reflectionClass = new ReflectionClass($stateClass);
 
-        if (! $reflectionClass->implementsInterface(JsonSchemaAwareRecord::class)
+        if (
+            ! $reflectionClass->implementsInterface(JsonSchemaAwareRecord::class)
             || $reflectionClass->isInterface()
         ) {
             return null;
@@ -112,7 +114,7 @@ final class PropertyStateExtractor implements PropertyListExtractorInterface, Pr
      *
      * @return array<Type>|null
      */
-    private static function typeMapper(array $schema, string $property) : ?array
+    private static function typeMapper(array $schema, string $property): ?array
     {
         $propertySchema = $schema['properties'][$property] ?? null;
 
@@ -139,7 +141,7 @@ final class PropertyStateExtractor implements PropertyListExtractorInterface, Pr
     /**
      * @param array<string, mixed> $schema
      */
-    private static function type(array $schema, string $property, string $type) : Type
+    private static function type(array $schema, string $property, string $type): Type
     {
         $symfonyType = self::mapToSymfonyType($type);
         $nullable = ! in_array($property, $schema['required'] ?? [$property]);
@@ -155,7 +157,7 @@ final class PropertyStateExtractor implements PropertyListExtractorInterface, Pr
     /**
      * @param array<string, mixed> $schema
      */
-    private static function collectionValueType(array $schema, string $property) : Type
+    private static function collectionValueType(array $schema, string $property): Type
     {
         /** @var ReflectionProperty|null $reflectionProperty */
         $reflectionProperty = $schema['reflectionProperties'][$property] ?? null;
@@ -185,7 +187,7 @@ final class PropertyStateExtractor implements PropertyListExtractorInterface, Pr
         return new Type(Type::BUILTIN_TYPE_OBJECT, false, $typeClass);
     }
 
-    private static function mapToSymfonyType(string $jsonSchemaType) : string
+    private static function mapToSymfonyType(string $jsonSchemaType): string
     {
         /** @var string|null $symfonyType */
         $symfonyType = self::TYPE_MAPPING[$jsonSchemaType] ?? null;

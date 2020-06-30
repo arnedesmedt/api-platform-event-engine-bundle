@@ -6,6 +6,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Message;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Config;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\FinderException;
+
 use function sprintf;
 
 final class Finder
@@ -22,7 +23,7 @@ final class Finder
      *
      * @return string|class-string
      */
-    public function byContext(array $context) : string
+    public function byContext(array $context): string
     {
         $entity = $context['changed_resource_class'] ?? $context['resource_class'];
         $operationType = $context['operation_type'];

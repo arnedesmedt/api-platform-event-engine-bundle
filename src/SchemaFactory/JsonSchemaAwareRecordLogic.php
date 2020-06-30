@@ -16,6 +16,7 @@ use EventEngine\JsonSchema\Type;
 use phpDocumentor\Reflection\DocBlock\Tags\Generic;
 use phpDocumentor\Reflection\DocBlockFactory;
 use ReflectionClass;
+
 use function array_filter;
 use function array_key_exists;
 use function array_map;
@@ -23,6 +24,7 @@ use function array_merge;
 use function count;
 use function is_string;
 use function sprintf;
+
 use const ARRAY_FILTER_USE_KEY;
 
 // phpcs:disable Squiz.NamingConventions.ValidVariableName.NotCamelCaps
@@ -36,7 +38,7 @@ trait JsonSchemaAwareRecordLogic
     /**
      * @param array<mixed> $arrayPropTypeMap
      */
-    private static function generateSchemaFromPropTypeMap(array $arrayPropTypeMap = []) : Type
+    private static function generateSchemaFromPropTypeMap(array $arrayPropTypeMap = []): Type
     {
         if (self::$__propTypeMap === null) {
             self::$__propTypeMap = self::buildPropTypeMap();
@@ -165,8 +167,10 @@ trait JsonSchemaAwareRecordLogic
 
                 // No default value is set. The property is just added as optional property
                 // Or the scheme doesn't support defaults.
-                if (! $keyIsPropertyName
-                    || ! $optionalProperties[$optionalPropertyName] instanceof AnnotatedType) {
+                if (
+                    ! $keyIsPropertyName
+                    || ! $optionalProperties[$optionalPropertyName] instanceof AnnotatedType
+                ) {
                     continue;
                 }
 
@@ -184,7 +188,7 @@ trait JsonSchemaAwareRecordLogic
         return self::$__schema;
     }
 
-    private static function getTypeFromClass(string $classOrType) : Type
+    private static function getTypeFromClass(string $classOrType): Type
     {
         return TypeDetector::getTypeFromClass($classOrType, self::__allowNestedSchema());
     }

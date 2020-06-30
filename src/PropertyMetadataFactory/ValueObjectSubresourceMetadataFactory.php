@@ -22,7 +22,7 @@ final class ValueObjectSubresourceMetadataFactory implements PropertyMetadataFac
     /**
      * @param array<mixed> $options
      */
-    public function create(string $resourceClass, string $property, array $options = []) : PropertyMetadata
+    public function create(string $resourceClass, string $property, array $options = []): PropertyMetadata
     {
         $propertyMetadata = $this->decorated->create($resourceClass, $property, $options);
 

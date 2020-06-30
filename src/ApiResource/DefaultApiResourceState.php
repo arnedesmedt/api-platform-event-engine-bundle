@@ -8,7 +8,7 @@ use ADS\Bundle\EventEngineBundle\Util\EventEngineUtil;
 
 trait DefaultApiResourceState
 {
-    public static function __newApiResource() : string
+    public static function __newApiResource(): string
     {
         return EventEngineUtil::fromStateToAggregateClass(static::class);
     }

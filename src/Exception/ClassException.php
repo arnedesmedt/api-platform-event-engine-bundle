@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Exception;
 
 use Exception;
+
 use function sprintf;
 
 final class ClassException extends Exception

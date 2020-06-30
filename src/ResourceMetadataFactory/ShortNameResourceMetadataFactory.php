@@ -6,6 +6,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory;
 
 use ApiPlatform\Core\Metadata\Resource\Factory\ResourceMetadataFactoryInterface;
 use ApiPlatform\Core\Metadata\Resource\ResourceMetadata;
+
 use function array_filter;
 use function array_map;
 use function array_search;
@@ -28,7 +29,7 @@ final class ShortNameResourceMetadataFactory implements ResourceMetadataFactoryI
     /**
      * @param class-string $resourceClass
      */
-    public function create(string $resourceClass) : ResourceMetadata
+    public function create(string $resourceClass): ResourceMetadata
     {
         $resourceMetadata = $this->decorated->create($resourceClass);
 

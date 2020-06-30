@@ -12,10 +12,12 @@ use ApiPlatform\Core\Serializer\SerializerContextBuilder;
 use ApiPlatform\Core\Serializer\SerializerContextBuilderInterface;
 use ReflectionClass;
 use Symfony\Component\HttpFoundation\Request;
+
 use function array_filter;
 use function array_map;
 use function reset;
 use function strpos;
+
 use const ARRAY_FILTER_USE_KEY;
 
 final class CustomContextBuilder implements SerializerContextBuilderInterface
@@ -36,7 +38,7 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
      *
      * @return array<mixed>
      */
-    public function createFromRequest(Request $request, bool $normalization, ?array $extractedAttributes = null) : array
+    public function createFromRequest(Request $request, bool $normalization, ?array $extractedAttributes = null): array
     {
         $context = $this->decorated->createFromRequest($request, $normalization, $extractedAttributes);
 
@@ -52,7 +54,7 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
      *
      * @return array<mixed>
      */
-    private function extractPathParameters(Request $request, array $context) : array
+    private function extractPathParameters(Request $request, array $context): array
     {
         $pathParameters = array_filter(
             $request->attributes->get('_route_params'),
@@ -77,7 +79,7 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
      *
      * @return array<mixed>
      */
-    private function changeResourceClass(array $context) : array
+    private function changeResourceClass(array $context): array
     {
         $reflectionClass = new ReflectionClass($context['resource_class']);
 
@@ -93,7 +95,7 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
      *
      * @return array<mixed>
      */
-    private function addIdentifier(Request $request, array $context) : array
+    private function addIdentifier(Request $request, array $context): array
     {
         if ($request->getMethod() === Request::METHOD_POST || $request->attributes->has('id')) {
             return $context;

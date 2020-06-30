@@ -9,5 +9,5 @@ interface ChangeApiResource
     /**
      * @return class-string
      */
-    public static function __newApiResource() : string;
+    public static function __newApiResource(): string;
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Exception;
 
 use Exception;
+
 use function json_encode;
 use function sprintf;
 
@@ -13,7 +14,7 @@ final class DocumentationException extends Exception
     /**
      * @param array<mixed> $schema
      */
-    public static function moreThanOneNullType(array $schema) : self
+    public static function moreThanOneNullType(array $schema): self
     {
         return new self(
             sprintf(

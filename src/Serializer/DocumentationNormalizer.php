@@ -25,6 +25,7 @@ use EventEngine\Schema\TypeSchema;
 use ReflectionClass;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+
 use function array_diff;
 use function array_diff_key;
 use function array_filter;
@@ -101,7 +102,7 @@ final class DocumentationNormalizer implements NormalizerInterface
     /**
      * @param mixed $data
      */
-    public function supportsNormalization($data, ?string $format = null) : bool
+    public function supportsNormalization($data, ?string $format = null): bool
     {
         return $format === SwaggerDocumentationNormalizer::FORMAT && $data instanceof Documentation;
     }
@@ -109,7 +110,7 @@ final class DocumentationNormalizer implements NormalizerInterface
     /**
      * @return array<mixed>
      */
-    private function messages(Documentation $documentation) : array
+    private function messages(Documentation $documentation): array
     {
         $tags = [];
         $messages = [];
@@ -141,7 +142,7 @@ final class DocumentationNormalizer implements NormalizerInterface
      *
      * @return array<class-string, mixed>
      */
-    private function resourceMessages(string $resourceClass, ResourceMetadata $resourceMetadata) : array
+    private function resourceMessages(string $resourceClass, ResourceMetadata $resourceMetadata): array
     {
         $messages = [];
 
@@ -175,7 +176,7 @@ final class DocumentationNormalizer implements NormalizerInterface
      *
      * @return array<mixed>
      */
-    private function paths(array $messages) : array
+    private function paths(array $messages): array
     {
         $paths = [];
 
@@ -231,7 +232,7 @@ final class DocumentationNormalizer implements NormalizerInterface
     /**
      * @param array<mixed> $operation
      */
-    private function path(array $operation) : Uri
+    private function path(array $operation): Uri
     {
         $path = $this->operationPathResolver->resolveOperationPath(
             $operation['resourceShortName'],
@@ -253,7 +254,7 @@ final class DocumentationNormalizer implements NormalizerInterface
      *
      * @return array<string, mixed>
      */
-    private function operation(Uri $path, array $schema, array $operation, string $messageClass) : array
+    private function operation(Uri $path, array $schema, array $operation, string $messageClass): array
     {
         $reflectionClass = new ReflectionClass($messageClass);
         $operation = array_filter([
@@ -291,7 +292,7 @@ final class DocumentationNormalizer implements NormalizerInterface
      *
      * @return array<int, array<string, mixed>>
      */
-    public function pathParameters(Uri $path, array &$schema) : array
+    public function pathParameters(Uri $path, array &$schema): array
     {
         $pathParameterNames = array_map([StringUtil::class, 'camelize'], $path->toPathParameterNames());
 
@@ -315,7 +316,7 @@ final class DocumentationNormalizer implements NormalizerInterface
     /**
      * @return array<array<string, mixed>>
      */
-    public function responses(string $messageClass) : array
+    public function responses(string $messageClass): array
     {
         return array_map(
             static function (TypeSchema $response) {
@@ -338,7 +339,7 @@ final class DocumentationNormalizer implements NormalizerInterface
      *
      * @return array<mixed>|null
      */
-    private static function removeFromSchema(array $schema, array $parameters) : ?array
+    private static function removeFromSchema(array $schema, array $parameters): ?array
     {
         $schema['properties'] ??= [];
 
@@ -359,7 +360,7 @@ final class DocumentationNormalizer implements NormalizerInterface
      *
      * @return array<string, array<mixed>>
      */
-    private function schemas(array $messages) : array
+    private function schemas(array $messages): array
     {
         $schemas = [];
 
@@ -381,7 +382,7 @@ final class DocumentationNormalizer implements NormalizerInterface
      *
      * @return array<mixed>
      */
-    private function components(array $components) : array
+    private function components(array $components): array
     {
         return array_map(
             [self::class, 'convertSchema'],
@@ -397,7 +398,7 @@ final class DocumentationNormalizer implements NormalizerInterface
      *
      * @return array<mixed>
      */
-    private function convertSchema(array $jsonSchema) : array
+    private function convertSchema(array $jsonSchema): array
     {
         if (isset($jsonSchema['type']) && is_array($jsonSchema['type'])) {
             $type = null;
@@ -450,7 +451,8 @@ final class DocumentationNormalizer implements NormalizerInterface
             $jsonSchema['$ref'] = str_replace('definitions', 'components/schemas', $jsonSchema['$ref']);
         }
 
-        if (isset($jsonSchema['enum'], $jsonSchema['type'])
+        if (
+            isset($jsonSchema['enum'], $jsonSchema['type'])
             && $jsonSchema['type'] === 'string'
             && in_array(null, $jsonSchema['enum'])
         ) {
@@ -477,7 +479,7 @@ final class DocumentationNormalizer implements NormalizerInterface
      *
      * @return array<mixed>
      */
-    private function buildSchema(array $paths, array $tags, array $components) : array
+    private function buildSchema(array $paths, array $tags, array $components): array
     {
         return array_merge_recursive(
             $this->schemaFactory->create(),

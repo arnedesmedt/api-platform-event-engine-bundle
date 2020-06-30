@@ -16,6 +16,7 @@ use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use ReflectionClass;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+
 use function is_string;
 use function sprintf;
 
@@ -53,7 +54,7 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
         ?Schema $schema = null,
         ?array $serializerContext = null,
         bool $forceCollection = false
-    ) : Schema {
+    ): Schema {
         $message = $this->message($className, $operationType, $operationName);
 
         if (! $message || $operationType === null || $operationName === null) {
@@ -116,7 +117,7 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
     /**
      * @return class-string|null
      */
-    private function message(string $className, ?string $operationType, ?string $operationName) : ?string
+    private function message(string $className, ?string $operationType, ?string $operationName): ?string
     {
         try {
             /** @var class-string $message */
@@ -136,7 +137,7 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
         return $reflectionClass->implementsInterface(JsonSchemaAwareRecord::class) ? $message : null;
     }
 
-    private function defaultStatusCode(string $className, string $operationType, string $operationName) : int
+    private function defaultStatusCode(string $className, string $operationType, string $operationName): int
     {
         $resourceMetaData = $this->resourceMetaDataFactory->create($className);
         $httpMethod = $resourceMetaData->getTypedOperationAttribute($operationType, $operationName, 'method');
@@ -144,8 +145,10 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
         switch ($httpMethod) {
             case Request::METHOD_POST:
                 return Response::HTTP_CREATED;
+
             case Request::METHOD_DELETE:
                 return Response::HTTP_NO_CONTENT;
+
             default:
                 return Response::HTTP_OK;
         }

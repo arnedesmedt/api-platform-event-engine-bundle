@@ -21,6 +21,7 @@ use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use EventEngine\JsonSchema\ProvidesValidationRules;
 use EventEngine\JsonSchema\Type;
 use ReflectionClass;
+
 use function array_map;
 use function call_user_func;
 use function class_exists;
@@ -30,7 +31,7 @@ use function substr;
 
 final class TypeDetector
 {
-    public static function getTypeFromClass(string $classOrType, bool $allowNestedSchema = true) : Type
+    public static function getTypeFromClass(string $classOrType, bool $allowNestedSchema = true): Type
     {
         if (! class_exists($classOrType)) {
             return JsonSchema::typeRef($classOrType);
@@ -63,7 +64,7 @@ final class TypeDetector
      * @param class-string $class
      * @param ReflectionClass<object> $refObj
      */
-    private static function determineScalarTypeOrListIfPossible(string $class, ReflectionClass $refObj) : ?Type
+    private static function determineScalarTypeOrListIfPossible(string $class, ReflectionClass $refObj): ?Type
     {
         $schemaType = null;
 
@@ -91,7 +92,8 @@ final class TypeDetector
             $schemaType = $schemaType->withDefault($class::defaultValue()->toValue());
         }
 
-        if (! $refObj->implementsInterface(HasExamples::class)
+        if (
+            ! $refObj->implementsInterface(HasExamples::class)
             || ! ($schemaType instanceof AnnotatedType)
         ) {
             return $schemaType;
@@ -111,7 +113,7 @@ final class TypeDetector
      * @param class-string $class
      * @param ReflectionClass<object> $refObj
      */
-    private static function determineScalarTypeIfPossible(string $class, ReflectionClass $refObj) : ?Type
+    private static function determineScalarTypeIfPossible(string $class, ReflectionClass $refObj): ?Type
     {
         $validation = $refObj->implementsInterface(ProvidesValidationRules::class)
             ? $class::validationRules()
@@ -145,7 +147,7 @@ final class TypeDetector
         return null;
     }
 
-    private static function convertClassToType(string $class) : Type
+    private static function convertClassToType(string $class): Type
     {
         $position = strrchr($class, '\\');
 

@@ -6,6 +6,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject;
 
 use ADS\Bundle\EventEngineBundle\Util\ArrayUtil;
 use ADS\ValueObjects\Implementation\String\StringValue;
+
 use function array_diff_key;
 use function array_flip;
 use function array_intersect_key;
@@ -22,7 +23,7 @@ final class Uri extends StringValue
     /**
      * @return array<string>
      */
-    public function toPathParameterNames() : array
+    public function toPathParameterNames(): array
     {
         return $this->matchParameters($this->toUrlPart());
     }
@@ -32,7 +33,7 @@ final class Uri extends StringValue
      *
      * @return array<string, mixed>
      */
-    public function toPathParameters(array &$parameters) : array
+    public function toPathParameters(array &$parameters): array
     {
         return $this->toParameters($parameters, $this->toPathParameterNames());
     }
@@ -40,7 +41,7 @@ final class Uri extends StringValue
     /**
      * @return array<string>
      */
-    public function toQueryParameterNames() : array
+    public function toQueryParameterNames(): array
     {
         return $this->matchParameters($this->toQueryPart());
     }
@@ -50,7 +51,7 @@ final class Uri extends StringValue
      *
      * @return array<string, mixed>
      */
-    public function toQueryParameters(array &$parameters) : array
+    public function toQueryParameters(array &$parameters): array
     {
         return $this->toParameters($parameters, $this->toQueryParameterNames());
     }
@@ -60,7 +61,7 @@ final class Uri extends StringValue
      *
      * @return array<string, mixed>
      */
-    public function toAllParameters(array &$parameters) : array
+    public function toAllParameters(array &$parameters): array
     {
         return array_merge(
             $this->toPathParameters($parameters),
@@ -74,7 +75,7 @@ final class Uri extends StringValue
      *
      * @return array<string, mixed>
      */
-    private function toParameters(array &$parameters, array $parameterNames) : array
+    private function toParameters(array &$parameters, array $parameterNames): array
     {
         /** @var array<string, mixed> $matchingParameters */
         $matchingParameters = array_intersect_key(
@@ -90,19 +91,19 @@ final class Uri extends StringValue
     /**
      * @return array<string>
      */
-    private function matchParameters(string $string) : array
+    private function matchParameters(string $string): array
     {
         preg_match_all('/{([^({})]+)}/', $string, $matches);
 
         return $matches[1] ?? [];
     }
 
-    public function toQueryPart() : string
+    public function toQueryPart(): string
     {
         return explode('?', $this->value, 2)[1] ?? '';
     }
 
-    public function toUrlPart() : string
+    public function toUrlPart(): string
     {
         return explode('?', $this->value, 2)[0] ?? '';
     }
@@ -110,7 +111,7 @@ final class Uri extends StringValue
     /**
      * @param array<string, mixed> $parameters
      */
-    public function replacePathParameters(array &$parameters) : self
+    public function replacePathParameters(array &$parameters): self
     {
         return $this->replaceParameters($this->toPathParameters($parameters));
     }
@@ -118,7 +119,7 @@ final class Uri extends StringValue
     /**
      * @param array<string, mixed> $parameters
      */
-    public function replaceQueryParameters(array &$parameters) : self
+    public function replaceQueryParameters(array &$parameters): self
     {
         return $this->replaceParameters($this->toQueryParameters($parameters));
     }
@@ -126,7 +127,7 @@ final class Uri extends StringValue
     /**
      * @param array<string, mixed> $parameters
      */
-    public function replaceAllParameters(array &$parameters) : self
+    public function replaceAllParameters(array &$parameters): self
     {
         return $this->replaceParameters($this->toAllParameters($parameters));
     }
@@ -134,7 +135,7 @@ final class Uri extends StringValue
     /**
      * @param array<string, mixed> $parameters
      */
-    private function replaceParameters(array $parameters) : self
+    private function replaceParameters(array $parameters): self
     {
         $patterns = array_map(
             static function (string $pattern) {

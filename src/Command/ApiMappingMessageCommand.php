@@ -10,6 +10,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+
 use function array_keys;
 use function array_map;
 use function array_merge;
@@ -28,7 +29,7 @@ class ApiMappingMessageCommand extends Command
         $this->config = $config;
     }
 
-    protected function configure() : void
+    protected function configure(): void
     {
         $this
             ->setName('api:mapping:message')
@@ -36,7 +37,7 @@ class ApiMappingMessageCommand extends Command
             ->addArgument('filter', InputArgument::OPTIONAL, 'Filter the output table.');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output) : int
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $mapping = $this->config->operationMapping();
         $io = new SymfonyStyle($input, $output);
@@ -64,7 +65,7 @@ class ApiMappingMessageCommand extends Command
      *
      * @return array<array<string, string>>
      */
-    private function mappingToTable(array $mapping, ?string $filter = null) : array
+    private function mappingToTable(array $mapping, ?string $filter = null): array
     {
         $table = [];
 
