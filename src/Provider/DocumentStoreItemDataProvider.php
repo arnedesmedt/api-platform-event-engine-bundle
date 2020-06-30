@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Provider;
 
-use ADS\Bundle\ApiPlatformEventEngineBundle\ApiResource\ChangeApiResource;
 use ApiPlatform\Core\DataProvider\DenormalizedIdentifiersAwareItemDataProviderInterface;
 use ApiPlatform\Core\DataProvider\RestrictedDataProviderInterface;
 use EventEngine\EventEngine;
 use EventEngine\Messaging\Message;
-use ReflectionClass;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 final class DocumentStoreItemDataProvider implements
@@ -40,12 +38,6 @@ final class DocumentStoreItemDataProvider implements
         ?string $operationName = null,
         array $context = []
     ) {
-        $reflectionClass = new ReflectionClass($resourceClass);
-
-        if ($reflectionClass->implementsInterface(ChangeApiResource::class)) {
-            $resourceClass = $resourceClass::__newApiResource();
-        }
-
         /** @var Message $message */
         $message = $this->denormalizer->denormalize($id, $resourceClass, null, $context);
 

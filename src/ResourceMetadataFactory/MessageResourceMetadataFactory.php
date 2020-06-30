@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory;
 
-use ADS\Bundle\ApiPlatformEventEngineBundle\ApiResource\ChangeApiResource;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Config;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
 use ApiPlatform\Core\Api\OperationType;
@@ -56,12 +55,6 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
 
         if (! $collectionOperations && ! $itemOperations) {
             return $resourceMetadata;
-        }
-
-        $reflectionClass = new ReflectionClass($resourceClass);
-
-        if ($reflectionClass->implementsInterface(ChangeApiResource::class)) {
-            $resourceClass = $resourceClass::__newApiResource();
         }
 
         if ($collectionOperations) {

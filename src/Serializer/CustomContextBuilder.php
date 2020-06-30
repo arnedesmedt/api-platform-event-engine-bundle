@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Serializer;
 
-use ADS\Bundle\ApiPlatformEventEngineBundle\ApiResource\ChangeApiResource;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Util\Util;
 use ADS\Bundle\EventEngineBundle\Util\StringUtil;
 use ApiPlatform\Core\Api\IdentifiersExtractorInterface;
 use ApiPlatform\Core\Serializer\SerializerContextBuilder;
 use ApiPlatform\Core\Serializer\SerializerContextBuilderInterface;
-use ReflectionClass;
 use Symfony\Component\HttpFoundation\Request;
 
 use function array_filter;
@@ -43,7 +41,6 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
         $context = $this->decorated->createFromRequest($request, $normalization, $extractedAttributes);
 
         $context = $this->extractPathParameters($request, $context);
-        $context = $this->changeResourceClass($context);
         $context = $this->addIdentifier($request, $context);
 
         return $context;
@@ -70,22 +67,6 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
             },
             $pathParameters
         );
-
-        return $context;
-    }
-
-    /**
-     * @param array<mixed> $context
-     *
-     * @return array<mixed>
-     */
-    private function changeResourceClass(array $context): array
-    {
-        $reflectionClass = new ReflectionClass($context['resource_class']);
-
-        if ($reflectionClass->implementsInterface(ChangeApiResource::class)) {
-            $context['changed_resource_class'] = $context['resource_class']::__newApiResource();
-        }
 
         return $context;
     }

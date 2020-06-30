@@ -25,7 +25,7 @@ final class Finder
      */
     public function byContext(array $context): string
     {
-        $entity = $context['changed_resource_class'] ?? $context['resource_class'];
+        $entity = $context['resource_class'];
         $operationType = $context['operation_type'];
         $operationName = $context[sprintf('%s_operation_name', $operationType)];
 
