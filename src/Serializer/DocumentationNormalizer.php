@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Serializer;
 
-use ADS\Bundle\ApiPlatformEventEngineBundle\ApiResource\ChangeApiResource;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Config;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Documentation\OpenApiSchemaFactoryInterface;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\ApiPlatformMappingException;
@@ -126,10 +125,6 @@ final class DocumentationNormalizer implements NormalizerInterface
             if ($reflectionClass->implementsInterface(JsonSchemaAwareRecord::class)) {
                 $components[$resourceMetadata->getShortName()] = $resourceClass::__schema()->toArray();
             }
-
-            $resourceClass = $reflectionClass->implementsInterface(ChangeApiResource::class)
-                ? $resourceClass::__newApiResource()
-                : $resourceClass;
 
             $messages = array_merge($messages, $this->resourceMessages($resourceClass, $resourceMetadata));
         }
