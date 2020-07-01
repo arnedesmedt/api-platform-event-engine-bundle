@@ -199,12 +199,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/arnedesmedt/event-engine-symfony-bundle.git",
-                "reference": "219abf8673ee3e53d9be2b84c390d0b8c0390dfb"
+                "reference": "5c9f83cc61660846b3a3c18555884d7ec83b61fa"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/arnedesmedt/event-engine-symfony-bundle/zipball/219abf8673ee3e53d9be2b84c390d0b8c0390dfb",
-                "reference": "219abf8673ee3e53d9be2b84c390d0b8c0390dfb",
+                "url": "https://api.github.com/repos/arnedesmedt/event-engine-symfony-bundle/zipball/5c9f83cc61660846b3a3c18555884d7ec83b61fa",
+                "reference": "5c9f83cc61660846b3a3c18555884d7ec83b61fa",
                 "shasum": ""
             },
             "require": {
@@ -222,9 +222,9 @@
                 "symfony/orm-pack": "^1.0"
             },
             "require-dev": {
-                "doctrine/coding-standard": "^7.0",
-                "phpro/grumphp": "^0.17.2",
-                "phpstan/phpstan": "^0.12.7",
+                "doctrine/coding-standard": "^8.0",
+                "phpro/grumphp": "^0.19",
+                "phpstan/phpstan": "^0.12",
                 "squizlabs/php_codesniffer": "^3.5"
             },
             "type": "symfony-bundle",
@@ -246,7 +246,7 @@
             ],
             "description": "A library that creates a bridge between Event Engine and Symfony.",
             "homepage": "https://github.com/arnedesmedt/event-engine-symfony-bundle",
-            "time": "2020-06-24T16:37:35+00:00"
+            "time": "2020-06-30T14:05:20+00:00"
         },
         {
             "name": "arnedesmedt/value-objects",
