@@ -7,6 +7,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Util\DocBlockUtil;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Util\Util;
+use ADS\ValueObjects\HasExamples;
 use ADS\ValueObjects\ValueObject;
 use EventEngine\Data\ImmutableRecord;
 use EventEngine\JsonSchema\AnnotatedType;
@@ -58,9 +59,7 @@ trait JsonSchemaAwareRecordLogic
             $props = [];
             $docBlockFactory = DocBlockFactory::createInstance();
             $reflectionClass = new ReflectionClass(static::class);
-            $examples = $reflectionClass->implementsInterface(ApiPlatformMessage::class)
-                ? (static::__examples() ?? [])
-                : [];
+            $examples = self::extractExamples($reflectionClass);
 
             foreach (self::$__propTypeMap as $prop => [$type, $isScalar, $isNullable]) {
                 if ($isScalar) {
@@ -191,5 +190,22 @@ trait JsonSchemaAwareRecordLogic
     private static function getTypeFromClass(string $classOrType): Type
     {
         return TypeDetector::getTypeFromClass($classOrType, self::__allowNestedSchema());
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    private static function extractExamples(ReflectionClass $reflectionClass): array
+    {
+        switch (true) {
+            case $reflectionClass->implementsInterface(ApiPlatformMessage::class):
+                return static::__examples() ?? [];
+
+            case $reflectionClass->implementsInterface(HasExamples::class)
+                && $reflectionClass->implementsInterface(ImmutableRecord::class):
+                return static::example()->toArray();
+        }
+
+        return [];
     }
 }
