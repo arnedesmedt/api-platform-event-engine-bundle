@@ -251,6 +251,7 @@ final class DocumentationNormalizer implements NormalizerInterface
      */
     private function operation(Uri $path, array $schema, array $operation, string $messageClass): array
     {
+        $method = $operation['method'];
         $reflectionClass = new ReflectionClass($messageClass);
         $operation = array_filter([
             'summary' => $operation['openapi_context']['summary'] ?? null,
@@ -272,9 +273,11 @@ final class DocumentationNormalizer implements NormalizerInterface
             $operation['requestBody'] = [
                 'required' => true,
                 'content' => [
-                    'application/json' => [
-                        'schema' => self::convertSchema($schema),
-                    ],
+                    $method === Request::METHOD_PATCH
+                        ? 'application/merge-patch+json'
+                        : 'application/json' => [
+                            'schema' => self::convertSchema($schema),
+                        ],
                 ],
             ];
         }
