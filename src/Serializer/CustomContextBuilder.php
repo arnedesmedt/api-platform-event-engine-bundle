@@ -10,6 +10,7 @@ use ApiPlatform\Core\Api\IdentifiersExtractorInterface;
 use ApiPlatform\Core\Serializer\SerializerContextBuilder;
 use ApiPlatform\Core\Serializer\SerializerContextBuilderInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 
 use function array_filter;
 use function array_map;
@@ -42,6 +43,7 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
 
         $context = $this->extractPathParameters($request, $context);
         $context = $this->addIdentifier($request, $context);
+        $context[AbstractObjectNormalizer::PRESERVE_EMPTY_OBJECTS] = true;
 
         return $context;
     }
