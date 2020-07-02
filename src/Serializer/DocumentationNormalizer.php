@@ -6,6 +6,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Serializer;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Config;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Documentation\OpenApiSchemaFactoryInterface;
+use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\ApiPlatformException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\ApiPlatformMappingException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\DocumentationException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
@@ -91,6 +92,7 @@ final class DocumentationNormalizer implements NormalizerInterface
     public function normalize($object, ?string $format = null, array $context = [])
     {
         [$tags, $messages, $components] = $this->messages($object);
+        $components[ApiPlatformException::REF] = ApiPlatformException::__schema()->toArray();
 
         $paths = $this->paths($messages);
         $components = $this->components($components);
