@@ -74,7 +74,7 @@ final class MessageNormalizer implements NormalizerInterface, DenormalizerInterf
     public function normalize($object, ?string $format = null, array $context = [])
     {
         if ($object instanceof ImmutableRecord) {
-            return $object->toArray();
+            return ArrayUtil::toSnakeCasedKeys($object->toArray(), true);
         }
 
         return $this->decorated->normalize($object, $format, $context);
