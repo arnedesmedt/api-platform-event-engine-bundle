@@ -398,7 +398,7 @@ final class DocumentationNormalizer implements NormalizerInterface
      *
      * @return array<mixed>
      */
-    private function convertSchema(array $jsonSchema): array
+    private static function convertSchema(array $jsonSchema): array
     {
         if (isset($jsonSchema['type']) && is_array($jsonSchema['type'])) {
             $type = null;
