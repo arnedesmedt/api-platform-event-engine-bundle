@@ -231,10 +231,12 @@ final class DocumentationNormalizer implements NormalizerInterface
      */
     private function path(array $operation): Uri
     {
+        // @phpstan-ignore-next-line
         $path = $this->operationPathResolver->resolveOperationPath(
             $operation['resourceShortName'],
             $operation,
-            $operation['operationType']
+            $operation['operationType'],
+            $operation['operationName']
         );
 
         if (substr($path, -10) === '.{_format}') {
