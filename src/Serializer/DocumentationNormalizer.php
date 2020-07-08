@@ -12,6 +12,7 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\DocumentationException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\AuthorizationMessage;
 use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
 use ADS\Bundle\EventEngineBundle\Message\HasResponses;
+use ADS\Bundle\EventEngineBundle\Type\DefaultType;
 use ADS\Bundle\EventEngineBundle\Util\StringUtil;
 use ApiPlatform\Core\Api\OperationType;
 use ApiPlatform\Core\Documentation\Documentation;
@@ -271,7 +272,7 @@ final class DocumentationNormalizer implements NormalizerInterface
             'parameters' => array_merge(
                 $this->pathParameters($path, $schema)
             ),
-            'responses' => $this->responses($messageClass, $reflectionClass, $schema),
+            'responses' => $this->responses($messageClass, $reflectionClass, $method, $schema),
         ]);
 
         if ($schema !== null) {
@@ -322,8 +323,12 @@ final class DocumentationNormalizer implements NormalizerInterface
      *
      * @return array<array<string, mixed>>|null
      */
-    public function responses(string $messageClass, ReflectionClass $reflectionClass, ?array $schema = null): ?array
-    {
+    public function responses(
+        string $messageClass,
+        ReflectionClass $reflectionClass,
+        string $method,
+        ?array $schema = null
+    ): ?array {
         if (! $reflectionClass->implementsInterface(HasResponses::class)) {
             return null;
         }
@@ -352,6 +357,9 @@ final class DocumentationNormalizer implements NormalizerInterface
                     Response::HTTP_FORBIDDEN => $reflectionClass
                         ->implementsInterface(AuthorizationMessage::class)
                         ? ApiPlatformException::forbidden()
+                        : null,
+                    Response::HTTP_NO_CONTENT => $method === Request::METHOD_DELETE
+                        ? DefaultType::emptyResponse()
                         : null,
                 ]
             ),
