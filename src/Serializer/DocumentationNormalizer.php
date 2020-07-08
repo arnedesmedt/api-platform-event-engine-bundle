@@ -21,6 +21,7 @@ use ApiPlatform\Core\Metadata\Resource\ResourceMetadata;
 use ApiPlatform\Core\PathResolver\OperationPathResolverInterface;
 use ApiPlatform\Core\Swagger\Serializer\DocumentationNormalizer as SwaggerDocumentationNormalizer;
 use EventEngine\EventEngine;
+use EventEngine\JsonSchema\AnnotatedType;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use EventEngine\Schema\TypeSchema;
 use ReflectionClass;
@@ -330,7 +331,9 @@ final class DocumentationNormalizer implements NormalizerInterface
         return array_map(
             static function (TypeSchema $response) {
                 return [
-                    'description' => '',
+                    'description' => $response instanceof AnnotatedType
+                        ? $response->toArray()['description'] ?? ''
+                        : '',
                     'content' => [
                         'application/json' => [
                             'schema' => self::convertSchema($response->toArray()),
