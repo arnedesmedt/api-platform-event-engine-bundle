@@ -341,10 +341,14 @@ final class DocumentationNormalizer implements NormalizerInterface
             array_merge(
                 array_filter(
                     [
-                        Response::HTTP_BAD_REQUEST => $schema === null ? null : ApiPlatformException::typeRef(),
+                        Response::HTTP_BAD_REQUEST => $schema === null ? null : ApiPlatformException::badRequest(),
                         Response::HTTP_UNAUTHORIZED => $reflectionClass
                             ->implementsInterface(AuthorizationMessage::class)
-                            ? ApiPlatformException::typeRef()
+                            ? ApiPlatformException::unauthorized()
+                            : null,
+                        Response::HTTP_FORBIDDEN => $reflectionClass
+                            ->implementsInterface(AuthorizationMessage::class)
+                            ? ApiPlatformException::forbidden()
                             : null,
                     ]
                 ),
