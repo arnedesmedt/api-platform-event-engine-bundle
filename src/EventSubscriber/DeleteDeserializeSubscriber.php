@@ -59,7 +59,7 @@ final class DeleteDeserializeSubscriber implements EventSubscriberInterface
         $request->attributes->set(
             'data',
             $this->serializer->deserialize(
-                (string) json_encode($context['pathParameters']),
+                (string) json_encode($context['path_parameters']),
                 $context['resource_class'],
                 'json',
                 $context

@@ -19,13 +19,11 @@ services:
             - 'property_info.type_extractor'
     ADS\Bundle\ApiPlatformEventEngineBundle\Provider\DocumentStoreCollectionDataProvider:
         arguments:
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\MessageNormalizer'
             - '@EventEngine\EventEngine'
         tags:
             - 'api_platform.collection_data_provider'
     ADS\Bundle\ApiPlatformEventEngineBundle\Provider\DocumentStoreItemDataProvider:
         arguments:
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\MessageNormalizer'
             - '@EventEngine\EventEngine'
         tags:
             - 'api_platform.item_data_provider'
@@ -87,5 +85,12 @@ services:
         arguments:
             - '@api_platform.serializer'
             - '@api_platform.serializer.context_builder'
+        tags:
+            - { name: kernel.event_subscriber, event: kernel.request }
+
+    ADS\Bundle\ApiPlatformEventEngineBundle\EventSubscriber\MessageDeserializeSubscriber:
+        arguments:
+            - '@api_platform.serializer.context_builder'
+            - '@api_platform.serializer'
         tags:
             - { name: kernel.event_subscriber, event: kernel.request }

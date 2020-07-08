@@ -42,6 +42,10 @@ final class MessageNormalizer implements NormalizerInterface, DenormalizerInterf
      **/
     public function denormalize($data, string $type, ?string $format = null, array $context = [])
     {
+        if ($context['message'] ?? null) {
+            return $context['message'];
+        }
+
         try {
             /** @var class-string $message */
             $message = $this->messageFinder->byContext($context);
@@ -108,26 +112,9 @@ final class MessageNormalizer implements NormalizerInterface, DenormalizerInterf
     {
         $data = array_merge(
             $data,
-            $context['pathParameters'] ?? []
+            $context['path_parameters'] ?? []
         );
 
-        $data = ArrayUtil::toCamelCasedKeys($data, true);
-
-//        if ($context['object_to_populate'] ?? false) {
-//            $identifier = $this->eventEngineConfig->aggregateIdentifiers()[$message] ?? null;
-//
-//            if ($identifier === null) {
-//                throw new RuntimeException(
-//                    sprintf(
-//                        'No identifier found for aggregate root class \'%s\'.',
-//                        $message
-//                    )
-//                );
-//            }
-//
-//            $data[$identifier] = $context['object_to_populate']->{$identifier}();
-//        }
-
-        return $data;
+        return ArrayUtil::toCamelCasedKeys($data, true);
     }
 }
