@@ -9,6 +9,7 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\Documentation\OpenApiSchemaFactoryIn
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\ApiPlatformException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\ApiPlatformMappingException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\DocumentationException;
+use ADS\Bundle\ApiPlatformEventEngineBundle\Message\AuthorizationMessage;
 use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
 use ADS\Bundle\EventEngineBundle\Message\HasResponses;
 use ADS\Bundle\EventEngineBundle\Util\StringUtil;
@@ -24,6 +25,7 @@ use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use EventEngine\Schema\TypeSchema;
 use ReflectionClass;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 use function array_diff;
@@ -268,9 +270,7 @@ final class DocumentationNormalizer implements NormalizerInterface
             'parameters' => array_merge(
                 $this->pathParameters($path, $schema)
             ),
-            'responses' => $reflectionClass->implementsInterface(HasResponses::class)
-                ? $this->responses($messageClass)
-                : null,
+            'responses' => $this->responses($messageClass, $reflectionClass, $schema),
         ]);
 
         if ($schema !== null) {
@@ -316,10 +316,17 @@ final class DocumentationNormalizer implements NormalizerInterface
     }
 
     /**
-     * @return array<array<string, mixed>>
+     * @param ReflectionClass<object> $reflectionClass
+     * @param array<mixed> $schema
+     *
+     * @return array<array<string, mixed>>|null
      */
-    public function responses(string $messageClass): array
+    public function responses(string $messageClass, ReflectionClass $reflectionClass, ?array $schema = null): ?array
     {
+        if (! $reflectionClass->implementsInterface(HasResponses::class)) {
+            return null;
+        }
+
         return array_map(
             static function (TypeSchema $response) {
                 return [
@@ -331,7 +338,18 @@ final class DocumentationNormalizer implements NormalizerInterface
                     ],
                 ];
             },
-            $messageClass::__responseSchemasPerStatusCode()
+            array_merge(
+                array_filter(
+                    [
+                        Response::HTTP_BAD_REQUEST => $schema === null ? null : ApiPlatformException::typeRef(),
+                        Response::HTTP_UNAUTHORIZED => $reflectionClass
+                            ->implementsInterface(AuthorizationMessage::class)
+                            ? ApiPlatformException::typeRef()
+                            : null,
+                    ]
+                ),
+                $messageClass::__responseSchemasPerStatusCode()
+            )
         );
     }
 
