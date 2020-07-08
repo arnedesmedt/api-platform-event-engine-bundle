@@ -199,21 +199,22 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/arnedesmedt/event-engine-symfony-bundle.git",
-                "reference": "5c9f83cc61660846b3a3c18555884d7ec83b61fa"
+                "reference": "12d03b95cec8526cdd7067a7ea2456aa070dd493"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/arnedesmedt/event-engine-symfony-bundle/zipball/5c9f83cc61660846b3a3c18555884d7ec83b61fa",
-                "reference": "5c9f83cc61660846b3a3c18555884d7ec83b61fa",
+                "url": "https://api.github.com/repos/arnedesmedt/event-engine-symfony-bundle/zipball/12d03b95cec8526cdd7067a7ea2456aa070dd493",
+                "reference": "12d03b95cec8526cdd7067a7ea2456aa070dd493",
                 "shasum": ""
             },
             "require": {
                 "arnedesmedt/value-objects": "dev-master",
                 "event-engine/cockpit-php-backend": "dev-master",
                 "event-engine/php-engine": "^0.14",
-                "event-engine/php-json-schema": "2.0-beta.1",
+                "event-engine/php-json-schema": "2.0-beta.3",
                 "event-engine/php-postgres-document-store": "^0.9.0",
                 "event-engine/prooph-v7-event-store": "^0.8.0",
+                "ext-json": "*",
                 "ext-pdo": "*",
                 "opis/json-schema": "^1.0",
                 "php": "^7.4",
