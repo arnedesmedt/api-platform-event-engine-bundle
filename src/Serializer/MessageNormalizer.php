@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Serializer;
 
+use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\FinderException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder;
 use ADS\Bundle\EventEngineBundle\Util\ArrayUtil;
 use ArrayObject;
 use EventEngine\Data\ImmutableRecord;
 use EventEngine\Messaging\MessageFactory;
-use RuntimeException;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
@@ -49,7 +49,7 @@ final class MessageNormalizer implements NormalizerInterface, DenormalizerInterf
         try {
             /** @var class-string $message */
             $message = $this->messageFinder->byContext($context);
-        } catch (RuntimeException $exception) {
+        } catch (FinderException $exception) {
             return $this->decorated->denormalize($data, $type, $format, $context);
         }
 
