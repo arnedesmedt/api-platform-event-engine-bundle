@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Provider;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\FinderException;
+use ADS\Bundle\EventEngineBundle\Util\ArrayUtil;
 use ApiPlatform\Core\Api\OperationType;
 use ApiPlatform\Core\DataProvider\DenormalizedIdentifiersAwareItemDataProviderInterface;
 use ApiPlatform\Core\DataProvider\RestrictedDataProviderInterface;
@@ -46,7 +47,9 @@ final class DocumentStoreItemDataProvider implements
             );
         }
 
-        return $this->eventEngine->dispatch($message);
+        $item = $this->eventEngine->dispatch($message);
+
+        return ArrayUtil::toSnakeCasedKeys($item, true);
     }
 
     /**
