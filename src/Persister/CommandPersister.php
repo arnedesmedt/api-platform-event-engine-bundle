@@ -8,7 +8,6 @@ use ADS\Bundle\EventEngineBundle\Message\Command;
 use ApiPlatform\Core\DataPersister\ContextAwareDataPersisterInterface;
 use EventEngine\EventEngine;
 use EventEngine\Messaging\MessageBag;
-use stdClass;
 
 final class CommandPersister implements ContextAwareDataPersisterInterface
 {
@@ -31,20 +30,22 @@ final class CommandPersister implements ContextAwareDataPersisterInterface
     /**
      * @param mixed $data
      * @param array<mixed> $context
+     *
+     * @return mixed
      */
-    public function persist($data, array $context = []): stdClass
+    public function persist($data, array $context = [])
     {
-        $this->eventEngine->dispatch($data);
-
-        return new stdClass();
+        return $this->eventEngine->dispatch($data);
     }
 
     /**
      * @param mixed $data
      * @param array<mixed> $context
+     *
+     * @return mixed
      */
-    public function remove($data, array $context = []): void
+    public function remove($data, array $context = [])
     {
-        $this->eventEngine->dispatch($data);
+        return $this->eventEngine->dispatch($data);
     }
 }
