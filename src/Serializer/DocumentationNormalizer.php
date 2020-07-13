@@ -346,8 +346,8 @@ final class DocumentationNormalizer implements NormalizerInterface
                     ],
                 ];
             },
-            $messageClass::__responseSchemasPerStatusCode() +
             array_filter(
+                $messageClass::__responseSchemasPerStatusCode() +
                 [
                     Response::HTTP_BAD_REQUEST => $schema === null ? null : ApiPlatformException::badRequest(),
                     Response::HTTP_UNAUTHORIZED => $reflectionClass
@@ -360,6 +360,12 @@ final class DocumentationNormalizer implements NormalizerInterface
                         : null,
                     Response::HTTP_NO_CONTENT => $method === Request::METHOD_DELETE
                         ? DefaultType::emptyResponse()
+                        : null,
+                    Response::HTTP_CREATED => $method === Request::METHOD_POST
+                        ? DefaultType::created()
+                        : null,
+                    Response::HTTP_OK => $method === Request::METHOD_PUT
+                        ? DefaultType::ok()
                         : null,
                 ]
             ),
