@@ -32,9 +32,7 @@ trait DefaultAuthorizationMessage
         $authorizationAttributes = [];
 
         foreach ($authorizationMethods as $authorizationMethod) {
-            $closure = $authorizationMethod->getClosureThis();
-
-            $authorizationAttributes += ($closure)();
+            $authorizationAttributes += $authorizationMethod->invoke(null);
         }
 
         return $authorizationAttributes;
