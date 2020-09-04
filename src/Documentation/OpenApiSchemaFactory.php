@@ -15,4 +15,12 @@ final class OpenApiSchemaFactory implements OpenApiSchemaFactoryInterface
     {
         return ['openapi' => '3.0.3'];
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function hideTags(): array
+    {
+        return [];
+    }
 }

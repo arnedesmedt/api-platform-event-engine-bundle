@@ -23,6 +23,7 @@ use ApiPlatform\Core\PathResolver\OperationPathResolverInterface;
 use ApiPlatform\Core\Swagger\Serializer\DocumentationNormalizer as SwaggerDocumentationNormalizer;
 use EventEngine\EventEngine;
 use EventEngine\JsonSchema\AnnotatedType;
+use EventEngine\JsonSchema\JsonSchema;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use EventEngine\Schema\TypeSchema;
 use ReflectionClass;
@@ -275,14 +276,14 @@ final class DocumentationNormalizer implements NormalizerInterface
             'responses' => $this->responses($messageClass, $reflectionClass, $method, $schema),
         ]);
 
-        if ($schema !== null) {
+        if ($schema !== null || $method === Request::METHOD_POST) {
             $operation['requestBody'] = [
                 'required' => true,
                 'content' => [
                     $method === Request::METHOD_PATCH
                         ? 'application/merge-patch+json'
                         : 'application/json' => [
-                            'schema' => self::convertSchema($schema),
+                            'schema' => self::convertSchema($schema ?? JsonSchema::object([])->toArray()),
                         ],
                 ],
             ];
@@ -520,11 +521,46 @@ final class DocumentationNormalizer implements NormalizerInterface
      */
     private function buildSchema(array $paths, array $tags, array $components): array
     {
+        $tagNamesToHide = $this->schemaFactory->hideTags();
+
+        $tags = array_filter(
+            $this->schemaFactory->createTags($tags),
+            static function (array $tag) use ($tagNamesToHide) {
+                return ! in_array($tag['name'], $tagNamesToHide);
+            }
+        );
+
+        $paths = array_filter(
+            array_map(
+                static function (array $operations) use ($tagNamesToHide) {
+                    $operations = array_filter(
+                        $operations,
+                        static function (array $operation) use ($tagNamesToHide) {
+                            foreach ($tagNamesToHide as $tagNameToHide) {
+                                if (in_array($tagNameToHide, $operation['tags'])) {
+                                    return false;
+                                }
+                            }
+
+                            return true;
+                        }
+                    );
+
+                    if (empty($operations)) {
+                        return null;
+                    }
+
+                    return $operations;
+                },
+                $paths
+            )
+        );
+
         return array_merge_recursive(
             $this->schemaFactory->create(),
             [
                 'paths' => $paths,
-                'tags' => $this->schemaFactory->createTags($tags),
+                'tags' => array_values($tags),
                 'components' => ['schemas' => $components],
             ]
         );

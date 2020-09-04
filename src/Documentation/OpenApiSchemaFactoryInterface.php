@@ -18,4 +18,9 @@ interface OpenApiSchemaFactoryInterface
      * @return array<array<string, string>>
      */
     public function createTags(array $tags): array;
+
+    /**
+     * @return array<string>
+     */
+    public function hideTags(): array;
 }
