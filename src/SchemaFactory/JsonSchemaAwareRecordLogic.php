@@ -8,6 +8,7 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Util\DocBlockUtil;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Util\Util;
 use ADS\ValueObjects\HasExamples;
+use ADS\ValueObjects\Implementation\TypeDetector;
 use ADS\ValueObjects\ValueObject;
 use EventEngine\Data\ImmutableRecord;
 use EventEngine\JsonSchema\AnnotatedType;

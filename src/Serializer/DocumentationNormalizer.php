@@ -271,7 +271,8 @@ final class DocumentationNormalizer implements NormalizerInterface
                 . ucfirst($operation['resourceShortName'])
                 . ucfirst($operation['operationType']),
             'parameters' => array_merge(
-                $this->pathParameters($path, $schema)
+                $this->pathParameters($path, $schema),
+                $this->queryParameters($path, $schema)
             ),
             'responses' => $this->responses($messageClass, $reflectionClass, $method, $schema),
         ]);
@@ -297,8 +298,12 @@ final class DocumentationNormalizer implements NormalizerInterface
      *
      * @return array<int, array<string, mixed>>
      */
-    public function pathParameters(Uri $path, array &$schema): array
+    public function pathParameters(Uri $path, ?array &$schema): array
     {
+        if ($schema === null) {
+            return [];
+        }
+
         $pathParameterNames = array_map([StringUtil::class, 'camelize'], $path->toPathParameterNames());
 
         $pathParameters = array_map(
@@ -316,6 +321,36 @@ final class DocumentationNormalizer implements NormalizerInterface
         $schema = self::removeFromSchema($schema, $pathParameterNames);
 
         return $pathParameters;
+    }
+
+    /**
+     * @param array<mixed> $schema
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function queryParameters(Uri $path, ?array &$schema): array
+    {
+        if ($schema === null) {
+            return [];
+        }
+
+        $queryParameterNames = array_map([StringUtil::class, 'camelize'], $path->toQueryParameterNames());
+
+        $queryParameters = array_map(
+            static function (string $parameterName) use ($schema) {
+                return [
+                    'name' => StringUtil::decamilize($parameterName),
+                    'schema' => self::convertSchema($schema['properties'][$parameterName]),
+                    'required' => in_array($parameterName, $schema['required']),
+                    'in' => 'query',
+                ];
+            },
+            $queryParameterNames
+        );
+
+        $schema = self::removeFromSchema($schema, $queryParameterNames);
+
+        return $queryParameters;
     }
 
     /**

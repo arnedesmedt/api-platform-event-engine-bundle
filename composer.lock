@@ -255,16 +255,16 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/arnedesmedt/value-objects.git",
-                "reference": "286c6ec346aac850e43e4773b3bf152871b1e187"
+                "reference": "f8683ca3f049447947ebea9b7c27d9472cc2f1dc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/arnedesmedt/value-objects/zipball/286c6ec346aac850e43e4773b3bf152871b1e187",
-                "reference": "286c6ec346aac850e43e4773b3bf152871b1e187",
+                "url": "https://api.github.com/repos/arnedesmedt/value-objects/zipball/f8683ca3f049447947ebea9b7c27d9472cc2f1dc",
+                "reference": "f8683ca3f049447947ebea9b7c27d9472cc2f1dc",
                 "shasum": ""
             },
             "require": {
-                "event-engine/php-json-schema": "^2.0",
+                "event-engine/php-json-schema": "2.0-beta.3",
                 "ext-intl": "*",
                 "fzaninotto/faker": "^1.9",
                 "opis/json-schema": "^1.0",
@@ -296,7 +296,7 @@
             ],
             "description": "Value objects",
             "homepage": "https://github.com/arnedesmedt/value-objects",
-            "time": "2020-07-07T14:23:56+00:00"
+            "time": "2020-09-09T09:17:20+00:00"
         },
         {
             "name": "beberlei/assert",
