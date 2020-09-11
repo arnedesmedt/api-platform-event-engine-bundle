@@ -148,9 +148,8 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
 
             case Request::METHOD_DELETE:
                 return Response::HTTP_NO_CONTENT;
-
-            default:
-                return Response::HTTP_OK;
         }
+
+        return Response::HTTP_OK;
     }
 }

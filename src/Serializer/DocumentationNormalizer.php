@@ -400,7 +400,13 @@ final class DocumentationNormalizer implements NormalizerInterface
                     Response::HTTP_CREATED => $method === Request::METHOD_POST
                         ? DefaultType::created()
                         : null,
-                    Response::HTTP_OK => $method === Request::METHOD_PUT
+                    Response::HTTP_OK => in_array(
+                        $method,
+                        [
+                            Request::METHOD_PUT,
+                            Request::METHOD_PATCH,
+                        ]
+                    )
                         ? DefaultType::ok()
                         : null,
                 ]
