@@ -41,12 +41,14 @@ use function array_merge_recursive;
 use function array_search;
 use function array_values;
 use function count;
+use function explode;
 use function in_array;
 use function is_array;
 use function ksort;
 use function lcfirst;
 use function mb_strtolower;
 use function reset;
+use function str_contains;
 use function str_replace;
 use function strtolower;
 use function strtoupper;
@@ -206,11 +208,11 @@ final class DocumentationNormalizer implements NormalizerInterface
             $path = $this->path($operation);
             $operation = $this->operation($path, $schema, $operation, $messageClass);
 
-            if (! isset($paths[$path->toString()])) {
-                $paths[$path->toString()] = [];
+            if (! isset($paths[$path->toUrlPart()])) {
+                $paths[$path->toUrlPart()] = [];
             }
 
-            $paths[$path->toString()][$method] = $operation;
+            $paths[$path->toUrlPart()][$method] = $operation;
         }
 
         ksort($paths);
@@ -243,6 +245,11 @@ final class DocumentationNormalizer implements NormalizerInterface
             $operation['operationType'],
             $operation['operationName']
         );
+
+        if (str_contains($operation['path'] ?? '', '?')) {
+            $parts = explode('?', $operation['path'], 2);
+            $path .= '?' . $parts[1];
+        }
 
         if (substr($path, -10) === '.{_format}') {
             $path = substr($path, 0, -10);

@@ -94,3 +94,8 @@ services:
             - '@api_platform.serializer'
         tags:
             - { name: kernel.event_subscriber, event: kernel.request }
+
+    ADS\Bundle\ApiPlatformEventEngineBundle\Operation\QueryOperationRoutePathResolver:
+        decorates: 'api_platform.operation_path_resolver.custom'
+        arguments:
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Operation\QueryOperationRoutePathResolver.inner'
