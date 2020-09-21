@@ -42,6 +42,7 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
         $context = $this->decorated->createFromRequest($request, $normalization, $extractedAttributes);
 
         $this->extractPathParameters($request, $context);
+        $this->extractQueryParameters($request, $context);
         $this->addIdentifier($request, $context);
         $this->addMessage($request, $context);
         $context[AbstractObjectNormalizer::PRESERVE_EMPTY_OBJECTS] = true;
@@ -67,6 +68,19 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
                 return Util::castFromString($pathParameter);
             },
             $pathParameters
+        );
+    }
+
+    /**
+     * @param array<mixed> $context
+     */
+    private function extractQueryParameters(Request $request, array &$context): void
+    {
+        $context['query_parameters'] = array_map(
+            static function (string $queryParameter) {
+                return Util::castFromString($queryParameter);
+            },
+            $request->query->all()
         );
     }
 

@@ -112,7 +112,8 @@ final class MessageNormalizer implements NormalizerInterface, DenormalizerInterf
     {
         $data = array_merge(
             $data,
-            $context['path_parameters'] ?? []
+            $context['path_parameters'] ?? [],
+            $context['query_parameters'] ?? []
         );
 
         return ArrayUtil::toCamelCasedKeys($data, true);
