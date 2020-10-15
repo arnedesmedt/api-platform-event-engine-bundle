@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Provider;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\FinderException;
+use ADS\Bundle\EventEngineBundle\Util\ArrayUtil;
 use ApiPlatform\Core\Api\OperationType;
 use ApiPlatform\Core\DataProvider\ContextAwareCollectionDataProviderInterface;
 use ApiPlatform\Core\DataProvider\RestrictedDataProviderInterface;
 use EventEngine\EventEngine;
 use EventEngine\Messaging\Message;
+
+use function array_map;
 
 final class DocumentStoreCollectionDataProvider implements
     ContextAwareCollectionDataProviderInterface,
@@ -41,14 +44,12 @@ final class DocumentStoreCollectionDataProvider implements
             );
         }
 
-        return $this->eventEngine->dispatch($message);
-
-//        return array_map(
-//            static function (array $item) {
-//                return ArrayUtil::toSnakeCasedKeys($item, true);
-//            },
-//            $collection
-//        );
+        return array_map(
+            static function (array $item) {
+                return ArrayUtil::toSnakeCasedKeys($item, true);
+            },
+            $this->eventEngine->dispatch($message)
+        );
     }
 
     /**
