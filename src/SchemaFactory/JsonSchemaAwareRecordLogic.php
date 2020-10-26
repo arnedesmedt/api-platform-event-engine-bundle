@@ -112,8 +112,8 @@ trait JsonSchemaAwareRecordLogic
                     continue;
                 }
 
+                $docBlockExamples = null;
                 $reflectionProperty = $reflectionClass->getProperty($propName);
-
                 if ($reflectionProperty->getDocComment() !== false) {
                     $docBlock = $docBlockFactory->create($reflectionProperty);
                     $docBlockExamples = $docBlock->getTagsByName('example');
