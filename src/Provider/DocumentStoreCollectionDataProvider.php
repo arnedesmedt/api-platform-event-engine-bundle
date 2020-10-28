@@ -13,6 +13,7 @@ use EventEngine\EventEngine;
 use EventEngine\Messaging\Message;
 
 use function array_map;
+use function is_array;
 
 final class DocumentStoreCollectionDataProvider implements
     ContextAwareCollectionDataProviderInterface,
@@ -45,7 +46,11 @@ final class DocumentStoreCollectionDataProvider implements
         }
 
         return array_map(
-            static function (array $item) {
+            static function ($item) {
+                if (! is_array($item)) {
+                    return $item;
+                }
+
                 return ArrayUtil::toSnakeCasedKeys($item, true);
             },
             $this->eventEngine->dispatch($message)
