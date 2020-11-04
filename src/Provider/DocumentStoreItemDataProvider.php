@@ -9,8 +9,14 @@ use ADS\Bundle\EventEngineBundle\Util\ArrayUtil;
 use ApiPlatform\Core\Api\OperationType;
 use ApiPlatform\Core\DataProvider\DenormalizedIdentifiersAwareItemDataProviderInterface;
 use ApiPlatform\Core\DataProvider\RestrictedDataProviderInterface;
+use EventEngine\Data\ImmutableRecord;
 use EventEngine\EventEngine;
 use EventEngine\Messaging\Message;
+use RuntimeException;
+
+use function is_array;
+use function print_r;
+use function sprintf;
 
 final class DocumentStoreItemDataProvider implements
     DenormalizedIdentifiersAwareItemDataProviderInterface,
@@ -47,7 +53,19 @@ final class DocumentStoreItemDataProvider implements
             );
         }
 
-        return ArrayUtil::toSnakeCasedKeys($this->eventEngine->dispatch($message), true);
+        $item = $this->eventEngine->dispatch($message);
+
+        if ($item instanceof ImmutableRecord) {
+            $item = $item->toArray();
+        }
+
+        if (! is_array($item)) {
+            throw new RuntimeException(
+                sprintf('Result of item data provider is not an array. \'%s\' given.', print_r($item, true))
+            );
+        }
+
+        return ArrayUtil::toSnakeCasedKeys($item, true);
     }
 
     /**
