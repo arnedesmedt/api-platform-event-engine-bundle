@@ -12,6 +12,7 @@
         }
     ],
     "require": {
+        "ext-json": "*",
         "arnedesmedt/event-engine-symfony-bundle": "dev-master",
         "api-platform/api-pack": "^1.2"
     },

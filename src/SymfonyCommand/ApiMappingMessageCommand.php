@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ADS\Bundle\ApiPlatformEventEngineBundle\Command;
+namespace ADS\Bundle\ApiPlatformEventEngineBundle\SymfonyCommand;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Config;
 use Symfony\Component\Console\Command\Command;

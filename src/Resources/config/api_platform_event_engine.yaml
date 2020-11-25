@@ -49,7 +49,7 @@ services:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder'
             - '@api_platform.metadata.resource.metadata_factory'
             - '@EventEngine\EventEngine'
-    ADS\Bundle\ApiPlatformEventEngineBundle\Command\ApiMappingMessageCommand:
+    ADS\Bundle\ApiPlatformEventEngineBundle\SymfonyCommand\ApiMappingMessageCommand:
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Config'
         tags:
