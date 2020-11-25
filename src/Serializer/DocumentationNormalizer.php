@@ -11,7 +11,7 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\ApiPlatformMappingExceptio
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\DocumentationException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\AuthorizationMessage;
 use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
-use ADS\Bundle\EventEngineBundle\Message\HasResponses;
+use ADS\Bundle\EventEngineBundle\Response\HasResponses;
 use ADS\Bundle\EventEngineBundle\Type\DefaultType;
 use ADS\Bundle\EventEngineBundle\Util\StringUtil;
 use ApiPlatform\Core\Api\OperationType;

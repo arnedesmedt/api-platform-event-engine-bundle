@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Persister;
 
-use ADS\Bundle\EventEngineBundle\Message\Command;
+use ADS\Bundle\EventEngineBundle\Command\Command;
 use ApiPlatform\Core\DataPersister\ContextAwareDataPersisterInterface;
 use EventEngine\EventEngine;
 use EventEngine\Messaging\MessageBag;

@@ -7,7 +7,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\FinderException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Util\JsonSchema;
-use ADS\Bundle\EventEngineBundle\Message\HasResponses;
+use ADS\Bundle\EventEngineBundle\Response\HasResponses;
 use ApiPlatform\Core\JsonSchema\Schema;
 use ApiPlatform\Core\JsonSchema\SchemaFactoryInterface;
 use ApiPlatform\Core\Metadata\Resource\Factory\ResourceMetadataFactoryInterface;
