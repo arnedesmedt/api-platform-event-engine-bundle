@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "862b3d2b0a2962a63e36208602020f40",
+    "content-hash": "e024802a40fa216a4ae74c4ef1f365a8",
     "packages": [
         {
             "name": "api-platform/api-pack",
@@ -199,12 +199,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/arnedesmedt/event-engine-symfony-bundle.git",
-                "reference": "f065342621c1363d983c3cf30f74b1ac09278ab1"
+                "reference": "7ee870032632a4fda8541e77e328b6419a083d53"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/arnedesmedt/event-engine-symfony-bundle/zipball/f065342621c1363d983c3cf30f74b1ac09278ab1",
-                "reference": "f065342621c1363d983c3cf30f74b1ac09278ab1",
+                "url": "https://api.github.com/repos/arnedesmedt/event-engine-symfony-bundle/zipball/7ee870032632a4fda8541e77e328b6419a083d53",
+                "reference": "7ee870032632a4fda8541e77e328b6419a083d53",
                 "shasum": ""
             },
             "require": {
@@ -252,7 +252,7 @@
                 "issues": "https://github.com/arnedesmedt/event-engine-symfony-bundle/issues",
                 "source": "https://github.com/arnedesmedt/event-engine-symfony-bundle/tree/master"
             },
-            "time": "2020-11-25T08:27:45+00:00"
+            "time": "2020-11-25T15:26:55+00:00"
         },
         {
             "name": "arnedesmedt/value-objects",
@@ -7274,7 +7274,9 @@
     },
     "prefer-stable": true,
     "prefer-lowest": false,
-    "platform": [],
+    "platform": {
+        "ext-json": "*"
+    },
     "platform-dev": [],
     "plugin-api-version": "2.0.0"
 }
