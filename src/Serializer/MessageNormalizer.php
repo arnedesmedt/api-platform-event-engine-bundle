@@ -9,7 +9,7 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder;
 use ADS\Bundle\EventEngineBundle\Util\ArrayUtil;
 use ArrayObject;
 use EventEngine\Data\ImmutableRecord;
-use EventEngine\Messaging\MessageFactory;
+use EventEngine\EventEngine;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
@@ -22,16 +22,16 @@ final class MessageNormalizer implements NormalizerInterface, DenormalizerInterf
 {
     private AbstractNormalizer $decorated;
     private Finder $messageFinder;
-    private MessageFactory $messageFactory;
+    private EventEngine $eventEngine;
 
     public function __construct(
         AbstractNormalizer $decorated,
         Finder $messageFinder,
-        MessageFactory $messageFactory
+        EventEngine $eventEngine
     ) {
         $this->decorated = $decorated;
         $this->messageFinder = $messageFinder;
-        $this->messageFactory = $messageFactory;
+        $this->eventEngine = $eventEngine;
     }
 
     /**
@@ -53,7 +53,7 @@ final class MessageNormalizer implements NormalizerInterface, DenormalizerInterf
             return $this->decorated->denormalize($data, $type, $format, $context);
         }
 
-        return $this->messageFactory->createMessageFromArray(
+        return $this->eventEngine->messageFactory()->createMessageFromArray(
             $message,
             [
                 'payload' => $this->messageData($message, $data, $context),

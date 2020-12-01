@@ -41,7 +41,7 @@ services:
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\MessageNormalizer.inner'
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder'
-            - '@=service("EventEngine\\EventEngine").messageFactory()'
+            - '@EventEngine\EventEngine'
     ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageSchemaFactory:
         decorates: 'api_platform.json_schema.schema_factory'
         arguments:
