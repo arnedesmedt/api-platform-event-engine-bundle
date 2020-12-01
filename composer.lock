@@ -199,12 +199,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/arnedesmedt/event-engine-symfony-bundle.git",
-                "reference": "6ddbeea95dc387d9df7944bd8228191280bee879"
+                "reference": "0ca4dbe7c0e1ce5d2cb43032a3e11105cd827f3e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/arnedesmedt/event-engine-symfony-bundle/zipball/6ddbeea95dc387d9df7944bd8228191280bee879",
-                "reference": "6ddbeea95dc387d9df7944bd8228191280bee879",
+                "url": "https://api.github.com/repos/arnedesmedt/event-engine-symfony-bundle/zipball/0ca4dbe7c0e1ce5d2cb43032a3e11105cd827f3e",
+                "reference": "0ca4dbe7c0e1ce5d2cb43032a3e11105cd827f3e",
                 "shasum": ""
             },
             "require": {
@@ -251,7 +251,7 @@
                 "issues": "https://github.com/arnedesmedt/event-engine-symfony-bundle/issues",
                 "source": "https://github.com/arnedesmedt/event-engine-symfony-bundle/tree/master"
             },
-            "time": "2020-11-27T17:24:32+00:00"
+            "time": "2020-12-01T05:56:13+00:00"
         },
         {
             "name": "arnedesmedt/value-objects",
