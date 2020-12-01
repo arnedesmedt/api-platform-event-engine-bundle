@@ -26,10 +26,7 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
     ];
 
     private ResourceMetadataFactoryInterface $decorated;
-
-    /** @var array<mixed> */
-    private array $mapping;
-
+    private Config $config;
     private DocBlockFactory $docBlockFactory;
 
     public function __construct(
@@ -37,7 +34,7 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
         Config $config
     ) {
         $this->decorated = $decorated;
-        $this->mapping = $config->messageMapping();
+        $this->config = $config;
         $this->docBlockFactory = DocBlockFactory::createInstance();
     }
 
@@ -79,9 +76,11 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
     {
         $newOperations = [];
 
+        $mapping = $this->config->messageMapping();
+
         foreach ($operations as $operationName => $operation) {
             /** @var class-string<ApiPlatformMessage>|false $messageClass */
-            $messageClass = $this->mapping[$entity][$operationType][$operationName] ?? false;
+            $messageClass = $mapping[$entity][$operationType][$operationName] ?? false;
             if ($messageClass) {
                 $reflectionClass = new ReflectionClass($messageClass);
 

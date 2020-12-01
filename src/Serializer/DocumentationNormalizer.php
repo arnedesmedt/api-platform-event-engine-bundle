@@ -69,10 +69,7 @@ final class DocumentationNormalizer implements NormalizerInterface
     private ResourceMetadataFactoryInterface $resourceMetadataFactory;
     private OperationPathResolverInterface $operationPathResolver;
     private EventEngine $eventEngine;
-    /** @var array<string, array<string, array<string, string>>> */
-    private array $messageMapping;
-    /** @var array<string, array<string, string>> */
-    private array $operationMapping;
+    private Config $config;
     private OpenApiSchemaFactoryInterface $schemaFactory;
 
     public function __construct(
@@ -85,8 +82,7 @@ final class DocumentationNormalizer implements NormalizerInterface
         $this->resourceMetadataFactory = $resourceMetadataFactory;
         $this->operationPathResolver = $operationPathResolver;
         $this->eventEngine = $eventEngine;
-        $this->messageMapping = $config->messageMapping();
-        $this->operationMapping = $config->operationMapping();
+        $this->config = $config;
         $this->schemaFactory = $schemaFactory;
     }
 
@@ -150,9 +146,11 @@ final class DocumentationNormalizer implements NormalizerInterface
     {
         $messages = [];
 
+        $messageMapping = $this->config->messageMapping();
+
         foreach ($resourceMetadata->getItemOperations() ?? [] as $itemOperationName => $itemOperation) {
             /** @var class-string|null $messageClass */
-            $messageClass = $this->messageMapping[$resourceClass][OperationType::ITEM][$itemOperationName] ?? null;
+            $messageClass = $messageMapping[$resourceClass][OperationType::ITEM][$itemOperationName] ?? null;
 
             if (! $messageClass) {
                 continue;
@@ -163,7 +161,7 @@ final class DocumentationNormalizer implements NormalizerInterface
 
         foreach ($resourceMetadata->getCollectionOperations() ?? [] as $collectionOperationName => $collectionOperation) {
             /** @var class-string|null $messageClass */
-            $messageClass = $this->messageMapping[$resourceClass][OperationType::COLLECTION][$collectionOperationName] ?? null;
+            $messageClass = $messageMapping[$resourceClass][OperationType::COLLECTION][$collectionOperationName] ?? null;
 
             if (! $messageClass) {
                 continue;
@@ -186,13 +184,15 @@ final class DocumentationNormalizer implements NormalizerInterface
 
         $schemas = $this->schemas($messages);
 
+        $operationMapping = $this->config->operationMapping();
+
         foreach ($messages as $messageClass => $operation) {
-            if (! isset($this->operationMapping[$messageClass])) {
+            if (! isset($operationMapping[$messageClass])) {
                 throw ApiPlatformMappingException::noOperationFound($messageClass);
             }
 
             $operation = array_merge(
-                $this->operationMapping[$messageClass],
+                $operationMapping[$messageClass],
                 $operation
             );
 
