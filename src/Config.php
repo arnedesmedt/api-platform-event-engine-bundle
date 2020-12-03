@@ -14,6 +14,7 @@ use function array_filter;
 use function array_keys;
 use function array_merge_recursive;
 use function array_reduce;
+use function is_array;
 use function preg_match;
 
 final class Config implements CacheClearerInterface
@@ -24,6 +25,11 @@ final class Config implements CacheClearerInterface
     private EventEngineConfig $config;
     private AbstractAdapter $cache;
     private string $environment;
+
+    /** @var array<array<array<string>>>|null */
+    private ?array $messageMapping = null;
+    /** @var array<string, array<string, string>>|null */
+    private ?array $operationMapping = null;
 
     public function __construct(EventEngineConfig $config, AbstractAdapter $cache, string $environment)
     {
@@ -135,6 +141,10 @@ final class Config implements CacheClearerInterface
      */
     private function getMessageMapping(): array
     {
+        if (is_array($this->messageMapping)) {
+            return $this->messageMapping;
+        }
+
         $config = $this->config->config();
         $commandMapping = $this->specificMessageMapping(
             $config['compiledCommandRouting'],
@@ -148,7 +158,9 @@ final class Config implements CacheClearerInterface
             'name'
         );
 
-        return array_merge_recursive($commandMapping, $controllerMapping, $queryMapping);
+        $this->messageMapping = array_merge_recursive($commandMapping, $controllerMapping, $queryMapping);
+
+        return $this->messageMapping;
     }
 
     /**
@@ -156,6 +168,10 @@ final class Config implements CacheClearerInterface
      */
     private function getOperationMapping(): array
     {
+        if (is_array($this->operationMapping)) {
+            return $this->operationMapping;
+        }
+
         $apiPlatformMapping = $this->messageMapping();
 
         $operationMapping = [];
@@ -172,7 +188,9 @@ final class Config implements CacheClearerInterface
             }
         }
 
-        return $operationMapping;
+        $this->operationMapping = $operationMapping;
+
+        return $this->operationMapping;
     }
 
     private function isDevEnv(): bool
