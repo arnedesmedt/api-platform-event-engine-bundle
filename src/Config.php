@@ -14,6 +14,7 @@ use function array_filter;
 use function array_keys;
 use function array_merge_recursive;
 use function array_reduce;
+use function preg_match;
 
 final class Config implements CacheClearerInterface
 {
@@ -22,11 +23,13 @@ final class Config implements CacheClearerInterface
 
     private EventEngineConfig $config;
     private AbstractAdapter $cache;
+    private string $environment;
 
-    public function __construct(EventEngineConfig $config, AbstractAdapter $cache)
+    public function __construct(EventEngineConfig $config, AbstractAdapter $cache, string $environment)
     {
         $this->config = $config;
         $this->cache = $cache;
+        $this->environment = $environment;
     }
 
     /**
@@ -34,23 +37,14 @@ final class Config implements CacheClearerInterface
      */
     public function messageMapping(): array
     {
+        if ($this->isDevEnv()) {
+            return $this->getMessageMapping();
+        }
+
         return $this->cache->get(
             self::API_PLATFORM_MAPPING,
             function () {
-                $config = $this->config->config();
-                $commandMapping = $this->specificMessageMapping(
-                    $config['compiledCommandRouting'],
-                    'commandName'
-                );
-
-                $controllerMapping = $this->specificMessageMapping(array_keys($config['commandControllers']));
-
-                $queryMapping = $this->specificMessageMapping(
-                    $config['compiledQueryDescriptions'],
-                    'name'
-                );
-
-                return array_merge_recursive($commandMapping, $controllerMapping, $queryMapping);
+                return $this->getMessageMapping();
             }
         );
     }
@@ -60,26 +54,14 @@ final class Config implements CacheClearerInterface
      */
     public function operationMapping(): array
     {
+        if ($this->isDevEnv()) {
+            return $this->getOperationMapping();
+        }
+
         return $this->cache->get(
             self::OPERATION_MAPPING,
             function () {
-                $apiPlatformMapping = $this->messageMapping();
-
-                $operationMapping = [];
-
-                foreach ($apiPlatformMapping as $resource => $operationTypes) {
-                    foreach ($operationTypes as $operationType => $messageClasses) {
-                        foreach ($messageClasses as $operationName => $messageClass) {
-                            $operationMapping[$messageClass] = [
-                                'resource' => $resource,
-                                'operationType' => $operationType,
-                                'operationName' => $operationName,
-                            ];
-                        }
-                    }
-                }
-
-                return $operationMapping;
+                return $this->getOperationMapping();
             }
         );
     }
@@ -128,7 +110,7 @@ final class Config implements CacheClearerInterface
         string $entity,
         string $type,
         string $name,
-        $apiPlatformMessage
+        string $apiPlatformMessage
     ): array {
         if (! isset($mapping[$entity])) {
             $mapping[$entity] = [];
@@ -146,5 +128,55 @@ final class Config implements CacheClearerInterface
     public function clear(string $cacheDir): void
     {
         $this->cache->clear();
+    }
+
+    /**
+     * @return array<array<array<string>>>
+     */
+    private function getMessageMapping(): array
+    {
+        $config = $this->config->config();
+        $commandMapping = $this->specificMessageMapping(
+            $config['compiledCommandRouting'],
+            'commandName'
+        );
+
+        $controllerMapping = $this->specificMessageMapping(array_keys($config['commandControllers']));
+
+        $queryMapping = $this->specificMessageMapping(
+            $config['compiledQueryDescriptions'],
+            'name'
+        );
+
+        return array_merge_recursive($commandMapping, $controllerMapping, $queryMapping);
+    }
+
+    /**
+     * @return array<string, array<string, string>>
+     */
+    private function getOperationMapping(): array
+    {
+        $apiPlatformMapping = $this->messageMapping();
+
+        $operationMapping = [];
+
+        foreach ($apiPlatformMapping as $resource => $operationTypes) {
+            foreach ($operationTypes as $operationType => $messageClasses) {
+                foreach ($messageClasses as $operationName => $messageClass) {
+                    $operationMapping[$messageClass] = [
+                        'resource' => $resource,
+                        'operationType' => $operationType,
+                        'operationName' => $operationName,
+                    ];
+                }
+            }
+        }
+
+        return $operationMapping;
+    }
+
+    private function isDevEnv(): bool
+    {
+        return preg_match('/(dev(.*)|local)/i', $this->environment) === 1;
     }
 }
