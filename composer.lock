@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e024802a40fa216a4ae74c4ef1f365a8",
+    "content-hash": "a191ddd2ffa5ceb27f73da03d3439fae",
     "packages": [
         {
             "name": "api-platform/api-pack",
@@ -199,12 +199,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/arnedesmedt/event-engine-symfony-bundle.git",
-                "reference": "0ca4dbe7c0e1ce5d2cb43032a3e11105cd827f3e"
+                "reference": "16979ba35fd9d1e794b760ecce3bbeec4d8f4d9a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/arnedesmedt/event-engine-symfony-bundle/zipball/0ca4dbe7c0e1ce5d2cb43032a3e11105cd827f3e",
-                "reference": "0ca4dbe7c0e1ce5d2cb43032a3e11105cd827f3e",
+                "url": "https://api.github.com/repos/arnedesmedt/event-engine-symfony-bundle/zipball/16979ba35fd9d1e794b760ecce3bbeec4d8f4d9a",
+                "reference": "16979ba35fd9d1e794b760ecce3bbeec4d8f4d9a",
                 "shasum": ""
             },
             "require": {
@@ -251,7 +251,7 @@
                 "issues": "https://github.com/arnedesmedt/event-engine-symfony-bundle/issues",
                 "source": "https://github.com/arnedesmedt/event-engine-symfony-bundle/tree/master"
             },
-            "time": "2020-12-01T05:56:13+00:00"
+            "time": "2021-01-05T12:59:00+00:00"
         },
         {
             "name": "arnedesmedt/value-objects",
@@ -6486,11 +6486,13 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "arnedesmedt/event-engine-symfony-bundle": 20
+        "arnedesmedt/event-engine-symfony-bundle": 20,
+        "roave/security-advisories": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
+        "php": "^7.4",
         "ext-json": "*"
     },
     "platform-dev": [],
