@@ -3,6 +3,7 @@ services:
         arguments:
             - '@ADS\Bundle\EventEngineBundle\Config'
             - '@event_engine.cache'
+            - "%kernel.environment%"
     ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder:
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Config'
