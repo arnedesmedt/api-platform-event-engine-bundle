@@ -24,6 +24,7 @@ use ApiPlatform\Core\Swagger\Serializer\DocumentationNormalizer as SwaggerDocume
 use EventEngine\EventEngine;
 use EventEngine\JsonSchema\AnnotatedType;
 use EventEngine\JsonSchema\JsonSchema;
+use EventEngine\JsonSchema\JsonSchemaAwareCollection;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use EventEngine\Schema\TypeSchema;
 use ReflectionClass;
@@ -455,11 +456,17 @@ final class DocumentationNormalizer implements NormalizerInterface
         foreach ($messages as $messageClass => $operation) {
             $reflectionClass = new ReflectionClass($messageClass);
 
-            if (! $reflectionClass->implementsInterface(JsonSchemaAwareRecord::class)) {
+            if ($reflectionClass->implementsInterface(JsonSchemaAwareRecord::class)) {
+                $schemas[$messageClass] = $messageClass::__schema()->toArray();
+
                 continue;
             }
 
-            $schemas[$messageClass] = $messageClass::__schema()->toArray();
+            if ($reflectionClass->implementsInterface(JsonSchemaAwareCollection::class)) {
+                $schemas[$messageClass] = JsonSchema::array($messageClass::__itemSchema())->toArray();
+
+                continue;
+            }
         }
 
         return $schemas;
