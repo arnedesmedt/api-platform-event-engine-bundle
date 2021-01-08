@@ -17,6 +17,7 @@ use Symfony\Component\Serializer\SerializerAwareInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
 use function array_merge;
+use function method_exists;
 
 final class MessageNormalizer implements NormalizerInterface, DenormalizerInterface, SerializerAwareInterface
 {
@@ -110,6 +111,13 @@ final class MessageNormalizer implements NormalizerInterface, DenormalizerInterf
      */
     private function messageData(string $message, $data, array $context): array
     {
+        if (
+            method_exists($message, '__requestBodyArrayProperty')
+            && $message::__requestBodyArrayProperty()
+        ) {
+            $data = [$message::__requestBodyArrayProperty() => $data];
+        }
+
         $data = array_merge(
             $data,
             $context['path_parameters'] ?? [],

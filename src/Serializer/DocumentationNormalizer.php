@@ -48,6 +48,7 @@ use function is_array;
 use function ksort;
 use function lcfirst;
 use function mb_strtolower;
+use function method_exists;
 use function reset;
 use function str_contains;
 use function str_replace;
@@ -286,6 +287,14 @@ final class DocumentationNormalizer implements NormalizerInterface
         ]);
 
         if ($schema !== null || $method === Request::METHOD_POST) {
+            if (
+                $schema
+                && method_exists($messageClass, '__requestBodyArrayProperty')
+                && $messageClass::__requestBodyArrayProperty()
+            ) {
+                $schema = $schema['properties'][$messageClass::__requestBodyArrayProperty()];
+            }
+
             $operation['requestBody'] = [
                 'required' => true,
                 'content' => [

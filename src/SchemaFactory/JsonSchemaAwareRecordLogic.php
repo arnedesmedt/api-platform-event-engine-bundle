@@ -209,4 +209,9 @@ trait JsonSchemaAwareRecordLogic
 
         return [];
     }
+
+    public static function __requestBodyArrayProperty(): ?string
+    {
+        return null;
+    }
 }
