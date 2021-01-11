@@ -15,6 +15,7 @@
         "php": "^7.4",
         "ext-json": "*",
         "arnedesmedt/event-engine-symfony-bundle": "dev-master",
+        "arnedesmedt/json-immutable-objects": "dev-master",
         "api-platform/api-pack": "^1.2"
     },
     "require-dev": {
@@ -22,7 +23,7 @@
         "phpstan/phpstan": "^0.12",
         "squizlabs/php_codesniffer": "^3.5",
         "doctrine/coding-standard": "^8.0",
-        "phpro/grumphp": "^0.19"
+        "phpro/grumphp": "1.*"
     },
     "autoload": {
         "psr-4": {
