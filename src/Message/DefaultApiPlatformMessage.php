@@ -98,10 +98,7 @@ trait DefaultApiPlatformMessage
         throw ApiPlatformMappingException::noOperationNameFound(static::class);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public static function __examples(): ?array
+    public static function __requestBodyArrayProperty(): ?string
     {
         return null;
     }
