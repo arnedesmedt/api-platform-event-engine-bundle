@@ -161,9 +161,12 @@ final class DocumentationNormalizer implements NormalizerInterface
             $messages[$messageClass] = $itemOperation;
         }
 
-        foreach ($resourceMetadata->getCollectionOperations() ?? [] as $collectionOperationName => $collectionOperation) {
+        foreach (
+            $resourceMetadata->getCollectionOperations() ?? [] as $collectionOperationName => $collectionOperation
+        ) {
             /** @var class-string|null $messageClass */
-            $messageClass = $messageMapping[$resourceClass][OperationType::COLLECTION][$collectionOperationName] ?? null;
+            $messageClass = $messageMapping[$resourceClass][OperationType::COLLECTION][$collectionOperationName]
+                ?? null;
 
             if (! $messageClass) {
                 continue;
