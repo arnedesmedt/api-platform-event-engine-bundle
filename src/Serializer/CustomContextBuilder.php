@@ -100,7 +100,7 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
         }
 
         $identifier = reset($identifiers);
-        $identifier = StringUtil::decamilize($identifier);
+        $identifier = StringUtil::decamelize($identifier);
 
         if (! $request->attributes->has($identifier)) {
             return;

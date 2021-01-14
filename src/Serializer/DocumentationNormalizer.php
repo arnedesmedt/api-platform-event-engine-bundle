@@ -326,7 +326,7 @@ final class DocumentationNormalizer implements NormalizerInterface
         $pathParameters = array_map(
             static function (string $parameterName) use ($schema) {
                 return [
-                    'name' => StringUtil::decamilize($parameterName),
+                    'name' => StringUtil::decamelize($parameterName),
                     'schema' => self::convertSchema($schema['properties'][$parameterName]),
                     'required' => in_array($parameterName, $schema['required']),
                     'in' => 'path',
@@ -356,7 +356,7 @@ final class DocumentationNormalizer implements NormalizerInterface
         $queryParameters = array_map(
             static function (string $parameterName) use ($schema) {
                 return [
-                    'name' => StringUtil::decamilize($parameterName),
+                    'name' => StringUtil::decamelize($parameterName),
                     'schema' => self::convertSchema($schema['properties'][$parameterName]),
                     'required' => in_array($parameterName, $schema['required']),
                     'in' => 'query',
@@ -523,7 +523,7 @@ final class DocumentationNormalizer implements NormalizerInterface
 
         if (isset($jsonSchema['properties']) && is_array($jsonSchema['properties'])) {
             foreach ($jsonSchema['properties'] as $propName => $propSchema) {
-                $decamilize = StringUtil::decamilize($propName);
+                $decamilize = StringUtil::decamelize($propName);
                 $jsonSchema['properties'][$decamilize] = self::convertSchema($propSchema);
 
                 if ($decamilize === $propName) {
