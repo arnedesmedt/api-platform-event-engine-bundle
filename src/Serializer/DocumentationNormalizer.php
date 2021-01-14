@@ -572,8 +572,12 @@ final class DocumentationNormalizer implements NormalizerInterface
             unset($jsonSchema['examples']);
         }
 
-        if (isset($jsonSchema['required']) && count($jsonSchema['required']) === 0) {
-            unset($jsonSchema['required']);
+        if (isset($jsonSchema['required'])) {
+            $jsonSchema['required'] = array_map([StringUtil::class, 'decamelize'], $jsonSchema['required']);
+
+            if (count($jsonSchema['required']) === 0) {
+                unset($jsonSchema['required']);
+            }
         }
 
         return $jsonSchema;
