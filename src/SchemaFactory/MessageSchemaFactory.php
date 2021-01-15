@@ -82,7 +82,11 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
         } else {
             JsonSchema::toApiPlatformSchema(
                 $message::__responseSchemaForStatusCode(
-                    $message::__defaultStatusCode() ?? $this->defaultStatusCode($className, $operationType, $operationName)
+                    $message::__defaultStatusCode() ?? $this->defaultStatusCode(
+                        $className,
+                        $operationType,
+                        $operationName
+                    )
                 )
                     ->toArray(),
                 $schema

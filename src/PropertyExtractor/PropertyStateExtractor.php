@@ -182,7 +182,9 @@ final class PropertyStateExtractor implements PropertyListExtractorInterface, Pr
             return new Type(Type::BUILTIN_TYPE_OBJECT);
         }
 
-        $typeClass = $reflectionClass->implementsInterface(ListValue::class) ? $valueObjectClass::itemType() : $valueObjectClass;
+        $typeClass = $reflectionClass->implementsInterface(ListValue::class)
+            ? $valueObjectClass::itemType()
+            : $valueObjectClass;
 
         return new Type(Type::BUILTIN_TYPE_OBJECT, false, $typeClass);
     }
