@@ -23,8 +23,11 @@ final class JsonSchema
      *
      * @return Schema<mixed> $schema
      */
-    public static function toApiPlatformSchema(array $jsonSchema, ?Schema $schema = null, ?Schema $rootSchema = null): Schema
-    {
+    public static function toApiPlatformSchema(
+        array $jsonSchema,
+        ?Schema $schema = null,
+        ?Schema $rootSchema = null
+    ): Schema {
         $version = $rootSchema ? $rootSchema->getVersion() : Schema::VERSION_OPENAPI;
         $schema ??= new Schema($version);
         $rootSchema ??= $schema;
@@ -54,8 +57,6 @@ final class JsonSchema
 
             if ($key !== false) {
                 $schema['nullable'] = true;
-
-                unset($jsonSchema['type'][$key]);
             }
 
             if (count($jsonSchema['type']) === 1) {
