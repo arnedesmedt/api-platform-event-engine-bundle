@@ -11,7 +11,6 @@ grumphp:
                 - "die("
                 - "var_dump("
                 - "exit;"
-                - " dump("
                 - "echo "
             triggered_by: ['php']
         phpcs: ~
