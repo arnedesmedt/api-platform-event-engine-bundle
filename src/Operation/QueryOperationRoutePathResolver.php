@@ -22,8 +22,12 @@ final class QueryOperationRoutePathResolver implements OperationPathResolverInte
      * @param array<mixed> $operation
      * @param bool|string $operationType
      */
-    public function resolveOperationPath(string $resourceShortName, array $operation, $operationType, ?string $operationName = null): string
-    {
+    public function resolveOperationPath(
+        string $resourceShortName,
+        array $operation,
+        $operationType,
+        ?string $operationName = null
+    ): string {
         // @phpstan-ignore-next-line
         $path = $this->deferred->resolveOperationPath($resourceShortName, $operation, $operationType, $operationName);
 

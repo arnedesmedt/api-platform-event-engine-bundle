@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\PropertyExtractor;
 
+use ADS\ValueObjects\Implementation\TypeDetector;
 use ADS\ValueObjects\ListValue;
 use EventEngine\JsonSchema\JsonSchema;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
@@ -20,9 +21,12 @@ use Symfony\Component\PropertyInfo\Type;
 use function array_keys;
 use function array_map;
 use function array_reduce;
+use function array_unique;
+use function class_exists;
 use function in_array;
 use function is_array;
 use function sprintf;
+use function trim;
 
 final class PropertyStateExtractor implements PropertyListExtractorInterface, PropertyTypeExtractorInterface
 {
@@ -128,14 +132,30 @@ final class PropertyStateExtractor implements PropertyListExtractorInterface, Pr
 
         if (is_array($propertySchema['type'])) {
             return array_map(
-                static function (string $type) use ($schema, $property) {
-                    return self::type($schema, $property, $type);
-                },
-                $propertySchema['type']
+                static fn (string $type) => self::type($schema, $property, $type),
+                array_unique(
+                    array_map(
+                        static fn (string $type) => self::convertTypeIfComplex($type),
+                        $propertySchema['type']
+                    )
+                )
             );
         }
 
-        return [self::type($schema, $property, $propertySchema['type'])];
+        $type = self::convertTypeIfComplex($propertySchema['type']);
+
+        return [self::type($schema, $property, $type)];
+    }
+
+    private static function convertTypeIfComplex(string $type): string
+    {
+        $type = trim($type);
+
+        if (! class_exists($type)) {
+            return $type;
+        }
+
+        return TypeDetector::getTypeFromClass($type, true, false)->toArray()['type'];
     }
 
     /**
@@ -182,7 +202,9 @@ final class PropertyStateExtractor implements PropertyListExtractorInterface, Pr
             return new Type(Type::BUILTIN_TYPE_OBJECT);
         }
 
-        $typeClass = $reflectionClass->implementsInterface(ListValue::class) ? $valueObjectClass::itemType() : $valueObjectClass;
+        $typeClass = $reflectionClass->implementsInterface(ListValue::class)
+            ? $valueObjectClass::itemType()
+            : $valueObjectClass;
 
         return new Type(Type::BUILTIN_TYPE_OBJECT, false, $typeClass);
     }

@@ -55,12 +55,20 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
         }
 
         if ($collectionOperations) {
-            $collectionOperations = $this->handleMessageOperations($collectionOperations, $resourceClass, OperationType::COLLECTION);
+            $collectionOperations = $this->handleMessageOperations(
+                $collectionOperations,
+                $resourceClass,
+                OperationType::COLLECTION
+            );
             $resourceMetadata = $resourceMetadata->withCollectionOperations($collectionOperations);
         }
 
         if ($itemOperations) {
-            $itemOperations = $this->handleMessageOperations($itemOperations, $resourceClass, OperationType::ITEM);
+            $itemOperations = $this->handleMessageOperations(
+                $itemOperations,
+                $resourceClass,
+                OperationType::ITEM
+            );
             $resourceMetadata = $resourceMetadata->withItemOperations($itemOperations);
         }
 

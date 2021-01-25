@@ -161,9 +161,12 @@ final class DocumentationNormalizer implements NormalizerInterface
             $messages[$messageClass] = $itemOperation;
         }
 
-        foreach ($resourceMetadata->getCollectionOperations() ?? [] as $collectionOperationName => $collectionOperation) {
+        foreach (
+            $resourceMetadata->getCollectionOperations() ?? [] as $collectionOperationName => $collectionOperation
+        ) {
             /** @var class-string|null $messageClass */
-            $messageClass = $messageMapping[$resourceClass][OperationType::COLLECTION][$collectionOperationName] ?? null;
+            $messageClass = $messageMapping[$resourceClass][OperationType::COLLECTION][$collectionOperationName]
+                ?? null;
 
             if (! $messageClass) {
                 continue;
@@ -326,7 +329,7 @@ final class DocumentationNormalizer implements NormalizerInterface
         $pathParameters = array_map(
             static function (string $parameterName) use ($schema) {
                 return [
-                    'name' => StringUtil::decamilize($parameterName),
+                    'name' => StringUtil::decamelize($parameterName),
                     'schema' => self::convertSchema($schema['properties'][$parameterName]),
                     'required' => in_array($parameterName, $schema['required']),
                     'in' => 'path',
@@ -356,7 +359,7 @@ final class DocumentationNormalizer implements NormalizerInterface
         $queryParameters = array_map(
             static function (string $parameterName) use ($schema) {
                 return [
-                    'name' => StringUtil::decamilize($parameterName),
+                    'name' => StringUtil::decamelize($parameterName),
                     'schema' => self::convertSchema($schema['properties'][$parameterName]),
                     'required' => in_array($parameterName, $schema['required']),
                     'in' => 'query',
@@ -523,7 +526,7 @@ final class DocumentationNormalizer implements NormalizerInterface
 
         if (isset($jsonSchema['properties']) && is_array($jsonSchema['properties'])) {
             foreach ($jsonSchema['properties'] as $propName => $propSchema) {
-                $decamilize = StringUtil::decamilize($propName);
+                $decamilize = StringUtil::decamelize($propName);
                 $jsonSchema['properties'][$decamilize] = self::convertSchema($propSchema);
 
                 if ($decamilize === $propName) {
@@ -569,8 +572,12 @@ final class DocumentationNormalizer implements NormalizerInterface
             unset($jsonSchema['examples']);
         }
 
-        if (isset($jsonSchema['required']) && count($jsonSchema['required']) === 0) {
-            unset($jsonSchema['required']);
+        if (isset($jsonSchema['required'])) {
+            $jsonSchema['required'] = array_map([StringUtil::class, 'decamelize'], $jsonSchema['required']);
+
+            if (count($jsonSchema['required']) === 0) {
+                unset($jsonSchema['required']);
+            }
         }
 
         return $jsonSchema;

@@ -11,11 +11,9 @@ grumphp:
                 - "die("
                 - "var_dump("
                 - "exit;"
-                - " dump("
                 - "echo "
             triggered_by: ['php']
-        phpcs:
-            warning_severity: 6
+        phpcs: ~
         phpstan:
             autoload_file: ~
             configuration: phpstan.neon
