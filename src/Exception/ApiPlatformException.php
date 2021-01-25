@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Exception;
 
+use ADS\JsonImmutableObjects\JsonSchemaAwareRecordLogic;
 use EventEngine\JsonSchema\AnnotatedType;
 use EventEngine\JsonSchema\JsonSchema;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
-use EventEngine\JsonSchema\JsonSchemaAwareRecordLogic;
 use EventEngine\Schema\TypeSchema;
 
 final class ApiPlatformException implements JsonSchemaAwareRecord
