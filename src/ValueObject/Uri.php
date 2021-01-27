@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject;
 
-use ADS\Bundle\EventEngineBundle\Util\ArrayUtil;
+use ADS\Util\ArrayUtil;
 use ADS\ValueObjects\Implementation\String\StringValue;
 
 use function array_diff_key;

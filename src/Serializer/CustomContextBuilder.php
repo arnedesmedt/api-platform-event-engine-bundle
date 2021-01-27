@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Serializer;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Util\Util;
-use ADS\Bundle\EventEngineBundle\Util\StringUtil;
+use ADS\Util\StringUtil;
 use ApiPlatform\Core\Api\IdentifiersExtractorInterface;
 use ApiPlatform\Core\Serializer\SerializerContextBuilder;
 use ApiPlatform\Core\Serializer\SerializerContextBuilderInterface;

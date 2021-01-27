@@ -13,7 +13,7 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\Message\AuthorizationMessage;
 use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
 use ADS\Bundle\EventEngineBundle\Response\HasResponses;
 use ADS\Bundle\EventEngineBundle\Type\DefaultType;
-use ADS\Bundle\EventEngineBundle\Util\StringUtil;
+use ADS\Util\StringUtil;
 use ApiPlatform\Core\Api\OperationType;
 use ApiPlatform\Core\Documentation\Documentation;
 use ApiPlatform\Core\Exception\ResourceClassNotFoundException;

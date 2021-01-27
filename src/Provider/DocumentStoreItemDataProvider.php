@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Provider;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\FinderException;
-use ADS\Bundle\EventEngineBundle\Util\ArrayUtil;
+use ADS\Util\ArrayUtil;
 use ApiPlatform\Core\Api\OperationType;
 use ApiPlatform\Core\DataProvider\DenormalizedIdentifiersAwareItemDataProviderInterface;
 use ApiPlatform\Core\DataProvider\RestrictedDataProviderInterface;
