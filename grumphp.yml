@@ -6,13 +6,6 @@ grumphp:
         succeeded: ~
         failed: ~
     tasks:
-        git_blacklist:
-            keywords:
-                - "die("
-                - "var_dump("
-                - "exit;"
-                - "echo "
-            triggered_by: ['php']
         phpcs: ~
         phpstan:
             autoload_file: ~

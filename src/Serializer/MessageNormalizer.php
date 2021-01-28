@@ -6,7 +6,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Serializer;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\FinderException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder;
-use ADS\Bundle\EventEngineBundle\Util\ArrayUtil;
+use ADS\Util\ArrayUtil;
 use ArrayObject;
 use EventEngine\Data\ImmutableRecord;
 use EventEngine\EventEngine;
