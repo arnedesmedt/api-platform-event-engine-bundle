@@ -14,6 +14,7 @@ use phpDocumentor\Reflection\DocBlockFactory;
 use ReflectionClass;
 use Symfony\Component\HttpFoundation\Request;
 
+use function array_combine;
 use function array_keys;
 use function array_map;
 use function in_array;
@@ -88,25 +89,29 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
 
         /** @var array<string, class-string> $operationTypes */
         $operationTypes = $mapping[$entity][$operationType];
+        $operationKeys = array_keys($operations);
 
-        return array_map(
-            function ($operation, string $operationName) use ($operationTypes) {
-                /** @var class-string<ApiPlatformMessage>|false $messageClass */
-                $messageClass = $operationTypes[$operationName] ?? false;
+        return array_combine(
+            $operationKeys,
+            array_map(
+                function (string $operationName, $operation) use ($operationTypes) {
+                    /** @var class-string<ApiPlatformMessage>|false $messageClass */
+                    $messageClass = $operationTypes[$operationName] ?? false;
 
-                if ($messageClass) {
-                    $reflectionClass = new ReflectionClass($messageClass);
+                    if ($messageClass) {
+                        $reflectionClass = new ReflectionClass($messageClass);
 
-                    $this->addDocumentation($operation, $reflectionClass);
-                    $this->addHttpMethod($operation, $messageClass);
-                    $this->addPath($operation, $messageClass);
-                    $this->needRead($operation);
-                }
+                        $this->addDocumentation($operation, $reflectionClass);
+                        $this->addHttpMethod($operation, $messageClass);
+                        $this->addPath($operation, $messageClass);
+                        $this->needRead($operation);
+                    }
 
-                return $operation;
-            },
-            $operations,
-            array_keys($operations)
+                    return $operation;
+                },
+                $operationKeys,
+                $operations
+            )
         );
     }
 
