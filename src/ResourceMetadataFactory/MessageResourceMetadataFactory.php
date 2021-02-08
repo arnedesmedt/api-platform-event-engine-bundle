@@ -14,6 +14,8 @@ use phpDocumentor\Reflection\DocBlockFactory;
 use ReflectionClass;
 use Symfony\Component\HttpFoundation\Request;
 
+use function array_keys;
+use function array_map;
 use function in_array;
 
 final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInterface
@@ -82,24 +84,30 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
      */
     private function handleMessageOperations(array $operations, string $entity, string $operationType): array
     {
-        $newOperations = [];
-
         $mapping = $this->config->messageMapping();
 
-        foreach ($operations as $operationName => $operation) {
-            /** @var class-string<ApiPlatformMessage>|false $messageClass */
-            $messageClass = $mapping[$entity][$operationType][$operationName] ?? false;
-            if ($messageClass) {
-                $reflectionClass = new ReflectionClass($messageClass);
+        /** @var array<string, class-string> $operationTypes */
+        $operationTypes = $mapping[$entity][$operationType];
 
-                $this->addDocumentation($operation, $reflectionClass);
-                $this->needRead($operation);
-            }
+        return array_map(
+            function ($operation, string $operationName) use ($operationTypes) {
+                /** @var class-string<ApiPlatformMessage>|false $messageClass */
+                $messageClass = $operationTypes[$operationName] ?? false;
 
-            $newOperations[$operationName] = $operation;
-        }
+                if ($messageClass) {
+                    $reflectionClass = new ReflectionClass($messageClass);
 
-        return $newOperations;
+                    $this->addDocumentation($operation, $reflectionClass);
+                    $this->addHttpMethod($operation, $messageClass);
+                    $this->addPath($operation, $messageClass);
+                    $this->needRead($operation);
+                }
+
+                return $operation;
+            },
+            $operations,
+            array_keys($operations)
+        );
     }
 
     /**
@@ -126,5 +134,31 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
         }
 
         $operation['read'] = false;
+    }
+
+    /**
+     * @param array<mixed> $operation
+     * @param class-string<ApiPlatformMessage> $messageClass
+     */
+    private function addHttpMethod(array &$operation, string $messageClass): void
+    {
+        if (isset($operation['method']) || $messageClass::__httpMethod() === null) {
+            return;
+        }
+
+        $operation['method'] = $messageClass::__httpMethod();
+    }
+
+    /**
+     * @param array<mixed> $operation
+     * @param class-string<ApiPlatformMessage> $messageClass
+     */
+    private function addPath(array &$operation, string $messageClass): void
+    {
+        if (isset($operation['path']) || $messageClass::__path() === null) {
+            return;
+        }
+
+        $operation['path'] = $messageClass::__path();
     }
 }
