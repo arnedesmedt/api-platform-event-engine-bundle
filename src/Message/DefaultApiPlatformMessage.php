@@ -9,6 +9,7 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\ApiPlatformMappingExceptio
 use ADS\Bundle\ApiPlatformEventEngineBundle\Operation\Name;
 use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
 use ADS\Bundle\EventEngineBundle\Type\DefaultType;
+use ADS\Util\StringUtil;
 use ApiPlatform\Core\Action\PlaceholderAction;
 use ApiPlatform\Core\Api\OperationType;
 use EventEngine\Schema\TypeSchema;
@@ -137,6 +138,16 @@ trait DefaultApiPlatformMessage
     public static function __apiPlatformController(): string
     {
         return PlaceholderAction::class;
+    }
+
+    public static function __routeName(): string
+    {
+        return sprintf(
+            'api_%s_%s_%s',
+            StringUtil::decamelize(self::__entity()),
+            StringUtil::decamelize(self::__operationName()),
+            self::__operationType()
+        );
     }
 
     public static function __requestBodyArrayProperty(): ?string

@@ -105,6 +105,7 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
                         $this->addHttpMethod($operation, $messageClass);
                         $this->addPath($operation, $messageClass);
                         $this->addController($operation, $messageClass);
+                        $this->addRouteName($operation, $messageClass);
                         $this->needRead($operation);
                     }
 
@@ -179,5 +180,18 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
         }
 
         $operation['controller'] = $messageClass::__apiPlatformController();
+    }
+
+    /**
+     * @param array<mixed> $operation
+     * @param class-string<ApiPlatformMessage> $messageClass
+     */
+    private function addRouteName(array &$operation, string $messageClass): void
+    {
+        if (isset($operation['route_name'])) {
+            return;
+        }
+
+        $operation['route_name'] = $messageClass::__routeName();
     }
 }
