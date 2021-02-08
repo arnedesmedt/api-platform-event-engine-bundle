@@ -9,7 +9,6 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\Documentation\OpenApiSchemaFactoryIn
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\ApiPlatformException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\ApiPlatformMappingException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\DocumentationException;
-use ADS\Bundle\ApiPlatformEventEngineBundle\Message\AuthorizationMessage;
 use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
 use ADS\Bundle\EventEngineBundle\Response\HasResponses;
 use ADS\Bundle\EventEngineBundle\Type\DefaultType;
@@ -406,14 +405,6 @@ final class DocumentationNormalizer implements NormalizerInterface
                 $messageClass::__responseSchemasPerStatusCode() +
                 [
                     Response::HTTP_BAD_REQUEST => $schema === null ? null : ApiPlatformException::badRequest(),
-                    Response::HTTP_UNAUTHORIZED => $reflectionClass
-                        ->implementsInterface(AuthorizationMessage::class)
-                        ? ApiPlatformException::unauthorized()
-                        : null,
-                    Response::HTTP_FORBIDDEN => $reflectionClass
-                        ->implementsInterface(AuthorizationMessage::class)
-                        ? ApiPlatformException::forbidden()
-                        : null,
                     Response::HTTP_NO_CONTENT => $method === Request::METHOD_DELETE
                         ? DefaultType::emptyResponse()
                         : null,

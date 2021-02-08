@@ -6,8 +6,11 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Message;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\ApiPlatformMappingException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Operation\Name;
+use ADS\Bundle\EventEngineBundle\Type\DefaultType;
 use ApiPlatform\Core\Api\OperationType;
+use EventEngine\Schema\TypeSchema;
 use ReflectionClass;
+use Symfony\Component\HttpFoundation\Response;
 
 use function array_pop;
 use function class_exists;
@@ -108,5 +111,25 @@ trait DefaultApiPlatformMessage
         $reflectionClass = new ReflectionClass(static::class);
 
         return $reflectionClass->getShortName();
+    }
+
+    /**
+     * @return array<int, TypeSchema>
+     */
+    public static function __extraResponseApiPlatform(): array
+    {
+        switch (self::__operationName()) {
+            case Name::POST:
+                return [Response::HTTP_CREATED => DefaultType::created()];
+
+            case Name::DELETE:
+                return [Response::HTTP_NO_CONTENT => DefaultType::emptyResponse()];
+
+            case Name::PUT:
+            case Name::PATCH:
+                return [Response::HTTP_OK => DefaultType::ok()];
+        }
+
+        return [];
     }
 }
