@@ -9,6 +9,7 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\ApiPlatformMappingExceptio
 use ADS\Bundle\ApiPlatformEventEngineBundle\Operation\Name;
 use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
 use ADS\Bundle\EventEngineBundle\Type\DefaultType;
+use ApiPlatform\Core\Action\PlaceholderAction;
 use ApiPlatform\Core\Api\OperationType;
 use EventEngine\Schema\TypeSchema;
 use ReflectionClass;
@@ -133,6 +134,11 @@ trait DefaultApiPlatformMessage
         return null;
     }
 
+    public static function __controller(): string
+    {
+        return PlaceholderAction::class;
+    }
+
     public static function __requestBodyArrayProperty(): ?string
     {
         return null;
@@ -166,6 +172,7 @@ trait DefaultApiPlatformMessage
             case Request::METHOD_PUT:
             case Request::METHOD_PATCH:
             case Request::METHOD_GET:
+            case Request::METHOD_OPTIONS:
                 $responses[Response::HTTP_OK] = DefaultType::ok();
                 break;
         }

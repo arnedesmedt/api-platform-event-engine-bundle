@@ -104,6 +104,7 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
                         $this->addDocumentation($operation, $reflectionClass);
                         $this->addHttpMethod($operation, $messageClass);
                         $this->addPath($operation, $messageClass);
+                        $this->addController($operation, $messageClass);
                         $this->needRead($operation);
                     }
 
@@ -165,5 +166,18 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
         }
 
         $operation['path'] = $messageClass::__path();
+    }
+
+    /**
+     * @param array<mixed> $operation
+     * @param class-string<ApiPlatformMessage> $messageClass
+     */
+    private function addController(array &$operation, string $messageClass): void
+    {
+        if (isset($operation['controller'])) {
+            return;
+        }
+
+        $operation['controller'] = $messageClass::__controller();
     }
 }
