@@ -134,7 +134,7 @@ trait DefaultApiPlatformMessage
         return null;
     }
 
-    public static function __controller(): string
+    public static function __apiPlatformController(): string
     {
         return PlaceholderAction::class;
     }

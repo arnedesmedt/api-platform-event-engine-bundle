@@ -19,7 +19,7 @@ interface ApiPlatformMessage
 
     public static function __path(): ?string;
 
-    public static function __controller(): string;
+    public static function __apiPlatformController(): string;
 
     /**
      * If the request body is an array, we use a property that will used for the request body

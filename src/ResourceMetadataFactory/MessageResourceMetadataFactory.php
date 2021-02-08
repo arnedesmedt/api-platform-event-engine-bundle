@@ -178,6 +178,6 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
             return;
         }
 
-        $operation['controller'] = $messageClass::__controller();
+        $operation['controller'] = $messageClass::__apiPlatformController();
     }
 }
