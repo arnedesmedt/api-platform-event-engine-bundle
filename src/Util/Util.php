@@ -57,7 +57,7 @@ final class Util
 
         if (! empty($positions)) {
             $position = reset($positions);
-            $namespaceParts = array_slice($resourceNameParts, 0, $position);
+            $namespaceParts = array_slice($resourceNameParts, 0, $position + 1);
 
             if (empty($namespaceParts)) {
                 return '\\';
