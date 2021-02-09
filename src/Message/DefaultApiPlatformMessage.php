@@ -7,6 +7,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Message;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\ApiPlatformException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\ApiPlatformMappingException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Operation\Name;
+use ADS\Bundle\ApiPlatformEventEngineBundle\Util\Util;
 use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
 use ADS\Bundle\EventEngineBundle\Type\DefaultType;
 use ADS\Util\StringUtil;
@@ -19,10 +20,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function array_diff;
 use function array_keys;
-use function array_pop;
 use function class_exists;
-use function explode;
-use function implode;
 use function method_exists;
 use function preg_match;
 use function sprintf;
@@ -35,22 +33,23 @@ trait DefaultApiPlatformMessage
             $customEntity = static::__customEntity();
 
             if ($customEntity !== null) {
+                if (! class_exists($customEntity)) {
+                    throw ApiPlatformMappingException::noEntityFound(static::class);
+                }
+
                 return $customEntity;
             }
         }
 
-        $parts = explode('\\', static::class);
-        array_pop($parts);
-        array_pop($parts);
-        $namespace = implode('\\', $parts);
+        $entityNamespace = Util::entityNamespaceFromClassName(static::class);
+        $entityName = Util::entityNameFromClassName(static::class);
+        $entityStateClass = sprintf('%s\\%s\\%s', $entityNamespace, $entityName, 'State');
 
-        $entityClass = sprintf('%s\\%s', $namespace, 'State');
-
-        if (! class_exists($entityClass)) {
+        if (! class_exists($entityStateClass)) {
             throw ApiPlatformMappingException::noEntityFound(static::class);
         }
 
-        return $entityClass;
+        return $entityStateClass;
     }
 
     public static function __operationType(): string
@@ -144,7 +143,7 @@ trait DefaultApiPlatformMessage
     {
         return sprintf(
             'api_%s_%s_%s',
-            StringUtil::decamelize(self::__entity()),
+            StringUtil::decamelize(Util::entityNameFromClassName(static::class)),
             StringUtil::decamelize(self::__operationName()),
             self::__operationType()
         );
