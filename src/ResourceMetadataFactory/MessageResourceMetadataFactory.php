@@ -15,6 +15,7 @@ use ReflectionClass;
 use Symfony\Component\HttpFoundation\Request;
 
 use function array_combine;
+use function array_key_exists;
 use function array_keys;
 use function array_map;
 use function in_array;
@@ -53,50 +54,73 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
         /** @var array<string, array<mixed>>|null $itemOperations */
         $itemOperations = $resourceMetadata->getItemOperations();
 
-        if (! $collectionOperations && ! $itemOperations) {
-            return $resourceMetadata;
-        }
+        /** @var array<string, array<string, class-string<ApiPlatformMessage>>> $resourceMessageMapping */
+        $resourceMessageMapping = $this->config->messageMapping()[$resourceClass];
 
-        if ($collectionOperations) {
-            $collectionOperations = $this->handleMessageOperations(
-                $collectionOperations,
-                $resourceClass,
-                OperationType::COLLECTION
+        $collectionOperations = $this
+            ->addOperations(
+                $collectionOperations ?? [],
+                $resourceMessageMapping[OperationType::COLLECTION] ?? []
             );
-            $resourceMetadata = $resourceMetadata->withCollectionOperations($collectionOperations);
-        }
 
-        if ($itemOperations) {
-            $itemOperations = $this->handleMessageOperations(
-                $itemOperations,
-                $resourceClass,
-                OperationType::ITEM
+        $collectionOperations = $this
+            ->decorateOperations(
+                $collectionOperations ?? [],
+                $resourceMessageMapping[OperationType::COLLECTION] ?? []
             );
-            $resourceMetadata = $resourceMetadata->withItemOperations($itemOperations);
+
+        $resourceMetadata = $resourceMetadata->withCollectionOperations($collectionOperations);
+
+        $itemOperations = $this
+            ->addOperations(
+                $itemOperations ?? [],
+                $resourceMessageMapping[OperationType::ITEM] ?? []
+            );
+
+        $itemOperations = $this
+            ->decorateOperations(
+                $itemOperations ?? [],
+                $resourceMessageMapping[OperationType::ITEM] ?? []
+            );
+
+        return $resourceMetadata->withItemOperations($itemOperations);
+    }
+
+    /**
+     * @param array<string, array<mixed>> $existingOperations
+     * @param array<string, class-string<ApiPlatformMessage>> $messagesByOperationName
+     *
+     * @return array<string, array<mixed>>
+     */
+    private function addOperations(array $existingOperations, array $messagesByOperationName): array
+    {
+        foreach ($messagesByOperationName as $operationName => $messageClass) {
+            if (array_key_exists($operationName, $existingOperations)) {
+                continue;
+            }
+
+            $existingOperations[$operationName] = [];
         }
 
-        return $resourceMetadata;
+        return $existingOperations;
     }
 
     /**
      * @param array<string, array<mixed>> $operations
+     * @param array<string, class-string<ApiPlatformMessage>> $messagesByOperationName
      *
      * @return array<string, array<mixed>>
      */
-    private function handleMessageOperations(array $operations, string $entity, string $operationType): array
+    private function decorateOperations(array $operations, array $messagesByOperationName): array
     {
-        $mapping = $this->config->messageMapping();
-
-        /** @var array<string, class-string> $operationTypes */
-        $operationTypes = $mapping[$entity][$operationType];
         $operationKeys = array_keys($operations);
 
         return array_combine(
             $operationKeys,
             array_map(
-                function (string $operationName, $operation) use ($operationTypes) {
+                function (string $operationName, $operation) use ($messagesByOperationName) {
                     /** @var class-string<ApiPlatformMessage>|false $messageClass */
-                    $messageClass = $operationTypes[$operationName] ?? false;
+                    $messageClass = $messagesByOperationName[$operationName] ?? false;
 
                     if ($messageClass) {
                         $reflectionClass = new ReflectionClass($messageClass);
