@@ -71,7 +71,7 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
             $operations = $resourceMetadata->{$getMethod}() ?? [];
             $operations = $this->rejectSimpleOperations($operations);
 
-            $messages = $this->filterApiPlatformMessages($resourceMessageMapping[$operationType]);
+            $messages = $this->filterApiPlatformMessages($resourceMessageMapping[$operationType] ?? []);
 
             $operations = $this
                 ->addOperations(
@@ -149,6 +149,7 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
                         $this->addHttpMethod($operation, $messageClass);
                         $this->addPath($operation, $messageClass);
                         $this->addController($operation, $messageClass);
+                        $this->addTags($operation, $messageClass);
                         $this->needRead($operation);
                     }
 
@@ -232,6 +233,19 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
         }
 
         $operation['controller'] = $messageClass::__apiPlatformController();
+    }
+
+    /**
+     * @param array<mixed> $operation
+     * @param class-string<ApiPlatformMessage> $messageClass
+     */
+    private function addTags(array &$operation, string $messageClass): void
+    {
+        if (isset($operation['tags'])) {
+            return;
+        }
+
+        $operation['tags'] = $messageClass::__tags();
     }
 
     /**

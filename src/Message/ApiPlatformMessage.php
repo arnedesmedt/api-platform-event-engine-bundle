@@ -21,7 +21,10 @@ interface ApiPlatformMessage
 
     public static function __apiPlatformController(): string;
 
-    public static function __routeName(): string;
+    /**
+     * @return array<string>
+     */
+    public static function __tags(): array;
 
     /**
      * If the request body is an array, we use a property that will used for the request body
