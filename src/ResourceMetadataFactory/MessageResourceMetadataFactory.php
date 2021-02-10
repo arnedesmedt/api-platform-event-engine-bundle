@@ -206,17 +206,8 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
      */
     private function addPath(array &$operation, string $messageClass): void
     {
-        if (isset($operation['path'])) {
+        if (isset($operation['path']) || $messageClass::__path() === null) {
             return;
-        }
-
-        if ($messageClass::__path() === null) {
-            throw new RuntimeException(
-                sprintf(
-                    'No __path method found in class \'%s\'.',
-                    $messageClass
-                )
-            );
         }
 
         $operation['path'] = $messageClass::__path();
