@@ -22,6 +22,10 @@ use function array_keys;
 use function array_map;
 use function in_array;
 use function sprintf;
+use function strtoupper;
+use function ucfirst;
+
+use const ARRAY_FILTER_USE_BOTH;
 
 final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInterface
 {
@@ -52,49 +56,54 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
     {
         $resourceMetadata = $this->decorated->create($resourceClass);
 
-        /** @var array<string, array<mixed>>|null $collectionOperations */
-        $collectionOperations = $resourceMetadata->getCollectionOperations();
-        /** @var array<string, array<mixed>>|null $itemOperations */
-        $itemOperations = $resourceMetadata->getItemOperations();
+        $operationTypes = [
+            OperationType::COLLECTION,
+            OperationType::ITEM,
+        ];
 
         /** @var array<string, array<string, class-string>> $resourceMessageMapping */
         $resourceMessageMapping = $this->config->messageMapping()[$resourceClass];
 
-        $collectionMessages = $this->filterApiPlatformMessages(
-            $resourceMessageMapping[OperationType::COLLECTION] ?? []
+        foreach ($operationTypes as $operationType) {
+            $getMethod = sprintf('get%sOperations', ucfirst($operationType));
+            $withMethod = sprintf('with%sOperations', ucfirst($operationType));
+
+            $operations = $resourceMetadata->{$getMethod}() ?? [];
+            $operations = $this->rejectSimpleOperations($operations);
+
+            $messages = $this->filterApiPlatformMessages($resourceMessageMapping[$operationType]);
+
+            $operations = $this
+                ->addOperations(
+                    $operations ?? [],
+                    $messages
+                );
+
+            $operations = $this
+                ->decorateOperations(
+                    $operations ?? [],
+                    $messages
+                );
+
+            $resourceMetadata = $resourceMetadata->{$withMethod}($operations);
+        }
+
+        return $resourceMetadata;
+    }
+
+    /**
+     * @param array<string, array<mixed>> $operations
+     *
+     * @return array<string, array<mixed>>
+     */
+    private function rejectSimpleOperations(array $operations): array
+    {
+        return array_filter(
+            $operations,
+            static fn ($operation, $operationName) => ! isset($operation['method'])
+                || $operation['method'] !== strtoupper($operationName),
+            ARRAY_FILTER_USE_BOTH
         );
-
-        $itemMessasges = $this->filterApiPlatformMessages(
-            $resourceMessageMapping[OperationType::ITEM] ?? []
-        );
-
-        $collectionOperations = $this
-            ->addOperations(
-                $collectionOperations ?? [],
-                $collectionMessages
-            );
-
-        $collectionOperations = $this
-            ->decorateOperations(
-                $collectionOperations ?? [],
-                $collectionMessages
-            );
-
-        $resourceMetadata = $resourceMetadata->withCollectionOperations($collectionOperations);
-
-        $itemOperations = $this
-            ->addOperations(
-                $itemOperations ?? [],
-                $itemMessasges
-            );
-
-        $itemOperations = $this
-            ->decorateOperations(
-                $itemOperations ?? [],
-                $itemMessasges
-            );
-
-        return $resourceMetadata->withItemOperations($itemOperations);
     }
 
     /**
