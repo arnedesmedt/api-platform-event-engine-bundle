@@ -151,6 +151,7 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
                         $this->addController($operation, $messageClass);
                         $this->addTags($operation, $messageClass);
                         $this->needRead($operation);
+                        $this->addStateless($operation, $messageClass);
                     }
 
                     return $operation;
@@ -263,5 +264,18 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
         );
 
         return $result;
+    }
+
+    /**
+     * @param array<mixed> $operation
+     * @param class-string<ApiPlatformMessage> $messageClass
+     */
+    private function addStateless(array &$operation, string $messageClass): void
+    {
+        if (isset($operation['stateless'])) {
+            return;
+        }
+
+        $operation['stateless'] = $messageClass::__stateless();
     }
 }
