@@ -12,9 +12,20 @@ use ApiPlatform\Core\Metadata\Resource\ResourceMetadata;
 use InvalidArgumentException;
 use phpDocumentor\Reflection\DocBlockFactory;
 use ReflectionClass;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\Request;
 
+use function array_combine;
+use function array_filter;
+use function array_key_exists;
+use function array_keys;
+use function array_map;
 use function in_array;
+use function sprintf;
+use function strtoupper;
+use function ucfirst;
+
+use const ARRAY_FILTER_USE_BOTH;
 
 final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInterface
 {
@@ -45,31 +56,36 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
     {
         $resourceMetadata = $this->decorated->create($resourceClass);
 
-        /** @var array<string, array<mixed>>|null $collectionOperations */
-        $collectionOperations = $resourceMetadata->getCollectionOperations();
-        /** @var array<string, array<mixed>>|null $itemOperations */
-        $itemOperations = $resourceMetadata->getItemOperations();
+        $operationTypes = [
+            OperationType::COLLECTION,
+            OperationType::ITEM,
+        ];
 
-        if (! $collectionOperations && ! $itemOperations) {
-            return $resourceMetadata;
-        }
+        /** @var array<string, array<string, class-string>> $resourceMessageMapping */
+        $resourceMessageMapping = $this->config->messageMapping()[$resourceClass];
 
-        if ($collectionOperations) {
-            $collectionOperations = $this->handleMessageOperations(
-                $collectionOperations,
-                $resourceClass,
-                OperationType::COLLECTION
-            );
-            $resourceMetadata = $resourceMetadata->withCollectionOperations($collectionOperations);
-        }
+        foreach ($operationTypes as $operationType) {
+            $getMethod = sprintf('get%sOperations', ucfirst($operationType));
+            $withMethod = sprintf('with%sOperations', ucfirst($operationType));
 
-        if ($itemOperations) {
-            $itemOperations = $this->handleMessageOperations(
-                $itemOperations,
-                $resourceClass,
-                OperationType::ITEM
-            );
-            $resourceMetadata = $resourceMetadata->withItemOperations($itemOperations);
+            $operations = $resourceMetadata->{$getMethod}() ?? [];
+            $operations = $this->rejectSimpleOperations($operations);
+
+            $messages = $this->filterApiPlatformMessages($resourceMessageMapping[$operationType] ?? []);
+
+            $operations = $this
+                ->addOperations(
+                    $operations ?? [],
+                    $messages
+                );
+
+            $operations = $this
+                ->decorateOperations(
+                    $operations ?? [],
+                    $messages
+                );
+
+            $resourceMetadata = $resourceMetadata->{$withMethod}($operations);
         }
 
         return $resourceMetadata;
@@ -80,26 +96,69 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
      *
      * @return array<string, array<mixed>>
      */
-    private function handleMessageOperations(array $operations, string $entity, string $operationType): array
+    private function rejectSimpleOperations(array $operations): array
     {
-        $newOperations = [];
+        return array_filter(
+            $operations,
+            static fn ($operation, $operationName) => ! isset($operation['method'])
+                || $operation['method'] !== strtoupper($operationName),
+            ARRAY_FILTER_USE_BOTH
+        );
+    }
 
-        $mapping = $this->config->messageMapping();
-
-        foreach ($operations as $operationName => $operation) {
-            /** @var class-string<ApiPlatformMessage>|false $messageClass */
-            $messageClass = $mapping[$entity][$operationType][$operationName] ?? false;
-            if ($messageClass) {
-                $reflectionClass = new ReflectionClass($messageClass);
-
-                $this->addDocumentation($operation, $reflectionClass);
-                $this->needRead($operation);
+    /**
+     * @param array<string, array<mixed>> $existingOperations
+     * @param array<string, class-string<ApiPlatformMessage>> $messagesByOperationName
+     *
+     * @return array<string, array<mixed>>
+     */
+    private function addOperations(array $existingOperations, array $messagesByOperationName): array
+    {
+        foreach ($messagesByOperationName as $operationName => $messageClass) {
+            if (array_key_exists($operationName, $existingOperations)) {
+                continue;
             }
 
-            $newOperations[$operationName] = $operation;
+            $existingOperations[$operationName] = [];
         }
 
-        return $newOperations;
+        return $existingOperations;
+    }
+
+    /**
+     * @param array<string, array<mixed>> $operations
+     * @param array<string, class-string<ApiPlatformMessage>> $messagesByOperationName
+     *
+     * @return array<string, array<mixed>>
+     */
+    private function decorateOperations(array $operations, array $messagesByOperationName): array
+    {
+        $operationKeys = array_keys($operations);
+
+        return array_combine(
+            $operationKeys,
+            array_map(
+                function (string $operationName, $operation) use ($messagesByOperationName) {
+                    /** @var class-string<ApiPlatformMessage>|false $messageClass */
+                    $messageClass = $messagesByOperationName[$operationName] ?? false;
+
+                    if ($messageClass) {
+                        $reflectionClass = new ReflectionClass($messageClass);
+
+                        $this->addDocumentation($operation, $reflectionClass);
+                        $this->addHttpMethod($operation, $messageClass);
+                        $this->addPath($operation, $messageClass);
+                        $this->addController($operation, $messageClass);
+                        $this->addTags($operation, $messageClass);
+                        $this->needRead($operation);
+                    }
+
+                    return $operation;
+                },
+                $operationKeys,
+                $operations
+            )
+        );
     }
 
     /**
@@ -126,5 +185,83 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
         }
 
         $operation['read'] = false;
+    }
+
+    /**
+     * @param array<mixed> $operation
+     * @param class-string<ApiPlatformMessage> $messageClass
+     */
+    private function addHttpMethod(array &$operation, string $messageClass): void
+    {
+        if (isset($operation['method'])) {
+            return;
+        }
+
+        if ($messageClass::__httpMethod() === null) {
+            throw new RuntimeException(
+                sprintf(
+                    'No __httpMethod method found in class \'%s\'.',
+                    $messageClass
+                )
+            );
+        }
+
+        $operation['method'] = $messageClass::__httpMethod();
+    }
+
+    /**
+     * @param array<mixed> $operation
+     * @param class-string<ApiPlatformMessage> $messageClass
+     */
+    private function addPath(array &$operation, string $messageClass): void
+    {
+        if (isset($operation['path']) || $messageClass::__path() === null) {
+            return;
+        }
+
+        $operation['path'] = $messageClass::__path();
+    }
+
+    /**
+     * @param array<mixed> $operation
+     * @param class-string<ApiPlatformMessage> $messageClass
+     */
+    private function addController(array &$operation, string $messageClass): void
+    {
+        if (isset($operation['controller'])) {
+            return;
+        }
+
+        $operation['controller'] = $messageClass::__apiPlatformController();
+    }
+
+    /**
+     * @param array<mixed> $operation
+     * @param class-string<ApiPlatformMessage> $messageClass
+     */
+    private function addTags(array &$operation, string $messageClass): void
+    {
+        if (isset($operation['tags'])) {
+            return;
+        }
+
+        $operation['tags'] = $messageClass::__tags();
+    }
+
+    /**
+     * @param array<string, class-string> $messageClasses
+     *
+     * @return array<string, class-string<ApiPlatformMessage>>
+     */
+    private function filterApiPlatformMessages(array $messageClasses): array
+    {
+        /** @var array<string, class-string<ApiPlatformMessage>> $result */
+        $result =  array_filter(
+            $messageClasses,
+            static fn ($messageClass) => (new ReflectionClass($messageClass))
+                ->implementsInterface(ApiPlatformMessage::class)
+        );
+
+        return $result;
     }
 }

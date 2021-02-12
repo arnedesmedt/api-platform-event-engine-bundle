@@ -57,6 +57,14 @@ final class Uri extends StringValue
     }
 
     /**
+     * @return array<string>
+     */
+    public function toAllParameterNames(): array
+    {
+        return $this->matchParameters($this->toString());
+    }
+
+    /**
      * @param array<string, mixed> $parameters
      *
      * @return array<string, mixed>

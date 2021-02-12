@@ -9,10 +9,8 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\Documentation\OpenApiSchemaFactoryIn
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\ApiPlatformException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\ApiPlatformMappingException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\DocumentationException;
-use ADS\Bundle\ApiPlatformEventEngineBundle\Message\AuthorizationMessage;
 use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
 use ADS\Bundle\EventEngineBundle\Response\HasResponses;
-use ADS\Bundle\EventEngineBundle\Type\DefaultType;
 use ADS\Util\StringUtil;
 use ApiPlatform\Core\Api\OperationType;
 use ApiPlatform\Core\Documentation\Documentation;
@@ -29,7 +27,6 @@ use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use EventEngine\Schema\TypeSchema;
 use ReflectionClass;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 use function array_diff;
@@ -286,7 +283,7 @@ final class DocumentationNormalizer implements NormalizerInterface
                 $this->pathParameters($path, $schema),
                 $this->queryParameters($path, $schema)
             ),
-            'responses' => $this->responses($messageClass, $reflectionClass, $method, $schema),
+            'responses' => $this->responses($messageClass, $reflectionClass),
         ]);
 
         if ($schema !== null || $method === Request::METHOD_POST) {
@@ -375,15 +372,12 @@ final class DocumentationNormalizer implements NormalizerInterface
 
     /**
      * @param ReflectionClass<object> $reflectionClass
-     * @param array<mixed> $schema
      *
      * @return array<array<string, mixed>>|null
      */
     public function responses(
         string $messageClass,
-        ReflectionClass $reflectionClass,
-        string $method,
-        ?array $schema = null
+        ReflectionClass $reflectionClass
     ): ?array {
         if (! $reflectionClass->implementsInterface(HasResponses::class)) {
             return null;
@@ -402,35 +396,7 @@ final class DocumentationNormalizer implements NormalizerInterface
                     ],
                 ];
             },
-            array_filter(
-                $messageClass::__responseSchemasPerStatusCode() +
-                [
-                    Response::HTTP_BAD_REQUEST => $schema === null ? null : ApiPlatformException::badRequest(),
-                    Response::HTTP_UNAUTHORIZED => $reflectionClass
-                        ->implementsInterface(AuthorizationMessage::class)
-                        ? ApiPlatformException::unauthorized()
-                        : null,
-                    Response::HTTP_FORBIDDEN => $reflectionClass
-                        ->implementsInterface(AuthorizationMessage::class)
-                        ? ApiPlatformException::forbidden()
-                        : null,
-                    Response::HTTP_NO_CONTENT => $method === Request::METHOD_DELETE
-                        ? DefaultType::emptyResponse()
-                        : null,
-                    Response::HTTP_CREATED => $method === Request::METHOD_POST
-                        ? DefaultType::created()
-                        : null,
-                    Response::HTTP_OK => in_array(
-                        $method,
-                        [
-                            Request::METHOD_PUT,
-                            Request::METHOD_PATCH,
-                        ]
-                    )
-                        ? DefaultType::ok()
-                        : null,
-                ]
-            ),
+            $messageClass::__responseSchemasPerStatusCode()
         );
     }
 
