@@ -138,9 +138,9 @@ trait DefaultApiPlatformMessage
         return PlaceholderAction::class;
     }
 
-    public static function __stateless(): bool
+    public static function __stateless(): ?bool
     {
-        return true;
+        return null;
     }
 
     /**
