@@ -6,6 +6,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
 use ADS\Bundle\EventEngineBundle\Config as EventEngineConfig;
+use EventEngine\Data\ImmutableRecord;
 use ReflectionClass;
 use Symfony\Component\Cache\Adapter\AbstractAdapter;
 use Symfony\Component\HttpKernel\CacheClearer\CacheClearerInterface;
@@ -26,9 +27,9 @@ final class Config implements CacheClearerInterface
     private AbstractAdapter $cache;
     private string $environment;
 
-    /** @var array<array<array<string>>>|null */
+    /** @var array<string, array<string, array<string, class-string<ImmutableRecord>>>>|null */
     private ?array $messageMapping = null;
-    /** @var array<string, array<string, string>>|null */
+    /** @var array<class-string<ImmutableRecord>, array<string, string>>|null */
     private ?array $operationMapping = null;
 
     public function __construct(EventEngineConfig $config, AbstractAdapter $cache, string $environment)
@@ -39,7 +40,7 @@ final class Config implements CacheClearerInterface
     }
 
     /**
-     * @return array<array<array<string>>>
+     * @return array<string, array<string, array<string, class-string<ImmutableRecord>>>>
      */
     public function messageMapping(): array
     {
@@ -75,7 +76,7 @@ final class Config implements CacheClearerInterface
     /**
      * @param array<mixed> $messageConfig
      *
-     * @return array<mixed>
+     * @return array<string, array<string, array<string, class-string<ImmutableRecord>>>>
      */
     private function specificMessageMapping(array $messageConfig, ?string $classKey = null): array
     {
@@ -92,7 +93,6 @@ final class Config implements CacheClearerInterface
         return array_reduce(
             $apiPlatformMessageConfig,
             function (array $mapping, $config) use ($classKey) {
-                /** @var class-string $message */
                 $message = $classKey === null ? $config : $config[$classKey];
 
                 $entity = $message::__entity();
@@ -106,10 +106,10 @@ final class Config implements CacheClearerInterface
     }
 
     /**
-     * @param array<array<array<string>>> $mapping
-     * @param class-string|string $apiPlatformMessage
+     * @param array<string, array<string, array<string, class-string<ImmutableRecord>>>> $mapping
+     * @param class-string<ImmutableRecord> $apiPlatformMessage
      *
-     * @return array<array<array<string>>>
+     * @return array<string, array<string, array<string, class-string<ImmutableRecord>>>>
      */
     private function addToMapping(
         array $mapping,
@@ -137,7 +137,7 @@ final class Config implements CacheClearerInterface
     }
 
     /**
-     * @return array<array<array<string>>>
+     * @return array<string, array<string, array<string, class-string<ImmutableRecord>>>>
      */
     private function getMessageMapping(): array
     {
@@ -164,7 +164,7 @@ final class Config implements CacheClearerInterface
     }
 
     /**
-     * @return array<string, array<string, string>>
+     * @return array<class-string<ImmutableRecord>, array<string, string>>
      */
     private function getOperationMapping(): array
     {

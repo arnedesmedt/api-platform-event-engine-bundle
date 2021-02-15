@@ -21,6 +21,7 @@ use function array_key_exists;
 use function array_keys;
 use function array_map;
 use function in_array;
+use function json_encode;
 use function sprintf;
 use function strtoupper;
 use function ucfirst;
@@ -61,8 +62,19 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
             OperationType::ITEM,
         ];
 
-        /** @var array<string, array<string, class-string>> $resourceMessageMapping */
-        $resourceMessageMapping = $this->config->messageMapping()[$resourceClass];
+        $messageMapping = $this->config->messageMapping();
+
+        if (! array_key_exists($resourceClass, $messageMapping)) {
+            throw new RuntimeException(
+                sprintf(
+                    'No messages found for resource class \'%s\'. Resources with messages are: %s.',
+                    $resourceClass,
+                    json_encode(array_keys($messageMapping))
+                )
+            );
+        }
+
+        $resourceMessageMapping = $messageMapping[$resourceClass];
 
         foreach ($operationTypes as $operationType) {
             $getMethod = sprintf('get%sOperations', ucfirst($operationType));
