@@ -21,6 +21,8 @@ interface ApiPlatformMessage
 
     public static function __apiPlatformController(): string;
 
+    public static function __stateless(): ?bool;
+
     /**
      * @return array<string>
      */
