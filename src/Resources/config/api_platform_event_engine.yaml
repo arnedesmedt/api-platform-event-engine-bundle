@@ -100,3 +100,8 @@ services:
         decorates: 'api_platform.operation_path_resolver.custom'
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Operation\QueryOperationRoutePathResolver.inner'
+
+    ADS\Bundle\ApiPlatformEventEngineBundle\PropertyExtractor\IdentifierExtractor:
+        decorates: 'api_platform.identifiers_extractor'
+        arguments:
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\PropertyExtractor\IdentifierExtractor.inner'
