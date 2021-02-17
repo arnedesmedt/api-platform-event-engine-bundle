@@ -102,6 +102,6 @@ services:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Operation\QueryOperationRoutePathResolver.inner'
 
     ADS\Bundle\ApiPlatformEventEngineBundle\PropertyExtractor\IdentifierExtractor:
-        decorates: 'api_platform.identifiers_extractor'
+        decorates: 'api_platform.identifiers_extractor.cached'
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\PropertyExtractor\IdentifierExtractor.inner'

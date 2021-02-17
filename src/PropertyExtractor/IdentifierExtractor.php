@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\PropertyExtractor;
 
+use ADS\Util\ArrayUtil;
 use ApiPlatform\Core\Api\IdentifiersExtractorInterface;
 
 class IdentifierExtractor implements IdentifiersExtractorInterface
@@ -22,7 +23,9 @@ class IdentifierExtractor implements IdentifiersExtractorInterface
      */
     public function getIdentifiersFromResourceClass(string $resourceClass): array
     {
-        return $this->identifiersExtractor->getIdentifiersFromResourceClass($resourceClass);
+        $identifiers = $this->identifiersExtractor->getIdentifiersFromResourceClass($resourceClass);
+
+        return ArrayUtil::toSnakeCasedValues($identifiers);
     }
 
     /**
@@ -32,6 +35,8 @@ class IdentifierExtractor implements IdentifiersExtractorInterface
      */
     public function getIdentifiersFromItem($item): array
     {
-        return $this->identifiersExtractor->getIdentifiersFromItem($item);
+        $identifiers = $this->identifiersExtractor->getIdentifiersFromItem($item);
+
+        return ArrayUtil::toSnakeCasedValues($identifiers);
     }
 }
