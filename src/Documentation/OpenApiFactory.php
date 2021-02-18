@@ -39,8 +39,10 @@ final class OpenApiFactory implements OpenApiFactoryInterface
     private OpenApiFactoryInterface $openApiFactory;
     private Config $config;
 
-    public function __construct(OpenApiFactoryInterface $openApiFactory, Config $config)
-    {
+    public function __construct(
+        OpenApiFactoryInterface $openApiFactory,
+        Config $config
+    ) {
         $this->openApiFactory = $openApiFactory;
         $this->config = $config;
     }
@@ -54,6 +56,12 @@ final class OpenApiFactory implements OpenApiFactoryInterface
     {
         $openApi = ($this->openApiFactory)($context);
 
+        return $openApi
+            ->withPaths($this->pathsWithResponses($openApi));
+    }
+
+    private function pathsWithResponses(OpenApi $openApi): Paths
+    {
         $paths = new Paths();
 
         /** @var PathItem $pathItem */
@@ -112,6 +120,6 @@ final class OpenApiFactory implements OpenApiFactoryInterface
             $paths->addPath($path, $pathItem);
         }
 
-        return $openApi->withPaths($paths);
+        return $paths;
     }
 }
