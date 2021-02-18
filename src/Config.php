@@ -6,13 +6,14 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
 use ADS\Bundle\EventEngineBundle\Config as EventEngineConfig;
-use EventEngine\Data\ImmutableRecord;
 use ReflectionClass;
 use Symfony\Component\Cache\Adapter\AbstractAdapter;
 use Symfony\Component\HttpKernel\CacheClearer\CacheClearerInterface;
 
+use function array_combine;
 use function array_filter;
 use function array_keys;
+use function array_map;
 use function array_merge_recursive;
 use function array_reduce;
 use function is_array;
@@ -22,15 +23,18 @@ final class Config implements CacheClearerInterface
 {
     public const API_PLATFORM_MAPPING = 'apiPlatformMapping';
     public const OPERATION_MAPPING = 'operationMapping';
+    public const OPERATION_ID_MAPPING = 'operationIdMapping';
 
     private EventEngineConfig $config;
     private AbstractAdapter $cache;
     private string $environment;
 
-    /** @var array<string, array<string, array<string, class-string<ImmutableRecord>>>>|null */
+    /** @var array<string, array<string, array<string, class-string<ApiPlatformMessage>>>>|null */
     private ?array $messageMapping = null;
-    /** @var array<class-string<ImmutableRecord>, array<string, string>>|null */
+    /** @var array<class-string<ApiPlatformMessage>, array<string, string>>|null */
     private ?array $operationMapping = null;
+    /** @var array<string, class-string<ApiPlatformMessage>>|null */
+    private ?array $operationIdMapping = null;
 
     public function __construct(EventEngineConfig $config, AbstractAdapter $cache, string $environment)
     {
@@ -40,7 +44,7 @@ final class Config implements CacheClearerInterface
     }
 
     /**
-     * @return array<string, array<string, array<string, class-string<ImmutableRecord>>>>
+     * @return array<string, array<string, array<string, class-string<ApiPlatformMessage>>>>
      */
     public function messageMapping(): array
     {
@@ -74,9 +78,26 @@ final class Config implements CacheClearerInterface
     }
 
     /**
+     * @return array<string, string>
+     */
+    public function operationIdMapping(): array
+    {
+        if ($this->isDevEnv()) {
+            return $this->getOperationIdMapping();
+        }
+
+        return $this->cache->get(
+            self::OPERATION_ID_MAPPING,
+            function () {
+                return $this->getOperationIdMapping();
+            }
+        );
+    }
+
+    /**
      * @param array<mixed> $messageConfig
      *
-     * @return array<string, array<string, array<string, class-string<ImmutableRecord>>>>
+     * @return array<string, array<string, array<string, class-string<ApiPlatformMessage>>>>
      */
     private function specificMessageMapping(array $messageConfig, ?string $classKey = null): array
     {
@@ -106,10 +127,10 @@ final class Config implements CacheClearerInterface
     }
 
     /**
-     * @param array<string, array<string, array<string, class-string<ImmutableRecord>>>> $mapping
-     * @param class-string<ImmutableRecord> $apiPlatformMessage
+     * @param array<string, array<string, array<string, class-string<ApiPlatformMessage>>>> $mapping
+     * @param class-string<ApiPlatformMessage> $apiPlatformMessage
      *
-     * @return array<string, array<string, array<string, class-string<ImmutableRecord>>>>
+     * @return array<string, array<string, array<string, class-string<ApiPlatformMessage>>>>
      */
     private function addToMapping(
         array $mapping,
@@ -137,7 +158,7 @@ final class Config implements CacheClearerInterface
     }
 
     /**
-     * @return array<string, array<string, array<string, class-string<ImmutableRecord>>>>
+     * @return array<string, array<string, array<string, class-string<ApiPlatformMessage>>>>
      */
     private function getMessageMapping(): array
     {
@@ -164,7 +185,7 @@ final class Config implements CacheClearerInterface
     }
 
     /**
-     * @return array<class-string<ImmutableRecord>, array<string, string>>
+     * @return array<class-string<ApiPlatformMessage>, array<string, string>>
      */
     private function getOperationMapping(): array
     {
@@ -183,6 +204,7 @@ final class Config implements CacheClearerInterface
                         'resource' => $resource,
                         'operationType' => $operationType,
                         'operationName' => $operationName,
+                        'operationId' => $messageClass::__operationId(),
                     ];
                 }
             }
@@ -191,6 +213,31 @@ final class Config implements CacheClearerInterface
         $this->operationMapping = $operationMapping;
 
         return $this->operationMapping;
+    }
+
+    /**
+     * @return array<string, class-string<ApiPlatformMessage>>
+     */
+    private function getOperationIdMapping(): array
+    {
+        if (is_array($this->operationIdMapping)) {
+            return $this->operationIdMapping;
+        }
+
+        $operationMapping = $this->operationMapping();
+
+        /** @var array<string, class-string<ApiPlatformMessage>> $operationIdMapping */
+        $operationIdMapping = array_combine(
+            array_map(
+                static fn (array $operation) => $operation['operationId'],
+                $operationMapping
+            ),
+            array_keys($operationMapping)
+        );
+
+        $this->operationIdMapping = $operationIdMapping;
+
+        return $this->operationIdMapping;
     }
 
     private function isDevEnv(): bool

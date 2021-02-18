@@ -17,6 +17,8 @@ interface ApiPlatformMessage extends JsonSchemaAwareRecord
 
     public static function __operationName(): string;
 
+    public static function __operationId(): string;
+
     public static function __httpMethod(): ?string;
 
     public static function __path(): ?string;

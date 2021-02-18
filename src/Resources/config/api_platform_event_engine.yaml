@@ -4,50 +4,60 @@ services:
             - '@ADS\Bundle\EventEngineBundle\Config'
             - '@event_engine.cache'
             - "%kernel.environment%"
+
     ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder:
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Config'
+
     ADS\Bundle\ApiPlatformEventEngineBundle\Persister\CommandPersister:
         arguments:
             - '@EventEngine\EventEngine'
         tags:
             - 'api_platform.data_persister'
+
     ADS\Bundle\ApiPlatformEventEngineBundle\PropertyExtractor\PropertyStateExtractor:
         arguments:
             - '@api_platform.property_info'
         tags:
             - 'property_info.list_extractor'
             - 'property_info.type_extractor'
+
     ADS\Bundle\ApiPlatformEventEngineBundle\Provider\DocumentStoreCollectionDataProvider:
         arguments:
             - '@EventEngine\EventEngine'
         tags:
             - 'api_platform.collection_data_provider'
+
     ADS\Bundle\ApiPlatformEventEngineBundle\Provider\DocumentStoreItemDataProvider:
         arguments:
             - '@EventEngine\EventEngine'
         tags:
             - 'api_platform.item_data_provider'
+
     ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory\ShortNameResourceMetadataFactory:
         decorates: 'api_platform.metadata.resource.metadata_factory.short_name'
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory\ShortNameResourceMetadataFactory.inner'
+
     ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory\MessageResourceMetadataFactory:
         decorates: 'api_platform.metadata.resource.metadata_factory.operation'
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory\MessageResourceMetadataFactory.inner'
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Config'
+
     ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory\DocumentationResourceMetadataFactory:
         decorates: 'ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory\MessageResourceMetadataFactory'
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory\DocumentationResourceMetadataFactory.inner'
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Config'
+
     ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\MessageNormalizer:
         decorates: 'api_platform.serializer.normalizer.item'
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\MessageNormalizer.inner'
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder'
             - '@EventEngine\EventEngine'
+
     ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageSchemaFactory:
         decorates: 'api_platform.json_schema.schema_factory'
         arguments:
@@ -55,18 +65,17 @@ services:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder'
             - '@api_platform.metadata.resource.metadata_factory'
             - '@EventEngine\EventEngine'
+
     ADS\Bundle\ApiPlatformEventEngineBundle\SymfonyCommand\ApiMappingMessageCommand:
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Config'
         tags:
             - console.command
+
     ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\ValueObjectSubresourceMetadataFactory:
         decorates: 'api_platform.metadata.property.metadata_factory.annotation'
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\ValueObjectSubresourceMetadataFactory.inner'
-
-    api_platform.schema.factory:
-        class: 'ADS\Bundle\ApiPlatformEventEngineBundle\Documentation\OpenApiSchemaFactory'
 
     api_platform.serializer.context_builder:
         class: ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\CustomContextBuilder
@@ -101,3 +110,9 @@ services:
         decorates: 'api_platform.identifiers_extractor.cached'
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\PropertyExtractor\IdentifierExtractor.inner'
+
+    ADS\Bundle\ApiPlatformEventEngineBundle\Documentation\OpenApiFactory:
+        decorates: 'api_platform.openapi.factory'
+        arguments:
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Documentation\OpenApiFactory.inner'
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Config'

@@ -20,9 +20,11 @@ use Symfony\Component\HttpFoundation\Response;
 use function array_diff;
 use function array_keys;
 use function class_exists;
+use function lcfirst;
 use function method_exists;
 use function preg_match;
 use function sprintf;
+use function ucfirst;
 
 trait DefaultApiPlatformMessage
 {
@@ -104,6 +106,13 @@ trait DefaultApiPlatformMessage
         }
 
         throw ApiPlatformMappingException::noOperationNameFound(static::class);
+    }
+
+    public static function __operationId(): string
+    {
+        return lcfirst(self::__operationName())
+            . ucfirst(Util::entityNameFromClassName(static::class))
+            . ucfirst(self::__operationType());
     }
 
     public static function __httpMethod(): ?string

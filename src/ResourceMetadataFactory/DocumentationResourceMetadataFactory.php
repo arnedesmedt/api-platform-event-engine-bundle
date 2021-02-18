@@ -39,7 +39,7 @@ use function sprintf;
 use function str_replace;
 use function ucfirst;
 
-class DocumentationResourceMetadataFactory implements ResourceMetadataFactoryInterface
+final class DocumentationResourceMetadataFactory implements ResourceMetadataFactoryInterface
 {
     private ResourceMetadataFactoryInterface $decorated;
     private Config $config;
@@ -113,9 +113,10 @@ class DocumentationResourceMetadataFactory implements ResourceMetadataFactoryInt
                     if ($messageClass) {
                         $reflectionClass = new ReflectionClass($messageClass);
 
-                        $this->addDocumentation($operation, $reflectionClass);
-                        $this->addTags($operation, $messageClass);
-                        $this->addParameters($operation, $messageClass);
+                        $this
+                            ->addDocumentation($operation, $reflectionClass)
+                            ->addTags($operation, $messageClass)
+                            ->addParameters($operation, $messageClass);
                     }
 
                     return $operation;
@@ -132,7 +133,7 @@ class DocumentationResourceMetadataFactory implements ResourceMetadataFactoryInt
      * @param array<mixed> $operation
      * @param ReflectionClass<ApiPlatformMessage> $reflectionClass
      */
-    private function addDocumentation(array &$operation, ReflectionClass $reflectionClass): void
+    private function addDocumentation(array &$operation, ReflectionClass $reflectionClass): self
     {
         try {
             $docBlock = $this->docBlockFactory->create($reflectionClass);
@@ -140,22 +141,26 @@ class DocumentationResourceMetadataFactory implements ResourceMetadataFactoryInt
             $operation['openapi_context']['description'] = $docBlock->getDescription()->render();
         } catch (InvalidArgumentException $exception) {
         }
+
+        return $this;
     }
 
     /**
      * @param array<mixed> $operation
      * @param class-string<ApiPlatformMessage> $messageClass
      */
-    private function addTags(array &$operation, string $messageClass): void
+    private function addTags(array &$operation, string $messageClass): self
     {
         $operation['openapi_context']['tags'] = $messageClass::__tags();
+
+        return $this;
     }
 
     /**
      * @param array<mixed> $operation
      * @param class-string<ApiPlatformMessage> $messageClass
      */
-    private function addParameters(array &$operation, string $messageClass): void
+    private function addParameters(array &$operation, string $messageClass): self
     {
         if (! isset($operation['openapi_context']['parameters'])) {
             $operation['openapi_context']['parameters'] = [];
@@ -191,7 +196,7 @@ class DocumentationResourceMetadataFactory implements ResourceMetadataFactoryInt
         }
 
         if ($schema === null && $operation['method'] !== Request::METHOD_POST) {
-            return;
+            return $this;
         }
 
         if (
@@ -212,6 +217,8 @@ class DocumentationResourceMetadataFactory implements ResourceMetadataFactoryInt
                     ],
             ],
         ];
+
+        return $this;
     }
 
     /**
@@ -219,7 +226,7 @@ class DocumentationResourceMetadataFactory implements ResourceMetadataFactoryInt
      *
      * @return array<mixed>
      */
-    private static function toOpenApiSchema(array $jsonSchema): array
+    public static function toOpenApiSchema(array $jsonSchema): array
     {
         $jsonSchema = self::addNullableProperty($jsonSchema);
         $jsonSchema = self::decamilizeProperties($jsonSchema);
