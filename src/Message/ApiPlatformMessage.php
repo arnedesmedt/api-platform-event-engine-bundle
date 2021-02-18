@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Message;
 
-interface ApiPlatformMessage
+use EventEngine\JsonSchema\JsonSchemaAwareRecord;
+
+interface ApiPlatformMessage extends JsonSchemaAwareRecord
 {
     /**
      * @return class-string

@@ -37,6 +37,11 @@ services:
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory\MessageResourceMetadataFactory.inner'
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Config'
+    ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory\DocumentationResourceMetadataFactory:
+        decorates: 'ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory\MessageResourceMetadataFactory'
+        arguments:
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory\DocumentationResourceMetadataFactory.inner'
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Config'
     ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\MessageNormalizer:
         decorates: 'api_platform.serializer.normalizer.item'
         arguments:
@@ -62,15 +67,6 @@ services:
 
     api_platform.schema.factory:
         class: 'ADS\Bundle\ApiPlatformEventEngineBundle\Documentation\OpenApiSchemaFactory'
-
-    api_platform.swagger.normalizer.documentation:
-        class: 'ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\DocumentationNormalizer'
-        arguments:
-            - '@api_platform.metadata.resource.metadata_factory'
-            - '@api_platform.operation_path_resolver'
-            - '@EventEngine\EventEngine'
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Config'
-            - '@api_platform.schema.factory'
 
     api_platform.serializer.context_builder:
         class: ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\CustomContextBuilder
