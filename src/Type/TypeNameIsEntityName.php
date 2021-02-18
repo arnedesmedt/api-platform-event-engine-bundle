@@ -8,7 +8,7 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\Util\Util;
 
 trait TypeNameIsEntityName
 {
-    public static function __typeName(): string
+    public static function __type(): string
     {
         return Util::entityNameFromClassName(static::class);
     }

@@ -9,7 +9,7 @@ use ReflectionClass;
 
 trait TypeNameIsEntityNameAndClassName
 {
-    public static function __typeName(): string
+    public static function __type(): string
     {
         $reflectionClass = new ReflectionClass(static::class);
 
