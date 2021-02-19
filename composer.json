@@ -14,7 +14,7 @@
     "require": {
         "php": "^7.4",
         "ext-json": "*",
-        "arnedesmedt/event-engine-symfony-bundle": "dev-master",
+        "arnedesmedt/event-engine-symfony-bundle": "^0.1",
         "arnedesmedt/json-immutable-objects": "^0.1",
         "api-platform/api-pack": "^1.2"
     },

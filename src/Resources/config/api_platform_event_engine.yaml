@@ -116,3 +116,7 @@ services:
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Documentation\OpenApiFactory.inner'
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Config'
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Documentation\OpenApiMetadata'
+
+    ADS\Bundle\ApiPlatformEventEngineBundle\Documentation\OpenApiMetadata:
+        class: 'ADS\Bundle\ApiPlatformEventEngineBundle\Documentation\OpenApiMetadataExample'
