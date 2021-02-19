@@ -207,6 +207,10 @@ final class DocumentationResourceMetadataFactory implements ResourceMetadataFact
             $schema = $schema['properties'][$messageClass::__requestBodyArrayProperty()];
         }
 
+        if ($schema === null) {
+            return $this;
+        }
+
         $operation['openapi_context']['requestBody'] = [
             'required' => true,
             'content' => [
