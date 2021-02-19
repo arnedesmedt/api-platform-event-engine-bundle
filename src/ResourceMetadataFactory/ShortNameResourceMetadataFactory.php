@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory;
 
-use ADS\Bundle\ApiPlatformEventEngineBundle\Util\Util;
+use ADS\Util\StringUtil;
 use ApiPlatform\Core\Metadata\Resource\Factory\ResourceMetadataFactoryInterface;
 use ApiPlatform\Core\Metadata\Resource\ResourceMetadata;
 
@@ -28,6 +28,6 @@ final class ShortNameResourceMetadataFactory implements ResourceMetadataFactoryI
             return $resourceMetadata;
         }
 
-        return $resourceMetadata->withShortName(Util::entityNameFromClassName($resourceClass));
+        return $resourceMetadata->withShortName(StringUtil::entityNameFromClassName($resourceClass));
     }
 }

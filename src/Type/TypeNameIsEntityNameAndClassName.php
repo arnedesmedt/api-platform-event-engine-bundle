@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Type;
 
-use ADS\Bundle\ApiPlatformEventEngineBundle\Util\Util;
 use ADS\JsonImmutableObjects\JsonSchemaAwareRecordLogic;
+use ADS\Util\StringUtil;
 use ReflectionClass;
 
 trait TypeNameIsEntityNameAndClassName
@@ -16,6 +16,6 @@ trait TypeNameIsEntityNameAndClassName
     {
         $reflectionClass = new ReflectionClass(static::class);
 
-        return Util::entityNameFromClassName(static::class) . $reflectionClass->getShortName();
+        return StringUtil::entityNameFromClassName(static::class) . $reflectionClass->getShortName();
     }
 }

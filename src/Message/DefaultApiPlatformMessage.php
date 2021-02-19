@@ -7,9 +7,9 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Message;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\ApiPlatformException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\ApiPlatformMappingException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Operation\Name;
-use ADS\Bundle\ApiPlatformEventEngineBundle\Util\Util;
 use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
 use ADS\Bundle\EventEngineBundle\Type\DefaultType;
+use ADS\Util\StringUtil;
 use ApiPlatform\Core\Action\PlaceholderAction;
 use ApiPlatform\Core\Api\OperationType;
 use EventEngine\Schema\TypeSchema;
@@ -42,8 +42,8 @@ trait DefaultApiPlatformMessage
             }
         }
 
-        $entityNamespace = Util::entityNamespaceFromClassName(static::class);
-        $entityName = Util::entityNameFromClassName(static::class);
+        $entityNamespace = StringUtil::entityNamespaceFromClassName(static::class);
+        $entityName = StringUtil::entityNameFromClassName(static::class);
         $entityStateClass = sprintf('%s\\%s\\%s', $entityNamespace, $entityName, 'State');
 
         if (! class_exists($entityStateClass)) {
@@ -111,7 +111,7 @@ trait DefaultApiPlatformMessage
     public static function __operationId(): string
     {
         return lcfirst(self::__operationName())
-            . ucfirst(Util::entityNameFromClassName(static::class))
+            . ucfirst(StringUtil::entityNameFromClassName(static::class))
             . ucfirst(self::__operationType());
     }
 
@@ -157,7 +157,7 @@ trait DefaultApiPlatformMessage
      */
     public static function __tags(): array
     {
-        return [Util::entityNameFromClassName(static::class)];
+        return [StringUtil::entityNameFromClassName(static::class)];
     }
 
     public static function __requestBodyArrayProperty(): ?string

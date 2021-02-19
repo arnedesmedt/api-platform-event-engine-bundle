@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Serializer;
 
-use ADS\Bundle\ApiPlatformEventEngineBundle\Util\Util;
 use ADS\Util\StringUtil;
 use ApiPlatform\Core\Api\IdentifiersExtractorInterface;
 use ApiPlatform\Core\Serializer\SerializerContextBuilder;
@@ -65,7 +64,7 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
 
         $context['path_parameters'] = array_map(
             static function (string $pathParameter) {
-                return Util::castFromString($pathParameter);
+                return StringUtil::castFromString($pathParameter);
             },
             $pathParameters
         );
@@ -78,7 +77,7 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
     {
         $context['query_parameters'] = array_map(
             static function (string $queryParameter) {
-                return Util::castFromString($queryParameter);
+                return StringUtil::castFromString($queryParameter);
             },
             $request->query->all()
         );
