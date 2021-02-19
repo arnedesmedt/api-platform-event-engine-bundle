@@ -113,7 +113,9 @@ final class Uri extends StringValue
 
     public function toUrlPart(): string
     {
-        return explode('?', $this->value, 2)[0] ?? '';
+        $uri = explode('?', $this->value, 2)[0] ?? '';
+
+        return explode('.', $uri, 2)[0] ?? '';
     }
 
     /**

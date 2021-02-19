@@ -88,8 +88,7 @@ final class DocumentationResourceMetadataFactory implements ResourceMetadataFact
                 ->addOpenApiContext(
                     $operations,
                     $messages,
-                    $operationType,
-                    $resourceClass
+                    $operationType
                 );
 
             $resourceMetadata = $resourceMetadata->{$withMethod}($operations);
@@ -107,8 +106,7 @@ final class DocumentationResourceMetadataFactory implements ResourceMetadataFact
     private function addOpenApiContext(
         array $operations,
         array $messagesByOperationName,
-        string $operationType,
-        string $resourceClass
+        string $operationType
     ): array {
         $operationKeys = array_keys($operations);
 
@@ -121,8 +119,7 @@ final class DocumentationResourceMetadataFactory implements ResourceMetadataFact
                     $operation
                 ) use (
                     $messagesByOperationName,
-                    $operationType,
-                    $resourceClass
+                    $operationType
                 ) {
                     /** @var class-string<ApiPlatformMessage>|false $messageClass */
                     $messageClass = $messagesByOperationName[$operationName] ?? false;
@@ -138,7 +135,6 @@ final class DocumentationResourceMetadataFactory implements ResourceMetadataFact
                                 $messageClass,
                                 $operationName,
                                 $operationType,
-                                $resourceClass
                             );
                     }
 
@@ -187,8 +183,7 @@ final class DocumentationResourceMetadataFactory implements ResourceMetadataFact
         array &$operation,
         string $messageClass,
         string $operationName,
-        string $operationType,
-        string $resourceClass
+        string $operationType
     ): self {
         if (! isset($operation['openapi_context']['parameters'])) {
             $operation['openapi_context']['parameters'] = [];
@@ -198,7 +193,7 @@ final class DocumentationResourceMetadataFactory implements ResourceMetadataFact
         $uri = $messageClass::__path()
             ?? $operation['path']
             ?? $this->operationPathResolver->resolveOperationPath(
-                $resourceClass,
+                StringUtil::entityNameFromClassName($messageClass),
                 $operation,
                 $operationType,
                 $operationName
@@ -217,6 +212,17 @@ final class DocumentationResourceMetadataFactory implements ResourceMetadataFact
             }
 
             foreach ($parameterNames as $parameterName) {
+                if (! isset($schema['properties'][$parameterName])) {
+                    throw new RuntimeException(
+                        sprintf(
+                            'Parameter \'%s\' (uri: %s) not found in message \'%s\'.',
+                            $parameterName,
+                            $uri,
+                            $messageClass,
+                        )
+                    );
+                }
+
                 $operation['openapi_context']['parameters'][] = [
                     'name' => $parameterName,
                     'in' => $type,
