@@ -12,6 +12,7 @@ use ADS\Util\StringUtil;
 use ApiPlatform\Core\Api\OperationType;
 use ApiPlatform\Core\Metadata\Resource\Factory\ResourceMetadataFactoryInterface;
 use ApiPlatform\Core\Metadata\Resource\ResourceMetadata;
+use ApiPlatform\Core\PathResolver\OperationPathResolverInterface;
 use EventEngine\JsonSchema\JsonSchema;
 use InvalidArgumentException;
 use phpDocumentor\Reflection\DocBlockFactory;
@@ -43,14 +44,17 @@ final class DocumentationResourceMetadataFactory implements ResourceMetadataFact
 {
     private ResourceMetadataFactoryInterface $decorated;
     private Config $config;
+    private OperationPathResolverInterface $operationPathResolver;
     private DocBlockFactory $docBlockFactory;
 
     public function __construct(
         ResourceMetadataFactoryInterface $decorated,
-        Config $config
+        Config $config,
+        OperationPathResolverInterface $operationPathResolver
     ) {
         $this->decorated = $decorated;
         $this->config = $config;
+        $this->operationPathResolver = $operationPathResolver;
         $this->docBlockFactory = DocBlockFactory::createInstance();
     }
 
@@ -83,7 +87,9 @@ final class DocumentationResourceMetadataFactory implements ResourceMetadataFact
             $operations = $this
                 ->addOpenApiContext(
                     $operations,
-                    $messages
+                    $messages,
+                    $operationType,
+                    $resourceClass
                 );
 
             $resourceMetadata = $resourceMetadata->{$withMethod}($operations);
@@ -98,15 +104,26 @@ final class DocumentationResourceMetadataFactory implements ResourceMetadataFact
      *
      * @return array<string, mixed>
      */
-    private function addOpenApiContext(array $operations, array $messagesByOperationName): array
-    {
+    private function addOpenApiContext(
+        array $operations,
+        array $messagesByOperationName,
+        string $operationType,
+        string $resourceClass
+    ): array {
         $operationKeys = array_keys($operations);
 
         /** @var array<string, mixed> $withOpenApiContext */
         $withOpenApiContext = array_combine(
             $operationKeys,
             array_map(
-                function (string $operationName, $operation) use ($messagesByOperationName) {
+                function (
+                    string $operationName,
+                    $operation
+                ) use (
+                    $messagesByOperationName,
+                    $operationType,
+                    $resourceClass
+                ) {
                     /** @var class-string<ApiPlatformMessage>|false $messageClass */
                     $messageClass = $messagesByOperationName[$operationName] ?? false;
 
@@ -116,7 +133,13 @@ final class DocumentationResourceMetadataFactory implements ResourceMetadataFact
                         $this
                             ->addDocumentation($operation, $reflectionClass)
                             ->addTags($operation, $messageClass)
-                            ->addParameters($operation, $messageClass);
+                            ->addParameters(
+                                $operation,
+                                $messageClass,
+                                $operationName,
+                                $operationType,
+                                $resourceClass
+                            );
                     }
 
                     return $operation;
@@ -160,39 +183,49 @@ final class DocumentationResourceMetadataFactory implements ResourceMetadataFact
      * @param array<mixed> $operation
      * @param class-string<ApiPlatformMessage> $messageClass
      */
-    private function addParameters(array &$operation, string $messageClass): self
-    {
+    private function addParameters(
+        array &$operation,
+        string $messageClass,
+        string $operationName,
+        string $operationType,
+        string $resourceClass
+    ): self {
         if (! isset($operation['openapi_context']['parameters'])) {
             $operation['openapi_context']['parameters'] = [];
         }
 
         $schema = self::toOpenApiSchema($messageClass::__schema()->toArray());
-        $uri = $messageClass::__path() ?? $operation['path'] ?? null;
+        $uri = $messageClass::__path()
+            ?? $operation['path']
+            ?? $this->operationPathResolver->resolveOperationPath(
+                $resourceClass,
+                $operation,
+                $operationType,
+                $operationName
+            );
 
-        if ($uri !== null) {
-            $path = Uri::fromString($uri);
+        $path = Uri::fromString($uri);
 
-            $parameters = [
-                'path' => $path->toPathParameterNames(),
-                'query' => $path->toQueryParameterNames(),
-            ];
+        $parameters = [
+            'path' => $path->toPathParameterNames(),
+            'query' => $path->toQueryParameterNames(),
+        ];
 
-            foreach ($parameters as $type => $parameterNames) {
-                if ($schema === null) {
-                    break;
-                }
-
-                foreach ($parameterNames as $parameterName) {
-                    $operation['openapi_context']['parameters'][] = [
-                        'name' => $parameterName,
-                        'in' => $type,
-                        'schema' => $schema['properties'][$parameterName],
-                        'required' => in_array($parameterName, $schema['required']),
-                    ];
-                }
-
-                $schema = self::removeParametersFromSchema($parameterNames, $schema);
+        foreach ($parameters as $type => $parameterNames) {
+            if ($schema === null) {
+                break;
             }
+
+            foreach ($parameterNames as $parameterName) {
+                $operation['openapi_context']['parameters'][] = [
+                    'name' => $parameterName,
+                    'in' => $type,
+                    'schema' => $schema['properties'][$parameterName],
+                    'required' => in_array($parameterName, $schema['required']),
+                ];
+            }
+
+            $schema = self::removeParametersFromSchema($parameterNames, $schema);
         }
 
         if ($schema === null && $operation['method'] !== Request::METHOD_POST) {
@@ -205,10 +238,6 @@ final class DocumentationResourceMetadataFactory implements ResourceMetadataFact
             && $messageClass::__requestBodyArrayProperty()
         ) {
             $schema = $schema['properties'][$messageClass::__requestBodyArrayProperty()];
-        }
-
-        if ($schema === null) {
-            return $this;
         }
 
         $operation['openapi_context']['requestBody'] = [
