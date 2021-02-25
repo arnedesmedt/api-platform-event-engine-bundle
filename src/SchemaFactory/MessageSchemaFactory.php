@@ -85,12 +85,12 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
 
         $schemaArray = $schema->getArrayCopy();
 
-        $schema->exchangeArray(
-            array_merge_recursive(
-                $schemaArray,
-                $openApiSchema->toArray()
-            )
+        $mergedSchemaArray = array_merge_recursive(
+            $schemaArray,
+            $openApiSchema->toArray()
         );
+
+        $schema->exchangeArray(OpenApiSchemaFactory::toOpenApiSchema($mergedSchemaArray));
 
         $definitions = $schema->getDefinitions();
 

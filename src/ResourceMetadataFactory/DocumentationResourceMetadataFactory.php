@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Config;
-use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\DocumentationException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
+use ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\OpenApiSchemaFactory;
 use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
-use ADS\Util\StringUtil;
 use ApiPlatform\Core\Api\OperationType;
 use ApiPlatform\Core\Metadata\Resource\Factory\ResourceMetadataFactoryInterface;
 use ApiPlatform\Core\Metadata\Resource\ResourceMetadata;
@@ -22,21 +21,15 @@ use Symfony\Component\HttpFoundation\Request;
 use function array_combine;
 use function array_diff;
 use function array_diff_key;
-use function array_filter;
 use function array_flip;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
 use function array_values;
-use function count;
 use function in_array;
-use function is_array;
 use function json_encode;
-use function mb_strtolower;
 use function method_exists;
-use function reset;
 use function sprintf;
-use function str_replace;
 use function ucfirst;
 
 final class DocumentationResourceMetadataFactory implements ResourceMetadataFactoryInterface
@@ -173,7 +166,7 @@ final class DocumentationResourceMetadataFactory implements ResourceMetadataFact
             $operation['openapi_context']['parameters'] = [];
         }
 
-        $schema = self::toOpenApiSchema($messageClass::__schema()->toArray());
+        $schema = OpenApiSchemaFactory::toOpenApiSchema($messageClass::__schema()->toArray());
         $uri = $messageClass::__path()
             ?? $operation['path']
             ?? null;
@@ -241,177 +234,6 @@ final class DocumentationResourceMetadataFactory implements ResourceMetadataFact
         ];
 
         return $this;
-    }
-
-    /**
-     * @param array<mixed> $jsonSchema
-     *
-     * @return array<mixed>
-     */
-    public static function toOpenApiSchema(array $jsonSchema): array
-    {
-        $jsonSchema = self::addNullableProperty($jsonSchema);
-        $jsonSchema = self::decamilizeProperties($jsonSchema);
-        $jsonSchema = self::oneOf($jsonSchema);
-        $jsonSchema = self::items($jsonSchema);
-        $jsonSchema = self::useOpenApiRef($jsonSchema);
-        $jsonSchema = self::noNullInStringEnum($jsonSchema);
-        $jsonSchema = self::onlyOneExample($jsonSchema);
-
-        return self::decamilizeRequired($jsonSchema);
-    }
-
-    /**
-     * @param array<mixed> $jsonSchema
-     *
-     * @return array<mixed>
-     */
-    private static function addNullableProperty(array $jsonSchema): array
-    {
-        if (isset($jsonSchema['type']) && is_array($jsonSchema['type'])) {
-            $type = null;
-            foreach ($jsonSchema['type'] as $possibleType) {
-                if (mb_strtolower($possibleType) !== 'null') {
-                    if ($type) {
-                        throw DocumentationException::moreThanOneNullType($jsonSchema);
-                    }
-
-                    $type = $possibleType;
-                } else {
-                    $jsonSchema['nullable'] = true;
-                }
-            }
-
-            $jsonSchema['type'] = $type;
-        }
-
-        return $jsonSchema;
-    }
-
-    /**
-     * @param array<mixed> $jsonSchema
-     *
-     * @return array<mixed>
-     */
-    private static function decamilizeProperties(array $jsonSchema): array
-    {
-        if (isset($jsonSchema['properties']) && is_array($jsonSchema['properties'])) {
-            foreach ($jsonSchema['properties'] as $propName => $propSchema) {
-                $decamilize = StringUtil::decamelize($propName);
-                $jsonSchema['properties'][$decamilize] = self::toOpenApiSchema($propSchema);
-
-                if ($decamilize === $propName) {
-                    continue;
-                }
-
-                unset($jsonSchema['properties'][$propName]);
-            }
-        }
-
-        return $jsonSchema;
-    }
-
-    /**
-     * @param array<mixed> $jsonSchema
-     *
-     * @return array<mixed>
-     */
-    private static function oneOf(array $jsonSchema): array
-    {
-        if (isset($jsonSchema['oneOf']) && is_array($jsonSchema['oneOf'])) {
-//            $key = array_search('null', $jsonSchema['oneOf']);
-//            if ($key !== false) {
-//                $jsonSchema['nullable'] = true;
-//
-//                unset($jsonSchema['oneOf'][$key]);
-//            }
-
-            foreach ($jsonSchema['oneOf'] as $oneOfName => $oneOfSchema) {
-                $jsonSchema['oneOf'][$oneOfName] = self::toOpenApiSchema($oneOfSchema);
-            }
-        }
-
-        return $jsonSchema;
-    }
-
-    /**
-     * @param array<mixed> $jsonSchema
-     *
-     * @return array<mixed>
-     */
-    private static function items(array $jsonSchema): array
-    {
-        if (isset($jsonSchema['items']) && is_array($jsonSchema['items'])) {
-            $jsonSchema['items'] = self::toOpenApiSchema($jsonSchema['items']);
-        }
-
-        return $jsonSchema;
-    }
-
-    /**
-     * @param array<mixed> $jsonSchema
-     *
-     * @return array<mixed>
-     */
-    private static function useOpenApiRef(array $jsonSchema): array
-    {
-        if (isset($jsonSchema['$ref'])) {
-            $jsonSchema['$ref'] = str_replace('definitions', 'components/schemas', $jsonSchema['$ref']);
-        }
-
-        return $jsonSchema;
-    }
-
-    /**
-     * @param array<mixed> $jsonSchema
-     *
-     * @return array<mixed>
-     */
-    private static function noNullInStringEnum(array $jsonSchema): array
-    {
-        if (
-            isset($jsonSchema['enum'], $jsonSchema['type'])
-            && $jsonSchema['type'] === 'string'
-            && in_array(null, $jsonSchema['enum'])
-        ) {
-            $jsonSchema['enum'] = array_filter($jsonSchema['enum']);
-        }
-
-        return $jsonSchema;
-    }
-
-    /**
-     * @param array<mixed> $jsonSchema
-     *
-     * @return array<mixed>
-     */
-    private static function onlyOneExample(array $jsonSchema): array
-    {
-        if (isset($jsonSchema['examples'])) {
-            $jsonSchema['example'] = reset($jsonSchema['examples']);
-
-            unset($jsonSchema['examples']);
-        }
-
-        return $jsonSchema;
-    }
-
-    /**
-     * @param array<mixed> $jsonSchema
-     *
-     * @return array<mixed>
-     */
-    private static function decamilizeRequired(array $jsonSchema): array
-    {
-        if (isset($jsonSchema['required'])) {
-            $jsonSchema['required'] = array_map([StringUtil::class, 'decamelize'], $jsonSchema['required']);
-
-            if (count($jsonSchema['required']) === 0) {
-                unset($jsonSchema['required']);
-            }
-        }
-
-        return $jsonSchema;
     }
 
     /**

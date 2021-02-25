@@ -6,7 +6,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Documentation;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Config;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
-use ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory\DocumentationResourceMetadataFactory;
+use ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\OpenApiSchemaFactory;
 use ADS\Bundle\EventEngineBundle\Response\HasResponses;
 use ApiPlatform\Core\OpenApi\Factory\OpenApiFactoryInterface;
 use ApiPlatform\Core\OpenApi\Model\Operation;
@@ -109,7 +109,7 @@ final class OpenApiFactory implements OpenApiFactoryInterface
                                         : '',
                                     'content' => [
                                         'application/json' => [
-                                            'schema' => DocumentationResourceMetadataFactory::toOpenApiSchema(
+                                            'schema' => OpenApiSchemaFactory::toOpenApiSchema(
                                                 $response->toArray()
                                             ),
                                         ],
