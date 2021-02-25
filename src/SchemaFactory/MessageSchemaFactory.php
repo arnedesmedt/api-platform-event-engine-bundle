@@ -12,7 +12,6 @@ use ApiPlatform\Core\JsonSchema\SchemaFactoryInterface;
 use ApiPlatform\Core\Metadata\Resource\Factory\ResourceMetadataFactoryInterface;
 use EventEngine\EventEngine;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
-use EventEngine\JsonSchema\Type\TypeRef;
 use ReflectionClass;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -70,7 +69,7 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
             );
         }
 
-        $schema ??= new Schema();
+        $schema ??= new Schema(Schema::VERSION_OPENAPI);
         $reflectionClass = new ReflectionClass($message);
 
         if ($type === Schema::TYPE_OUTPUT && ! $reflectionClass->implementsInterface(HasResponses::class)) {
@@ -94,14 +93,15 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
 
         $definitions = $schema->getDefinitions();
 
-        if ($openApiSchema instanceof TypeRef) {
-            $definitionName = $openApiSchema->referencedTypeName();
+        $refs = OpenApiSchemaFactory::findTypeRefs($openApiSchema->toArray());
+        $responseTypes = $this->eventEngine->compileCacheableConfig()['responseTypes'];
 
-            if ($this->eventEngine->isKnownType($definitionName)) {
-                $responseTypes = $this->eventEngine->compileCacheableConfig()['responseTypes'];
-
-                $definitions[$definitionName] = $responseTypes[$definitionName];
+        foreach ($refs as $ref) {
+            if (! $this->eventEngine->isKnownType($ref)) {
+                continue;
             }
+
+            $definitions[$ref] = OpenApiSchemaFactory::toOpenApiSchema($responseTypes[$ref]);
         }
 
         return $schema;

@@ -9,10 +9,13 @@ use ADS\Util\StringUtil;
 
 use function array_filter;
 use function array_map;
+use function array_merge;
+use function array_unique;
 use function count;
 use function in_array;
 use function is_array;
 use function mb_strtolower;
+use function preg_match;
 use function reset;
 use function str_replace;
 
@@ -57,7 +60,7 @@ final class OpenApiSchemaFactory
                 }
             }
 
-            $jsonSchema['type'] = $type;
+//            $jsonSchema['type'] = $type;
         }
 
         return $jsonSchema;
@@ -187,5 +190,36 @@ final class OpenApiSchemaFactory
         }
 
         return $jsonSchema;
+    }
+
+    /**
+     * @param array<mixed> $schema
+     *
+     * @return string[]
+     */
+    public static function findTypeRefs(array $schema): array
+    {
+        $definitions = [];
+
+        foreach ($schema as $name => $value) {
+            if ($name === '$ref') {
+                preg_match('~#/definitions/(.+)~', $schema['$ref'], $matches);
+
+                $definitions[] = $matches[1];
+
+                continue;
+            }
+
+            if (! is_array($value)) {
+                continue;
+            }
+
+            $definitions = array_merge(
+                $definitions,
+                self::findTypeRefs($value)
+            );
+        }
+
+        return array_unique($definitions);
     }
 }
