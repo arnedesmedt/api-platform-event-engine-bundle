@@ -50,7 +50,6 @@ services:
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory\DocumentationResourceMetadataFactory.inner'
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Config'
-            - '@api_platform.operation_path_resolver'
 
     ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\MessageNormalizer:
         decorates: 'api_platform.serializer.normalizer.item'

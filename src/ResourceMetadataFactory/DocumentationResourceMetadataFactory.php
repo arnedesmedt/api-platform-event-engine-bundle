@@ -12,7 +12,6 @@ use ADS\Util\StringUtil;
 use ApiPlatform\Core\Api\OperationType;
 use ApiPlatform\Core\Metadata\Resource\Factory\ResourceMetadataFactoryInterface;
 use ApiPlatform\Core\Metadata\Resource\ResourceMetadata;
-use ApiPlatform\Core\PathResolver\OperationPathResolverInterface;
 use EventEngine\JsonSchema\JsonSchema;
 use InvalidArgumentException;
 use phpDocumentor\Reflection\DocBlockFactory;
@@ -44,17 +43,14 @@ final class DocumentationResourceMetadataFactory implements ResourceMetadataFact
 {
     private ResourceMetadataFactoryInterface $decorated;
     private Config $config;
-    private OperationPathResolverInterface $operationPathResolver;
     private DocBlockFactory $docBlockFactory;
 
     public function __construct(
         ResourceMetadataFactoryInterface $decorated,
-        Config $config,
-        OperationPathResolverInterface $operationPathResolver
+        Config $config
     ) {
         $this->decorated = $decorated;
         $this->config = $config;
-        $this->operationPathResolver = $operationPathResolver;
         $this->docBlockFactory = DocBlockFactory::createInstance();
     }
 
@@ -87,8 +83,7 @@ final class DocumentationResourceMetadataFactory implements ResourceMetadataFact
             $operations = $this
                 ->addOpenApiContext(
                     $operations,
-                    $messages,
-                    $operationType
+                    $messages
                 );
 
             $resourceMetadata = $resourceMetadata->{$withMethod}($operations);
@@ -105,8 +100,7 @@ final class DocumentationResourceMetadataFactory implements ResourceMetadataFact
      */
     private function addOpenApiContext(
         array $operations,
-        array $messagesByOperationName,
-        string $operationType
+        array $messagesByOperationName
     ): array {
         $operationKeys = array_keys($operations);
 
@@ -114,13 +108,7 @@ final class DocumentationResourceMetadataFactory implements ResourceMetadataFact
         $withOpenApiContext = array_combine(
             $operationKeys,
             array_map(
-                function (
-                    string $operationName,
-                    $operation
-                ) use (
-                    $messagesByOperationName,
-                    $operationType
-                ) {
+                function (string $operationName, $operation) use ($messagesByOperationName) {
                     /** @var class-string<ApiPlatformMessage>|false $messageClass */
                     $messageClass = $messagesByOperationName[$operationName] ?? false;
 
@@ -132,9 +120,7 @@ final class DocumentationResourceMetadataFactory implements ResourceMetadataFact
                             ->addTags($operation, $messageClass)
                             ->addParameters(
                                 $operation,
-                                $messageClass,
-                                $operationName,
-                                $operationType,
+                                $messageClass
                             );
                     }
 
@@ -181,9 +167,7 @@ final class DocumentationResourceMetadataFactory implements ResourceMetadataFact
      */
     private function addParameters(
         array &$operation,
-        string $messageClass,
-        string $operationName,
-        string $operationType
+        string $messageClass
     ): self {
         if (! isset($operation['openapi_context']['parameters'])) {
             $operation['openapi_context']['parameters'] = [];
@@ -192,12 +176,11 @@ final class DocumentationResourceMetadataFactory implements ResourceMetadataFact
         $schema = self::toOpenApiSchema($messageClass::__schema()->toArray());
         $uri = $messageClass::__path()
             ?? $operation['path']
-            ?? $this->operationPathResolver->resolveOperationPath(
-                StringUtil::entityNameFromClassName($messageClass),
-                $operation,
-                $operationType,
-                $operationName
-            );
+            ?? null;
+
+        if ($uri === null) {
+            return $this;
+        }
 
         $path = Uri::fromString($uri);
 
