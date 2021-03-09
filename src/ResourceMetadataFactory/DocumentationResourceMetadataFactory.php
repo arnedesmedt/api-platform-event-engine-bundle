@@ -253,7 +253,9 @@ final class DocumentationResourceMetadataFactory implements ResourceMetadataFact
             return null;
         }
 
-        $filteredSchema['required'] = array_values(array_diff($schema['required'], $parameters));
+        if (array_key_exists('required', $schema)) {
+            $filteredSchema['required'] = array_values(array_diff($schema['required'], $parameters));
+        }
 
         return $filteredSchema;
     }
