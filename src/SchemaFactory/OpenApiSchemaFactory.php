@@ -6,12 +6,14 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\DocumentationException;
 use ADS\Util\StringUtil;
+use ApiPlatform\Core\OpenApi\OpenApi;
 
 use function array_filter;
 use function array_map;
 use function array_merge;
 use function array_unique;
 use function count;
+use function getenv;
 use function in_array;
 use function is_array;
 use function mb_strtolower;
@@ -26,9 +28,14 @@ final class OpenApiSchemaFactory
      *
      * @return array<mixed>
      */
-    public static function toOpenApiSchema(array $jsonSchema): array
+    public static function toOpenApiSchema(array $jsonSchema, string $version = OpenApi::VERSION): array
     {
-        $jsonSchema = self::addNullableProperty($jsonSchema);
+        if (($_ENV['APP_ENV'] ?? getenv('APP_ENV')) === 'test') {
+            // TODO: Testing framework uses new open api to validate
+            $version = '3.1';
+        }
+
+        $jsonSchema = self::addNullableProperty($jsonSchema, $version);
         $jsonSchema = self::decamilizeProperties($jsonSchema);
         $jsonSchema = self::oneOf($jsonSchema);
         $jsonSchema = self::items($jsonSchema);
@@ -44,7 +51,7 @@ final class OpenApiSchemaFactory
      *
      * @return array<mixed>
      */
-    private static function addNullableProperty(array $jsonSchema): array
+    private static function addNullableProperty(array $jsonSchema, string $version = OpenApi::VERSION): array
     {
         if (isset($jsonSchema['type']) && is_array($jsonSchema['type'])) {
             $type = null;
@@ -55,12 +62,14 @@ final class OpenApiSchemaFactory
                     }
 
                     $type = $possibleType;
-                } else {
+                } elseif ($version === OpenApi::VERSION) {
                     $jsonSchema['nullable'] = true;
                 }
             }
 
-            $jsonSchema['type'] = $type;
+            if ($version === OpenApi::VERSION) {
+                $jsonSchema['type'] = $type;
+            }
         }
 
         return $jsonSchema;
