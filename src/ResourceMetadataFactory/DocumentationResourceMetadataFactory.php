@@ -162,6 +162,8 @@ final class DocumentationResourceMetadataFactory implements ResourceMetadataFact
         array &$operation,
         string $messageClass
     ): self {
+        $operation['identifiers'] = [];
+
         if (! isset($operation['openapi_context']['parameters'])) {
             $operation['openapi_context']['parameters'] = [];
         }
