@@ -13,7 +13,6 @@ use function array_map;
 use function array_merge;
 use function array_unique;
 use function count;
-use function getenv;
 use function in_array;
 use function is_array;
 use function mb_strtolower;
@@ -30,7 +29,7 @@ final class OpenApiSchemaFactory
      */
     public static function toOpenApiSchema(array $jsonSchema, string $version = OpenApi::VERSION): array
     {
-        if (($_ENV['APP_ENV'] ?? getenv('APP_ENV')) === 'test') {
+        if ($_SERVER['APP_ENV'] === 'test') {
             // TODO: Testing framework uses new open api to validate
             $version = '3.1';
         }
