@@ -247,6 +247,7 @@ final class DocumentationResourceMetadataFactory implements ResourceMetadataFact
     private static function removeParametersFromSchema(array $parameters, array $schema): ?array
     {
         $schema['properties'] ??= [];
+        $schema['required'] ??= [];
 
         $filteredSchema = $schema;
         $filteredSchema['properties'] = array_diff_key($schema['properties'], array_flip($parameters));
