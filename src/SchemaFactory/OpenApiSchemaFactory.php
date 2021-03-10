@@ -60,7 +60,7 @@ final class OpenApiSchemaFactory
                 }
             }
 
-//            $jsonSchema['type'] = $type;
+            $jsonSchema['type'] = $type;
         }
 
         return $jsonSchema;
