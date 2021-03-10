@@ -245,6 +245,7 @@ final class DocumentationResourceMetadataFactory implements ResourceMetadataFact
     private static function removeParametersFromSchema(array $parameters, array $schema): ?array
     {
         $schema['properties'] ??= [];
+        $schema['required'] ??= [];
 
         $filteredSchema = $schema;
         $filteredSchema['properties'] = array_diff_key($schema['properties'], array_flip($parameters));
@@ -253,9 +254,7 @@ final class DocumentationResourceMetadataFactory implements ResourceMetadataFact
             return null;
         }
 
-        if (array_key_exists('required', $schema)) {
-            $filteredSchema['required'] = array_values(array_diff($schema['required'], $parameters));
-        }
+        $filteredSchema['required'] = array_values(array_diff($schema['required'], $parameters));
 
         return $filteredSchema;
     }
