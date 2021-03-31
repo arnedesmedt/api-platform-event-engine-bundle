@@ -66,7 +66,7 @@ trait DefaultApiPlatformMessage
         $shortName = self::shortName();
 
         switch (true) {
-            case preg_match('/(Create|Add|GetAll|All|Enable)/', $shortName):
+            case preg_match('/(Create|Add|GetAll|All|Enable|Import)/', $shortName):
                 return OperationType::COLLECTION;
 
             case preg_match('/(Update|Get|Change|Delete|Remove|ByUuid|ById|Disable)/', $shortName):
@@ -89,7 +89,7 @@ trait DefaultApiPlatformMessage
         $shortName = self::shortName();
 
         switch (true) {
-            case preg_match('/(Create|Add|Enable)/', $shortName):
+            case preg_match('/(Create|Add|Enable|Import)/', $shortName):
                 return Name::POST;
 
             case preg_match('/(Get|GetAll|All|ById|ByUuid)/', $shortName):
