@@ -26,6 +26,7 @@ use function class_exists;
 use function in_array;
 use function is_array;
 use function sprintf;
+use function stripslashes;
 use function trim;
 
 final class PropertyStateExtractor implements PropertyListExtractorInterface, PropertyTypeExtractorInterface
@@ -149,7 +150,7 @@ final class PropertyStateExtractor implements PropertyListExtractorInterface, Pr
 
     private static function convertTypeIfComplex(string $type): string
     {
-        $type = trim($type);
+        $type = stripslashes(trim($type));
 
         if (! class_exists($type)) {
             return $type;
