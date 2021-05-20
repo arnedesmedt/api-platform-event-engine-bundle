@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory;
 
+use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\DocumentationException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\FinderException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder;
 use ADS\Bundle\EventEngineBundle\Response\HasResponses;
@@ -69,12 +70,16 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
             );
         }
 
-        $schema ??= new Schema(Schema::VERSION_OPENAPI);
         $reflectionClass = new ReflectionClass($message);
+        $schema ??= new Schema(Schema::VERSION_OPENAPI);
 
         if ($type === Schema::TYPE_OUTPUT && ! $reflectionClass->implementsInterface(HasResponses::class)) {
             return $schema;
         }
+
+        $definitions = $schema->getDefinitions();
+        $schema = new Schema(Schema::VERSION_OPENAPI);
+        $schema->setDefinitions($definitions);
 
         $openApiSchema = $type === Schema::TYPE_INPUT
             ? $message::__schema()
@@ -83,13 +88,20 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
             );
 
         $schemaArray = $schema->getArrayCopy();
+        $openApiSchemaArray = $openApiSchema->toArray();
 
         $mergedSchemaArray = array_merge_recursive(
             $schemaArray,
-            $openApiSchema->toArray()
+            $openApiSchemaArray
         );
 
-        $schema->exchangeArray(OpenApiSchemaFactory::toOpenApiSchema($mergedSchemaArray));
+        try {
+            $schema->exchangeArray(OpenApiSchemaFactory::toOpenApiSchema($mergedSchemaArray));
+        } catch (DocumentationException $exception) {
+            $result = $mergedSchemaArray;
+
+            throw $exception;
+        }
 
         $definitions = $schema->getDefinitions();
 
