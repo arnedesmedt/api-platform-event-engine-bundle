@@ -123,6 +123,11 @@ services:
     ADS\Bundle\ApiPlatformEventEngineBundle\Documentation\OpenApiMetadata:
         class: 'ADS\Bundle\ApiPlatformEventEngineBundle\Documentation\OpenApiMetadataExample'
 
+    ADS\Bundle\ApiPlatformEventEngineBundle\Filter\FilterConverter:
+        arguments:
+            - '%api_platform.collection.order_parameter_name%'
+            - '%api_platform.collection.pagination.page_parameter_name%'
+
     api_platform.event_engine.order_filter:
         class: App\Filter\OrderFilter
         arguments:
