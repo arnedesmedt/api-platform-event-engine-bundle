@@ -19,13 +19,13 @@ final class InMemoryFilterConverter extends FilterConverter
     /**
      * @param array<mixed> $apiPlatformFilters
      */
-    public function order(array $apiPlatformFilters): Closure
+    public function order(array $apiPlatformFilters): ?Closure
     {
         if (
             ! isset($apiPlatformFilters[$this->orderParameterName])
             || empty($apiPlatformFilters[$this->orderParameterName])
         ) {
-            return static fn (array $items) => $items;
+            return null;
         }
 
         return function (array $items) use ($apiPlatformFilters) {
