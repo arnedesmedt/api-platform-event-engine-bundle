@@ -128,6 +128,12 @@ services:
             - '%api_platform.collection.pagination.page_parameter_name%'
             - '%api_platform.collection.order_parameter_name%'
 
+    ADS\Bundle\ApiPlatformEventEngineBundle\Filter\DocumentStoreFilterConverter:
+        parent: '@ADS\Bundle\ApiPlatformEventEngineBundle\Filter\FilterConverter'
+
+    ADS\Bundle\ApiPlatformEventEngineBundle\Filter\InMemoryFilterConverter:
+        parent: '@ADS\Bundle\ApiPlatformEventEngineBundle\Filter\FilterConverter'
+
     api_platform.event_engine.order_filter:
         class: ADS\Bundle\ApiPlatformEventEngineBundle\Filter\OrderFilter
         arguments:

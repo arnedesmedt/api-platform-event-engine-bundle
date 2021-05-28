@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Resolver;
 
-use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\FilterConverter;
+use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\DocumentStoreFilterConverter;
 use ADS\Bundle\EventEngineBundle\Resolver\MetaDataResolver;
 use EventEngine\DocumentStore\Filter\Filter;
 use EventEngine\DocumentStore\OrderBy\OrderBy;
 
 class DocumentStoreResolver implements MetaDataResolver
 {
-    private FilterConverter $filterConverter;
+    private DocumentStoreFilterConverter $filterConverter;
     private ?OrderBy $orderBy = null;
     private ?Filter $filter = null;
     private ?int $skip = null;
     private ?int $limit = null;
 
-    public function __construct(FilterConverter $filterConverter)
+    public function __construct(DocumentStoreFilterConverter $filterConverter)
     {
         $this->filterConverter = $filterConverter;
     }
