@@ -57,6 +57,8 @@ services:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\MessageNormalizer.inner'
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder'
             - '@EventEngine\EventEngine'
+            - '%api_platform.collection.pagination.page_parameter_name%'
+            - '%api_platform.collection.order_parameter_name%'
 
     ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageSchemaFactory:
         decorates: 'api_platform.json_schema.schema_factory'
@@ -120,3 +122,8 @@ services:
 
     ADS\Bundle\ApiPlatformEventEngineBundle\Documentation\OpenApiMetadata:
         class: 'ADS\Bundle\ApiPlatformEventEngineBundle\Documentation\OpenApiMetadataExample'
+
+    api_platform.event_engine.order_filter:
+        class: App\Filter\OrderFilter
+        arguments:
+            -   $oderParameterName: '%api_platform.collection.order_parameter_name%'

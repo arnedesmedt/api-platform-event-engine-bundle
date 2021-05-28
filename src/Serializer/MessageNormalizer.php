@@ -16,6 +16,7 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\SerializerAwareInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
+use function array_key_exists;
 use function array_merge;
 use function method_exists;
 
@@ -24,15 +25,21 @@ final class MessageNormalizer implements NormalizerInterface, DenormalizerInterf
     private AbstractNormalizer $decorated;
     private Finder $messageFinder;
     private EventEngine $eventEngine;
+    private string $pageParameterName;
+    private string $orderParameterName;
 
     public function __construct(
         AbstractNormalizer $decorated,
         Finder $messageFinder,
-        EventEngine $eventEngine
+        EventEngine $eventEngine,
+        string $pageParameterName = 'page',
+        string $orderParameterName = 'order'
     ) {
         $this->decorated = $decorated;
         $this->messageFinder = $messageFinder;
         $this->eventEngine = $eventEngine;
+        $this->pageParameterName = $pageParameterName;
+        $this->orderParameterName = $orderParameterName;
     }
 
     /**
@@ -116,6 +123,14 @@ final class MessageNormalizer implements NormalizerInterface, DenormalizerInterf
             && $message::__requestBodyArrayProperty()
         ) {
             $data = [$message::__requestBodyArrayProperty() => $data];
+        }
+
+        if (array_key_exists($this->pageParameterName, $context['query_parameters'])) {
+            unset($context['query_parameters'][$this->pageParameterName]);
+        }
+
+        if (array_key_exists($this->orderParameterName, $context['query_parameters'])) {
+            unset($context['query_parameters'][$this->orderParameterName]);
         }
 
         $data = array_merge(
