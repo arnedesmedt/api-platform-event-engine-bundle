@@ -9,7 +9,10 @@ use Closure;
 use EventEngine\DocumentStore\Filter\Filter;
 
 use function array_column;
+use function array_merge;
 use function array_multisort;
+use function array_pop;
+use function strtoupper;
 
 use const SORT_ASC;
 use const SORT_DESC;
@@ -32,17 +35,23 @@ final class InMemoryFilterConverter extends FilterConverter
             $arguments = [];
 
             foreach ($apiPlatformFilters[$this->orderParameterName] as $orderParameter => $sorting) {
-                $arguments += [
-                    array_column($items, $orderParameter),
-                    $sorting === OrderFilterInterface::DIRECTION_ASC
-                        ? SORT_ASC
-                        : SORT_DESC,
-                ];
+                $arguments = array_merge(
+                    $arguments,
+                    [
+                        array_column($items, $orderParameter),
+                        strtoupper($sorting) === OrderFilterInterface::DIRECTION_ASC
+                            ? SORT_ASC
+                            : SORT_DESC,
+                    ]
+                );
             }
 
             $arguments[] = $items;
 
-            return array_multisort(...$arguments);
+            // @phpstan-ignore-next-line
+            array_multisort(...$arguments);
+
+            return array_pop($arguments);
         };
     }
 
