@@ -25,6 +25,7 @@ services:
     ADS\Bundle\ApiPlatformEventEngineBundle\Provider\DocumentStoreCollectionDataProvider:
         arguments:
             - '@EventEngine\EventEngine'
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Filter\FilterConverter'
         tags:
             - 'api_platform.collection_data_provider'
 
@@ -129,6 +130,6 @@ services:
             - '%api_platform.collection.pagination.page_parameter_name%'
 
     api_platform.event_engine.order_filter:
-        class: App\Filter\OrderFilter
+        class: ADS\Bundle\ApiPlatformEventEngineBundle\Filter\OrderFilter
         arguments:
             -   $oderParameterName: '%api_platform.collection.order_parameter_name%'
