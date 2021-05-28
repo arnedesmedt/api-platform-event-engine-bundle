@@ -45,7 +45,7 @@ final class FilterConverter
             static function ($propertyName, $order) {
                 $orderClass = sprintf('\EventEngine\DocumentStore\OrderBy\%s', ucfirst($order));
 
-                return $orderClass::fromString($propertyName);
+                return $orderClass::fromString(sprintf('state.%s', $propertyName));
             },
             array_keys($orderProperties),
             $orderProperties,
@@ -54,7 +54,7 @@ final class FilterConverter
         $order = reset($orders);
 
         while (! empty($orders)) {
-            $order = AndOrder::by($order, reset($orders));
+            $order = AndOrder::by(reset($orders), $order);
         }
 
         return $order;
@@ -69,6 +69,22 @@ final class FilterConverter
             return null;
         }
 
+        return null;
+    }
+
+    /**
+     * @param array<mixed> $apiPlatformFilters
+     */
+    public function skip(array $apiPlatformFilters): ?int
+    {
+        return null;
+    }
+
+    /**
+     * @param array<mixed> $apiPlatformFilters
+     */
+    public function limit(array $apiPlatformFilters): ?int
+    {
         return null;
     }
 }

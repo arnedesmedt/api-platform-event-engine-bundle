@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Provider;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\FinderException;
-use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\FilterConverter;
 use ADS\Util\ArrayUtil;
 use ApiPlatform\Core\Api\OperationType;
 use ApiPlatform\Core\DataProvider\ContextAwareCollectionDataProviderInterface;
@@ -21,12 +20,10 @@ final class DocumentStoreCollectionDataProvider implements
     RestrictedDataProviderInterface
 {
     private EventEngine $eventEngine;
-    private FilterConverter $filterConverter;
 
-    public function __construct(EventEngine $eventEngine, FilterConverter $filterConverter)
+    public function __construct(EventEngine $eventEngine)
     {
         $this->eventEngine = $eventEngine;
-        $this->filterConverter = $filterConverter;
     }
 
     /**
@@ -49,11 +46,7 @@ final class DocumentStoreCollectionDataProvider implements
         }
 
         if (! empty($context['filters'] ?? [])) {
-            $filter = $this->filterConverter->filter($context['filters']);
-            $order = $this->filterConverter->order($context['filters']);
-
-            $message = $filter ? $message->withAddedMetadata('filter', $filter) : $message;
-            $message = $order ? $message->withAddedMetadata('order', $order) : $message;
+            $message = $message->withAddedMetadata('filters', $context['filters']);
         }
 
         return array_map(
