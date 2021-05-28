@@ -13,6 +13,7 @@ use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 
 use function array_filter;
 use function array_map;
+use function is_string;
 use function reset;
 use function strpos;
 
@@ -76,8 +77,15 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
     private function extractQueryParameters(Request $request, array &$context): void
     {
         $context['query_parameters'] = array_map(
-            static function (string $queryParameter) {
-                return StringUtil::castFromString($queryParameter);
+            static function ($queryParameter) {
+                if (is_string($queryParameter)) {
+                    return StringUtil::castFromString($queryParameter);
+                }
+
+                return array_map(
+                    static fn (string $queryParameterItem) => StringUtil::castFromString($queryParameterItem),
+                    $queryParameter
+                );
             },
             $request->query->all()
         );
