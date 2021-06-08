@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory;
 
-use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\DocumentationException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\FinderException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder;
 use ADS\Bundle\EventEngineBundle\Response\HasResponses;
@@ -95,17 +94,10 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
             $openApiSchemaArray
         );
 
-        try {
-            $schema->exchangeArray(OpenApiSchemaFactory::toOpenApiSchema($mergedSchemaArray));
-        } catch (DocumentationException $exception) {
-            $result = $mergedSchemaArray;
-
-            throw $exception;
-        }
-
+        $schema->exchangeArray(OpenApiSchemaFactory::toOpenApiSchema($mergedSchemaArray));
         $definitions = $schema->getDefinitions();
 
-        $refs = OpenApiSchemaFactory::findTypeRefs($openApiSchema->toArray());
+        $refs = OpenApiSchemaFactory::findTypeRefs($openApiSchemaArray);
         $responseTypes = $this->eventEngine->compileCacheableConfig()['responseTypes'];
 
         foreach ($refs as $ref) {
