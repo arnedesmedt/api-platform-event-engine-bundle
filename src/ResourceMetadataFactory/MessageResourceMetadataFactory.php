@@ -6,6 +6,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Config;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
+use ADS\Bundle\EventEngineBundle\Response\HasResponses;
 use ApiPlatform\Core\Api\OperationType;
 use ApiPlatform\Core\Metadata\Resource\Factory\ResourceMetadataFactoryInterface;
 use ApiPlatform\Core\Metadata\Resource\ResourceMetadata;
@@ -168,6 +169,7 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
                         $this->addTags($operation, $messageClass);
                         $this->needRead($operation);
                         $this->addStateless($operation, $messageClass);
+                        $this->addStatus($operation, $messageClass);
                     }
 
                     return $operation;
@@ -264,5 +266,19 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
         }
 
         $operation['stateless'] = $messageClass::__stateless();
+    }
+
+    /**
+     * @param array<mixed> $operation
+     * @param class-string<ApiPlatformMessage> $messageClass
+     */
+    private function addStatus(array &$operation, string $messageClass): void
+    {
+        $reflectionClass = new ReflectionClass($messageClass);
+        if (isset($operation['status']) && $reflectionClass->implementsInterface(HasResponses::class)) {
+            return;
+        }
+
+        $operation['status'] = $messageClass::__defaultStatusCode();
     }
 }
