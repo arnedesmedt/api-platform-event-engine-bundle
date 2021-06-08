@@ -75,7 +75,8 @@ services:
             - console.command
 
     ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\JsonSchemaPropertyMetadataFactory:
-        decorates: 'api_platform.metadata.property.metadata_factory.cached'
+        decorates: 'api_platform.metadata.property.metadata_factory'
+        decoration_priority: -9
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\JsonSchemaPropertyMetadataFactory.inner'
 
