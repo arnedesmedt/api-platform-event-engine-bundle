@@ -74,10 +74,10 @@ services:
         tags:
             - console.command
 
-    ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\ValueObjectSubresourceMetadataFactory:
-        decorates: 'api_platform.metadata.property.metadata_factory.annotation'
+    ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\JsonSchemaPropertyMetadataFactory:
+        decorates: 'api_platform.metadata.property.metadata_factory.cached'
         arguments:
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\ValueObjectSubresourceMetadataFactory.inner'
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\JsonSchemaPropertyMetadataFactory.inner'
 
     api_platform.serializer.context_builder:
         class: ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\CustomContextBuilder
@@ -138,3 +138,6 @@ services:
         class: ADS\Bundle\ApiPlatformEventEngineBundle\Filter\OrderFilter
         arguments:
             -   $oderParameterName: '%api_platform.collection.order_parameter_name%'
+
+    api_platform.event_engine.search_filter:
+        class: ADS\Bundle\ApiPlatformEventEngineBundle\Filter\SearchFilter
