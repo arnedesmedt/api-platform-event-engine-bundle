@@ -29,12 +29,29 @@ final class Finder
         $operationType = $context['operation_type'];
         $operationName = $context[sprintf('%s_operation_name', $operationType)];
 
-        $mapping = $this->config->messageMapping();
+        return $this->byResourceAndOperation($entity, $operationType, $operationName);
+    }
 
-        if (! isset($mapping[$entity][$operationType][$operationName])) {
-            throw FinderException::noMessageFound($entity, $operationType, $operationName);
+    /**
+     * @return string|class-string
+     */
+    public function byResourceAndOperation(string $resourceClass, string $operationType, string $operationName): string
+    {
+        return self::byConfigResourceAndOperation($this->config, $resourceClass, $operationType, $operationName);
+    }
+
+    public static function byConfigResourceAndOperation(
+        Config $config,
+        string $resourceClass,
+        string $operationType,
+        string $operationName
+    ): string {
+        $mapping = $config->messageMapping();
+
+        if (! isset($mapping[$resourceClass][$operationType][$operationName])) {
+            throw FinderException::noMessageFound($resourceClass, $operationType, $operationName);
         }
 
-        return $mapping[$entity][$operationType][$operationName];
+        return $mapping[$resourceClass][$operationType][$operationName];
     }
 }
