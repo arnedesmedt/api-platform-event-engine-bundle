@@ -22,5 +22,15 @@ final class ADSApiPlatformEventEngineExtension extends Extension
         );
 
         $loader->load('api_platform_event_engine.yaml');
+
+        $container->setParameter(
+            'api_platform_event_engine.open_api.servers',
+            $configs[0]['open_api']['servers']
+        );
+
+        $container->setParameter(
+            'api_platform_event_engine.open_api.tags',
+            $configs[0]['open_api']['tags']
+        );
     }
 }
