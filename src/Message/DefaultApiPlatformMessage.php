@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Message;
 
-use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\ApiPlatformException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\ApiPlatformMappingException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Operation\Name;
-use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
 use ADS\Bundle\EventEngineBundle\Type\DefaultType;
 use ADS\Util\StringUtil;
 use ApiPlatform\Core\Action\PlaceholderAction;
@@ -17,8 +15,6 @@ use ReflectionClass;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-use function array_diff;
-use function array_keys;
 use function class_exists;
 use function lcfirst;
 use function method_exists;
@@ -171,17 +167,6 @@ trait DefaultApiPlatformMessage
     public static function __extraResponseApiPlatform(): array
     {
         $responses = [];
-        $path = self::__path();
-
-        if ($path !== null && method_exists(self::class, 'buildPropTypeMap')) {
-            $pathUri = Uri::fromString($path);
-            $parameterNames = $pathUri->toAllParameterNames();
-            $messageParameterNames = array_keys(self::buildPropTypeMap());
-
-            if (! empty(array_diff($messageParameterNames, $parameterNames))) {
-                $responses[Response::HTTP_BAD_REQUEST] = ApiPlatformException::badRequest();
-            }
-        }
 
         switch (self::__httpMethod()) {
             case Request::METHOD_POST:
