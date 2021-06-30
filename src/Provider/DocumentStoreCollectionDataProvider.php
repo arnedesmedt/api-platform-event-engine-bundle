@@ -5,15 +5,12 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Provider;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\FinderException;
-use ADS\Util\ArrayUtil;
 use ApiPlatform\Core\Api\OperationType;
 use ApiPlatform\Core\DataProvider\ContextAwareCollectionDataProviderInterface;
+use ApiPlatform\Core\DataProvider\PartialPaginatorInterface;
 use ApiPlatform\Core\DataProvider\RestrictedDataProviderInterface;
 use EventEngine\EventEngine;
 use EventEngine\Messaging\Message;
-
-use function array_map;
-use function is_array;
 
 final class DocumentStoreCollectionDataProvider implements
     ContextAwareCollectionDataProviderInterface,
@@ -30,9 +27,9 @@ final class DocumentStoreCollectionDataProvider implements
      * @param class-string $resourceClass
      * @param array<mixed> $context
      *
-     * @return array<mixed>
+     * @return array<mixed>|PartialPaginatorInterface<mixed>
      */
-    public function getCollection(string $resourceClass, ?string $operationName = null, array $context = []): array
+    public function getCollection(string $resourceClass, ?string $operationName = null, array $context = [])
     {
         /** @var Message|null $message */
         $message = $context['message'] ?? null;
@@ -49,16 +46,7 @@ final class DocumentStoreCollectionDataProvider implements
             $message = $message->withAddedMetadata('filters', $context['filters']);
         }
 
-        return array_map(
-            static function ($item) {
-                if (! is_array($item)) {
-                    return $item;
-                }
-
-                return ArrayUtil::toSnakeCasedKeys($item, true);
-            },
-            $this->eventEngine->dispatch($message)
-        );
+        return $this->eventEngine->dispatch($message);
     }
 
     /**

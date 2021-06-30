@@ -33,6 +33,20 @@ final class Finder
     }
 
     /**
+     * @param array<mixed> $context
+     */
+    public function hasMessageByContext(array $context): bool
+    {
+        try {
+            $this->byContext($context);
+
+            return true;
+        } catch (FinderException $exception) {
+            return false;
+        }
+    }
+
+    /**
      * @return string|class-string
      */
     public function byResourceAndOperation(string $resourceClass, string $operationType, string $operationName): string

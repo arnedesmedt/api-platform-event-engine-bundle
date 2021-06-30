@@ -17,18 +17,18 @@ use function ucfirst;
 final class DocumentStoreFilterConverter extends FilterConverter
 {
     /**
-     * @param array<mixed> $apiPlatformFilters
+     * @param array<mixed> $filters
      */
-    public function order(array $apiPlatformFilters): ?OrderBy
+    public function order(array $filters): ?OrderBy
     {
         if (
-            ! isset($apiPlatformFilters[$this->orderParameterName])
-            || empty($apiPlatformFilters[$this->orderParameterName])
+            ! isset($filters[$this->orderParameterName])
+            || empty($filters[$this->orderParameterName])
         ) {
             return null;
         }
 
-        $orderProperties = $apiPlatformFilters[$this->orderParameterName];
+        $orderProperties = $filters[$this->orderParameterName];
 
         $orders = array_map(
             static function ($propertyName, $order) {
@@ -50,30 +50,55 @@ final class DocumentStoreFilterConverter extends FilterConverter
     }
 
     /**
-     * @param array<mixed> $apiPlatformFilters
+     * @param array<mixed> $filters
      */
-    public function filter(array $apiPlatformFilters): ?Filter
+    public function filter(array $filters): ?Filter
     {
-        if (! isset($apiPlatformFilters[$this->pageParameterName])) {
+//        if (! isset($filters[$this->pageParameterName])) {
+//            return null;
+//        }
+//
+//        return null;
+
+        return null;
+    }
+
+    /**
+     * @param array<mixed> $filters
+     */
+    public function skip(array $filters): ?int
+    {
+        if (
+            $this->page($filters) === null
+            || $this->itemsPerPage($filters) === null
+        ) {
             return null;
         }
 
-        return null;
+        return ($this->page($filters) - 1) * $this->itemsPerPage($filters);
     }
 
     /**
-     * @param array<mixed> $apiPlatformFilters
+     * @param array<mixed> $filters
      */
-    public function skip(array $apiPlatformFilters): ?int
+    public function page(array $filters): ?int
     {
-        return null;
+        if (! isset($filters[$this->pageParameterName])) {
+            return null;
+        }
+
+        return (int) $filters[$this->pageParameterName];
     }
 
     /**
-     * @param array<mixed> $apiPlatformFilters
+     * @param array<mixed> $filters
      */
-    public function limit(array $apiPlatformFilters): ?int
+    public function itemsPerPage(array $filters): ?int
     {
-        return null;
+        if (! isset($filters[$this->itemsPerPageParameterName])) {
+            return null;
+        }
+
+        return (int) $filters[$this->itemsPerPageParameterName];
     }
 }

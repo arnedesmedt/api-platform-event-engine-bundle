@@ -4,42 +4,38 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Serializer;
 
-use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\FinderException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder;
 use ADS\Util\ArrayUtil;
 use ArrayObject;
 use EventEngine\Data\ImmutableRecord;
 use EventEngine\EventEngine;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
-use Symfony\Component\Serializer\SerializerAwareInterface;
-use Symfony\Component\Serializer\SerializerInterface;
 
 use function array_key_exists;
 use function array_merge;
 use function method_exists;
 
-final class MessageNormalizer implements NormalizerInterface, DenormalizerInterface, SerializerAwareInterface
+final class MessageNormalizer implements NormalizerInterface, DenormalizerInterface
 {
-    private AbstractNormalizer $decorated;
     private Finder $messageFinder;
     private EventEngine $eventEngine;
     private string $pageParameterName;
     private string $orderParameterName;
+    private string $itemsPerPageParameterName;
 
     public function __construct(
-        AbstractNormalizer $decorated,
         Finder $messageFinder,
         EventEngine $eventEngine,
         string $pageParameterName = 'page',
-        string $orderParameterName = 'order'
+        string $orderParameterName = 'order',
+        string $itemsPerPageParameterName = 'items-per-page'
     ) {
-        $this->decorated = $decorated;
         $this->messageFinder = $messageFinder;
         $this->eventEngine = $eventEngine;
         $this->pageParameterName = $pageParameterName;
         $this->orderParameterName = $orderParameterName;
+        $this->itemsPerPageParameterName = $itemsPerPageParameterName;
     }
 
     /**
@@ -54,12 +50,8 @@ final class MessageNormalizer implements NormalizerInterface, DenormalizerInterf
             return $context['message'];
         }
 
-        try {
-            /** @var class-string $message */
-            $message = $this->messageFinder->byContext($context);
-        } catch (FinderException $exception) {
-            return $this->decorated->denormalize($data, $type, $format, $context);
-        }
+        /** @var class-string $message */
+        $message = $this->messageFinder->byContext($context);
 
         return $this->eventEngine->messageFactory()->createMessageFromArray(
             $message,
@@ -71,10 +63,11 @@ final class MessageNormalizer implements NormalizerInterface, DenormalizerInterf
 
     /**
      * @param mixed $data
+     * @param array<mixed> $context
      */
-    public function supportsDenormalization($data, string $type, ?string $format = null): bool
+    public function supportsDenormalization($data, string $type, ?string $format = null, array $context = []): bool
     {
-        return $this->decorated->supportsDenormalization($data, $type, $format);
+        return $this->messageFinder->hasMessageByContext($context);
     }
 
     /**
@@ -85,11 +78,7 @@ final class MessageNormalizer implements NormalizerInterface, DenormalizerInterf
      */
     public function normalize($object, ?string $format = null, array $context = [])
     {
-        if ($object instanceof ImmutableRecord) {
-            return ArrayUtil::toSnakeCasedKeys($object->toArray(), true);
-        }
-
-        return $this->decorated->normalize($object, $format, $context);
+        return ArrayUtil::toSnakeCasedKeys($object->toArray(), true);
     }
 
     /**
@@ -97,16 +86,7 @@ final class MessageNormalizer implements NormalizerInterface, DenormalizerInterf
      */
     public function supportsNormalization($data, ?string $format = null): bool
     {
-        return $this->decorated->supportsNormalization($data, $format);
-    }
-
-    public function setSerializer(SerializerInterface $serializer): void
-    {
-        if (! ($this->decorated instanceof SerializerAwareInterface)) {
-            return;
-        }
-
-        $this->decorated->setSerializer($serializer);
+        return $data instanceof ImmutableRecord;
     }
 
     /**
@@ -131,6 +111,10 @@ final class MessageNormalizer implements NormalizerInterface, DenormalizerInterf
 
         if (array_key_exists($this->orderParameterName, $context['query_parameters'])) {
             unset($context['query_parameters'][$this->orderParameterName]);
+        }
+
+        if (array_key_exists($this->itemsPerPageParameterName, $context['query_parameters'])) {
+            unset($context['query_parameters'][$this->itemsPerPageParameterName]);
         }
 
         $data = array_merge(

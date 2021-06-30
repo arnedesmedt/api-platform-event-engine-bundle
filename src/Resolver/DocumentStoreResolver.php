@@ -5,22 +5,26 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Resolver;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\DocumentStoreFilterConverter;
+use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\Paginator;
+use ADS\Bundle\EventEngineBundle\Repository\Repository;
 use ADS\Bundle\EventEngineBundle\Resolver\MetaDataResolver;
+use EventEngine\Data\ImmutableRecord;
+use EventEngine\DocumentStore\Filter\AnyFilter;
 use EventEngine\DocumentStore\Filter\Filter;
 use EventEngine\DocumentStore\OrderBy\OrderBy;
 
 class DocumentStoreResolver implements MetaDataResolver
 {
-    private DocumentStoreFilterConverter $filterConverter;
+    protected Repository $repository;
+    /** @required */
+    public DocumentStoreFilterConverter $filterConverter;
     private ?OrderBy $orderBy = null;
     private ?Filter $filter = null;
     private ?int $skip = null;
-    private ?int $limit = null;
-
-    public function __construct(DocumentStoreFilterConverter $filterConverter)
-    {
-        $this->filterConverter = $filterConverter;
-    }
+    private ?int $itemsPerPage = null;
+    private ?int $page = null;
+    /** @var array<mixed> */
+    private array $filters = [];
 
     /**
      * @param array<mixed> $metaData
@@ -33,11 +37,12 @@ class DocumentStoreResolver implements MetaDataResolver
             return $this;
         }
 
-        $filters = $metaData['filters'];
-        $this->orderBy = $this->filterConverter->order($filters);
-        $this->filter = $this->filterConverter->filter($filters);
-        $this->skip = $this->filterConverter->skip($filters);
-        $this->limit = $this->filterConverter->limit($filters);
+        $this->filters = $metaData['filters'];
+        $this->orderBy = $this->filterConverter->order($this->filters);
+        $this->filter = $this->filterConverter->filter($this->filters);
+        $this->skip = $this->filterConverter->skip($this->filters);
+        $this->itemsPerPage = $this->filterConverter->itemsPerPage($this->filters);
+        $this->page = $this->filterConverter->page($this->filters);
 
         return $this;
     }
@@ -57,9 +62,14 @@ class DocumentStoreResolver implements MetaDataResolver
         return $this->skip;
     }
 
-    public function limit(): ?int
+    public function itemsPerPage(): ?int
     {
-        return $this->limit;
+        return $this->itemsPerPage;
+    }
+
+    public function page(): ?int
+    {
+        return $this->page;
     }
 
     /**
@@ -70,8 +80,42 @@ class DocumentStoreResolver implements MetaDataResolver
         return [
             $this->filter(),
             $this->skip(),
-            $this->limit(),
+            $this->itemsPerPage(),
             $this->orderBy(),
         ];
+    }
+
+    /**
+     * @return array<mixed>|Paginator<mixed>
+     */
+    public function __invoke()
+    {
+        $states = $this->repository->findDocumentStates(...$this->arguments());
+        $states = $this->processStates($states);
+        $totalItems = $this->repository->countDocuments(new AnyFilter());
+        $skip = $this->skip();
+        $itemsPerPage = $this->itemsPerPage();
+        $page = $this->page();
+
+        if (empty($skip) || empty($itemsPerPage) || empty($page)) {
+            return $states;
+        }
+
+        return new Paginator(
+            $states,
+            $page,
+            $itemsPerPage,
+            $totalItems
+        );
+    }
+
+    /**
+     * @param array<ImmutableRecord> $states
+     *
+     * @return mixed
+     */
+    protected function processStates(array $states)
+    {
+        return $states;
     }
 }

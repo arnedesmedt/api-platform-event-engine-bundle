@@ -50,13 +50,13 @@ services:
             - setSchemaFactory: ['@api_platform.json_schema.schema_factory']
 
     ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\MessageNormalizer:
-        decorates: 'api_platform.serializer.normalizer.item'
         arguments:
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\MessageNormalizer.inner'
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder'
             - '@EventEngine\EventEngine'
             - '%api_platform.collection.pagination.page_parameter_name%'
             - '%api_platform.collection.order_parameter_name%'
+        tags:
+            - { name: serializer.normalizer, priority: -800 }
 
     ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageSchemaFactory:
         decorates: 'api_platform.json_schema.schema_factory'
@@ -123,6 +123,7 @@ services:
     ADS\Bundle\ApiPlatformEventEngineBundle\Filter\FilterConverter:
         arguments:
             - '%api_platform.collection.pagination.page_parameter_name%'
+            - '%api_platform.collection.pagination.items_per_page_parameter_name%'
             - '%api_platform.collection.order_parameter_name%'
 
     ADS\Bundle\ApiPlatformEventEngineBundle\Filter\DocumentStoreFilterConverter:
