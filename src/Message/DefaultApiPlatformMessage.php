@@ -6,10 +6,15 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Message;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\ApiPlatformMappingException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Operation\Name;
+use ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageSchemaFactory;
+use ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\OpenApiSchemaFactory;
+use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
 use ADS\Bundle\EventEngineBundle\Type\DefaultType;
+use ADS\Util\ArrayUtil;
 use ADS\Util\StringUtil;
 use ApiPlatform\Core\Action\PlaceholderAction;
 use ApiPlatform\Core\Api\OperationType;
+use EventEngine\JsonSchema\Type\ObjectType;
 use EventEngine\Schema\TypeSchema;
 use ReflectionClass;
 use Symfony\Component\HttpFoundation\Request;
@@ -138,6 +143,27 @@ trait DefaultApiPlatformMessage
         return null;
     }
 
+    public static function __pathUri(): ?Uri
+    {
+        $path = static::__path();
+        if ($path === null) {
+            return null;
+        }
+
+        return Uri::fromString($path);
+    }
+
+    public function replacedPathUri(?Uri $pathUri = null): ?Uri
+    {
+        $pathUri ??= self::__pathUri();
+
+        if ($pathUri === null) {
+            return null;
+        }
+
+        return $pathUri->replaceAllParameters($this->toArray());
+    }
+
     public static function __apiPlatformController(): string
     {
         return PlaceholderAction::class;
@@ -153,7 +179,13 @@ trait DefaultApiPlatformMessage
      */
     public static function __tags(): array
     {
-        return [StringUtil::entityNameFromClassName(static::class)];
+        $tags = [StringUtil::entityNameFromClassName(static::class)];
+
+        if (method_exists(self::class, '__rootResourceClass')) {
+            $tags[] = StringUtil::entityNameFromClassName(self::__rootResourceClass());
+        }
+
+        return $tags;
     }
 
     public static function __requestBodyArrayProperty(): ?string
@@ -184,6 +216,118 @@ trait DefaultApiPlatformMessage
         }
 
         return $responses;
+    }
+
+    public static function __inputClass(): ?string
+    {
+        return null;
+    }
+
+    public static function __outputClass(): ?string
+    {
+        return null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public static function __normalizationContext(): array
+    {
+        return [];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public static function __denormalizationContext(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return array<mixed>|null
+     */
+    public static function __pathSchema(?Uri $pathUri = null): ?array
+    {
+        return self::filterSchema($pathUri);
+    }
+
+    /**
+     * @return array<mixed>|null
+     */
+    public static function __requestBodySchema(?Uri $pathUri = null): ?array
+    {
+        $schema = self::filterSchema($pathUri, 'removeParameters');
+
+        if (
+            $schema
+            && self::__requestBodyArrayProperty()
+        ) {
+            $schema = $schema['properties'][self::__requestBodyArrayProperty()];
+        }
+
+        return $schema;
+    }
+
+    /**
+     * @return array<mixed>|null
+     */
+    private static function filterSchema(?Uri $pathUri = null, string $method = 'filterParameters'): ?array
+    {
+        $pathUri ??= static::__pathUri();
+        $schema = static::__schema();
+
+        if ($pathUri === null || ! $schema instanceof ObjectType) {
+            return null;
+        }
+
+        $parameterNames = $pathUri->toAllParameterNames();
+        $schema = OpenApiSchemaFactory::toOpenApiSchema($schema->toArray());
+
+        return MessageSchemaFactory::$method($schema, $parameterNames);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function toPathArray(?Uri $pathUri = null): ?array
+    {
+        return $this->filterToArray($pathUri);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function toRequestBodyArray(?Uri $pathUri = null): ?array
+    {
+        $data = $this->filterToArray($pathUri, 'diff');
+
+        if (
+            $data
+            && self::__requestBodyArrayProperty()
+        ) {
+            $data = $data[self::__requestBodyArrayProperty()];
+        }
+
+        return $data;
+    }
+
+    /**
+     * @return array<mixed>|null
+     */
+    private function filterToArray(?Uri $pathUri = null, string $method = 'intersect'): ?array
+    {
+        $pathUri ??= static::__pathUri();
+
+        if ($pathUri === null) {
+            return null;
+        }
+
+        $parameterNames = ArrayUtil::toCamelCasedValues($pathUri->toAllParameterNames());
+        $data = $this->toArray();
+        $method = sprintf('array_%s_key', $method);
+
+        return $method($data, $parameterNames);
     }
 
     private static function shortName(): string

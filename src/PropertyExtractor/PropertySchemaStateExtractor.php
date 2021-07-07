@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\PropertyExtractor;
 
+use ADS\Util\StringUtil;
 use ADS\ValueObjects\Implementation\TypeDetector;
 use ADS\ValueObjects\ListValue;
 use EventEngine\JsonSchema\JsonSchema;
@@ -17,7 +18,11 @@ use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
 use Symfony\Component\PropertyInfo\PropertyListExtractorInterface;
 use Symfony\Component\PropertyInfo\PropertyTypeExtractorInterface;
 use Symfony\Component\PropertyInfo\Type;
+use Symfony\Component\Serializer\Mapping\AttributeMetadataInterface;
+use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactoryInterface;
 
+use function array_filter;
+use function array_intersect;
 use function array_keys;
 use function array_map;
 use function array_reduce;
@@ -27,12 +32,15 @@ use function in_array;
 use function is_array;
 use function sprintf;
 use function stripslashes;
+use function strpos;
+use function substr;
 use function trim;
 
-final class PropertyStateExtractor implements PropertyListExtractorInterface, PropertyTypeExtractorInterface
+final class PropertySchemaStateExtractor implements PropertyListExtractorInterface, PropertyTypeExtractorInterface
 {
     // phpcs:ignore SlevomatCodingStandard.Classes.UnusedPrivateElements.WriteOnlyProperty
     private PropertyInfoExtractorInterface $propertyInfo;
+    private ClassMetadataFactoryInterface $classMetadataFactory;
 
     private const TYPE_MAPPING = [
         JsonSchema::TYPE_ARRAY => Type::BUILTIN_TYPE_ARRAY,
@@ -44,9 +52,50 @@ final class PropertyStateExtractor implements PropertyListExtractorInterface, Pr
         JsonSchema::TYPE_STRING => Type::BUILTIN_TYPE_STRING,
     ];
 
-    public function __construct(PropertyInfoExtractorInterface $propertyInfo)
-    {
+    public function __construct(
+        PropertyInfoExtractorInterface $propertyInfo,
+        ClassMetadataFactoryInterface $classMetadataFactory
+    ) {
         $this->propertyInfo = $propertyInfo;
+        $this->classMetadataFactory = $classMetadataFactory;
+    }
+
+    /**
+     * @param array<string>|null $serializerGroups
+     *
+     * @return array<array<string>|null>
+     */
+    private static function splitSerializerGroups(?array $serializerGroups): array
+    {
+        if ($serializerGroups === null) {
+            return [null, null];
+        }
+
+        $whiteListedSerializerGroups = array_filter(
+            $serializerGroups,
+            static fn (string $serializerGroup) => strpos($serializerGroup, '!') !== 0
+        );
+
+        if (empty($whiteListedSerializerGroups)) {
+            $whiteListedSerializerGroups = null;
+        }
+
+        $blacklistedSerializerGroups = array_map(
+            static fn (string $serializerGroup) => substr($serializerGroup, 1),
+            array_filter(
+                $serializerGroups,
+                static fn (string $serializerGroup) => strpos($serializerGroup, '!') === 0
+            )
+        );
+
+        if (empty($blacklistedSerializerGroups)) {
+            $blacklistedSerializerGroups = null;
+        }
+
+        return [
+            $whiteListedSerializerGroups,
+            $blacklistedSerializerGroups,
+        ];
     }
 
     /**
@@ -57,13 +106,41 @@ final class PropertyStateExtractor implements PropertyListExtractorInterface, Pr
      */
     public function getProperties(string $class, array $context = []): ?array
     {
-        $schema = $this->schemaFrom($class);
+        $properties = [];
+        $context['serializer_groups'] ??= null;
 
-        if ($schema === null) {
-            return null;
+        [$serializerGroups, $blackListedSerializerGroups] = self::splitSerializerGroups($context['serializer_groups']);
+
+        // Only allow the properties that are listed in the json schema aware record, if it's such an object.
+        $filteredPropertyNames = array_keys(
+            $this->schemaFrom($class, false)['properties'] ?? []
+        );
+
+        $serializerClassMetadata = $this->classMetadataFactory->getMetadataFor($class);
+
+        foreach ($serializerClassMetadata->getAttributesMetadata() as $serializerAttributeMetadata) {
+            $jsonSchemaAndPropertyNotInSchema = ! empty($filteredPropertyNames)
+                && ! in_array($serializerAttributeMetadata->getName(), $filteredPropertyNames);
+            $ignoredProperty = $serializerAttributeMetadata instanceof AttributeMetadataInterface
+                && $serializerAttributeMetadata->isIgnored();
+            $inBlackListedSerializerGroup = $blackListedSerializerGroups !== null
+                && ! empty(array_intersect($serializerAttributeMetadata->getGroups(), $blackListedSerializerGroups));
+            $notInSerializerGroups = $serializerGroups !== null
+                && empty(array_intersect($serializerAttributeMetadata->getGroups(), $serializerGroups));
+
+            if (
+                $jsonSchemaAndPropertyNotInSchema
+                || $ignoredProperty
+                || $inBlackListedSerializerGroup
+                || $notInSerializerGroups
+            ) {
+                continue;
+            }
+
+            $properties[] = StringUtil::decamelize($serializerAttributeMetadata->getName());
         }
 
-        return array_keys($schema['properties'] ?? []);
+        return $properties;
     }
 
     /**
@@ -88,7 +165,7 @@ final class PropertyStateExtractor implements PropertyListExtractorInterface, Pr
      *
      * @return array<mixed>
      */
-    private function schemaFrom(string $stateClass): ?array
+    private function schemaFrom(string $stateClass, bool $withReflectionProperties = true): ?array
     {
         $reflectionClass = new ReflectionClass($stateClass);
 
@@ -100,6 +177,10 @@ final class PropertyStateExtractor implements PropertyListExtractorInterface, Pr
         }
 
         $schema = $stateClass::__schema()->toArray();
+
+        if (! $withReflectionProperties) {
+            return $schema;
+        }
 
         $schema['reflectionProperties'] = array_reduce(
             array_keys($schema['properties'] ?? []),
@@ -166,11 +247,13 @@ final class PropertyStateExtractor implements PropertyListExtractorInterface, Pr
     {
         $symfonyType = self::mapToSymfonyType($type);
         $nullable = ! in_array($property, $schema['required'] ?? [$property]);
+//        $class = $schema['reflectionProperties'][$property]->
         $collection = $symfonyType === Type::BUILTIN_TYPE_ARRAY;
         $collectionKeyType = $collection ? new Type(Type::BUILTIN_TYPE_INT) : null;
         $collectionValueType = $collection ? self::collectionValueType($schema, $property) : null;
 
         $type = new Type($symfonyType, $nullable, null, $collection, $collectionKeyType, $collectionValueType);
+//        $type = new Type($symfonyType, $nullable, $class, $collection, $collectionKeyType, $collectionValueType);
 
         return $type;
     }

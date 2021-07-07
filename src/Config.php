@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
+use ADS\Bundle\ApiPlatformEventEngineBundle\Message\SubresourceQuery;
 use ADS\Bundle\EventEngineBundle\Config as EventEngineConfig;
+use ADS\Util\StringUtil;
+use ApiPlatform\Core\Bridge\Symfony\Routing\RouteNameGenerator;
 use ReflectionClass;
 use Symfony\Component\Cache\Adapter\AbstractAdapter;
 use Symfony\Component\HttpKernel\CacheClearer\CacheClearerInterface;
@@ -18,6 +21,9 @@ use function array_merge_recursive;
 use function array_reduce;
 use function is_array;
 use function preg_match;
+use function sprintf;
+use function strlen;
+use function substr;
 
 final class Config implements CacheClearerInterface
 {
@@ -29,11 +35,11 @@ final class Config implements CacheClearerInterface
     private AbstractAdapter $cache;
     private string $environment;
 
-    /** @var array<string, array<string, array<string, class-string<ApiPlatformMessage>>>>|null */
+    /** @var array<string, array<string, array<string, class-string>>>|null */
     private ?array $messageMapping = null;
-    /** @var array<class-string<ApiPlatformMessage>, array<string, string>>|null */
+    /** @var array<class-string, array<int, array<string, mixed>>>|null */
     private ?array $operationMapping = null;
-    /** @var array<string, class-string<ApiPlatformMessage>>|null */
+    /** @var array<string, class-string>|null */
     private ?array $operationIdMapping = null;
 
     public function __construct(EventEngineConfig $config, AbstractAdapter $cache, string $environment)
@@ -44,7 +50,7 @@ final class Config implements CacheClearerInterface
     }
 
     /**
-     * @return array<string, array<string, array<string, class-string<ApiPlatformMessage>>>>
+     * @return array<string, array<string, array<string, class-string>>>
      */
     public function messageMapping(): array
     {
@@ -61,7 +67,7 @@ final class Config implements CacheClearerInterface
     }
 
     /**
-     * @return array<string, array<string, string>>
+     * @return array<class-string, array<int, array<string, mixed>>>
      */
     public function operationMapping(): array
     {
@@ -97,7 +103,7 @@ final class Config implements CacheClearerInterface
     /**
      * @param array<mixed> $messageConfig
      *
-     * @return array<string, array<string, array<string, class-string<ApiPlatformMessage>>>>
+     * @return array<string, array<string, array<string, class-string>>>
      */
     private function specificMessageMapping(array $messageConfig, ?string $classKey = null): array
     {
@@ -127,10 +133,10 @@ final class Config implements CacheClearerInterface
     }
 
     /**
-     * @param array<string, array<string, array<string, class-string<ApiPlatformMessage>>>> $mapping
-     * @param class-string<ApiPlatformMessage> $apiPlatformMessage
+     * @param array<string, array<string, array<string, class-string>>> $mapping
+     * @param class-string $apiPlatformMessage
      *
-     * @return array<string, array<string, array<string, class-string<ApiPlatformMessage>>>>
+     * @return array<string, array<string, array<string, class-string>>>
      */
     private function addToMapping(
         array $mapping,
@@ -149,6 +155,21 @@ final class Config implements CacheClearerInterface
 
         $mapping[$entity][$type][$name] = $apiPlatformMessage;
 
+        $reflectionClass = new ReflectionClass($apiPlatformMessage);
+
+        if ($reflectionClass->implementsInterface(SubresourceQuery::class)) {
+            /** @var string $entity */
+            $entity = $apiPlatformMessage::__rootResourceClass();
+            $entityName = StringUtil::entityNameFromClassName($entity);
+            $prefix = sprintf(
+                '%s%s',
+                RouteNameGenerator::ROUTE_NAME_PREFIX,
+                RouteNameGenerator::inflector($entityName, $apiPlatformMessage::__subresourceIsCollection())
+            );
+
+            $mapping[$entity][$type][substr($name, strlen($prefix) + 1)] = $apiPlatformMessage;
+        }
+
         return $mapping;
     }
 
@@ -158,7 +179,7 @@ final class Config implements CacheClearerInterface
     }
 
     /**
-     * @return array<string, array<string, array<string, class-string<ApiPlatformMessage>>>>
+     * @return array<string, array<string, array<string, class-string>>>
      */
     private function getMessageMapping(): array
     {
@@ -185,7 +206,7 @@ final class Config implements CacheClearerInterface
     }
 
     /**
-     * @return array<class-string<ApiPlatformMessage>, array<string, string>>
+     * @return array<class-string, array<int, array<string, mixed>>>
      */
     private function getOperationMapping(): array
     {
@@ -195,12 +216,17 @@ final class Config implements CacheClearerInterface
 
         $apiPlatformMapping = $this->messageMapping();
 
+        /** @var array<class-string, array<int, array<string, mixed>>> $operationMapping */
         $operationMapping = [];
 
         foreach ($apiPlatformMapping as $resource => $operationTypes) {
             foreach ($operationTypes as $operationType => $messageClasses) {
                 foreach ($messageClasses as $operationName => $messageClass) {
-                    $operationMapping[$messageClass] = [
+                    if (! isset($operationMapping[$messageClass])) {
+                        $operationMapping[$messageClass] = [];
+                    }
+
+                    $operationMapping[$messageClass][] = [
                         'resource' => $resource,
                         'operationType' => $operationType,
                         'operationName' => $operationName,
@@ -216,7 +242,7 @@ final class Config implements CacheClearerInterface
     }
 
     /**
-     * @return array<string, class-string<ApiPlatformMessage>>
+     * @return array<string, class-string>
      */
     private function getOperationIdMapping(): array
     {
@@ -226,10 +252,13 @@ final class Config implements CacheClearerInterface
 
         $operationMapping = $this->operationMapping();
 
-        /** @var array<string, class-string<ApiPlatformMessage>> $operationIdMapping */
+        /** @var array<string, class-string> $operationIdMapping */
         $operationIdMapping = array_combine(
             array_map(
-                static fn (array $operation) => $operation['operationId'],
+                static fn (array $operations) => array_map(
+                    static fn (array $operation) => $operation['operationId'],
+                    $operations
+                ),
                 $operationMapping
             ),
             array_keys($operationMapping)

@@ -7,8 +7,6 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Config;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\ApiPlatformException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
-use ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageSchemaFactory;
-use ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\OpenApiSchemaFactory;
 use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
 use ADS\Bundle\EventEngineBundle\Response\HasResponses;
 use ADS\Util\ArrayUtil;
@@ -36,7 +34,6 @@ use function array_keys;
 use function array_map;
 use function array_merge;
 use function in_array;
-use function method_exists;
 use function sprintf;
 use function strpos;
 use function strtoupper;
@@ -208,7 +205,6 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
                             $operation['openapi_context'] = [];
                         }
 
-                        $schema = OpenApiSchemaFactory::toOpenApiSchema($messageClass::__schema()->toArray());
                         $reflectionClass = new ReflectionClass($messageClass);
                         $openApiContext = &$operation['openapi_context'];
 
@@ -220,14 +216,15 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
                             ->addRead($operation)
                             ->addStateless($operation, $messageClass)
                             ->addStatus($operation, $messageClass, $reflectionClass)
+                            ->addInputClass($operation, $messageClass)
+                            ->addOutputClass($operation, $messageClass)
                             ->addTags($openApiContext, $messageClass)
                             ->addDocumentation($openApiContext, $messageClass, $reflectionClass)
-                            ->addParameters($operation, $schema, $messageClass)
+                            ->addParameters($operation, $messageClass)
                             ->addRequestBody(
                                 $operation,
                                 $operationType,
                                 $operationName,
-                                $schema,
                                 $messageClass,
                                 $resourceClass,
                                 $resourceMetadata
@@ -370,6 +367,34 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
     }
 
     /**
+     * @param array<mixed> $operation
+     */
+    private function addInputClass(array &$operation, string $messageClass): self
+    {
+        $operation['input']['class'] ??= $messageClass::__inputClass();
+
+        if ($operation['input']['class'] === null) {
+            unset($operation['input']);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param array<mixed> $operation
+     */
+    private function addOutputClass(array &$operation, string $messageClass): self
+    {
+        $operation['output']['class'] ??= $messageClass::__outputClass();
+
+        if ($operation['output']['class'] === null) {
+            unset($operation['output']);
+        }
+
+        return $this;
+    }
+
+    /**
      * @param array<mixed> $openApiContext
      * @param class-string<ApiPlatformMessage> $messageClass
      */
@@ -401,55 +426,31 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
 
     /**
      * @param array<mixed> $operation
-     * @param array<mixed> $schema
      * @param class-string<ApiPlatformMessage> $messageClass
      */
     private function addParameters(
         array &$operation,
-        array &$schema,
         string $messageClass
     ): self {
         $operation['openapi_context']['parameters'] ??= [];
 
-        $uri = $messageClass::__path() ?? $operation['path'] ?? null;
+        $pathUri = $messageClass::__pathUri() ?? ($operation['path'] ? Uri::fromString($operation['path']) : null);
 
-        if ($uri === null) {
+        if ($pathUri === null) {
             return $this;
         }
 
-        $path = Uri::fromString($uri);
+        /** @var array<string, mixed> $pathSchema */
+        $pathSchema = $messageClass::__pathSchema($pathUri);
+        $pathParameterNames = $pathUri->toPathParameterNames();
 
-        $parameters = [
-            'path' => $path->toPathParameterNames(),
-            'query' => $path->toQueryParameterNames(),
-        ];
-
-        foreach ($parameters as $type => $parameterNames) {
-            if ($schema === null) {
-                break;
-            }
-
-            foreach ($parameterNames as $parameterName) {
-                if (! isset($schema['properties'][$parameterName])) {
-                    throw new RuntimeException(
-                        sprintf(
-                            'Parameter \'%s\' (uri: %s) not found in message \'%s\'.',
-                            $parameterName,
-                            $uri,
-                            $messageClass,
-                        )
-                    );
-                }
-
-                $operation['openapi_context']['parameters'][] = [
-                    'name' => $parameterName,
-                    'in' => $type,
-                    'schema' => $schema['properties'][$parameterName],
-                    'required' => in_array($parameterName, $schema['required']),
-                ];
-            }
-
-            $schema = MessageSchemaFactory::removeParameters($schema, $parameterNames);
+        foreach ($pathUri->toAllParameterNames() as $parameterName) {
+            $operation['openapi_context']['parameters'][] = [
+                'name' => $parameterName,
+                'in' => in_array($parameterName, $pathParameterNames) ? 'path' : 'query',
+                'schema' => $pathSchema['properties'][$parameterName],
+                'required' => in_array($parameterName, $pathSchema['required']),
+            ];
         }
 
         return $this;
@@ -457,30 +458,23 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
 
     /**
      * @param array<mixed> $operation
-     * @param array<mixed> $schema
      * @param class-string<ApiPlatformMessage> $messageClass
      */
     private function addRequestBody(
         array &$operation,
         string $operationType,
         string $operationName,
-        ?array &$schema,
         string $messageClass,
         string $resourceClass,
         ResourceMetadata $resourceMetadata
     ): self {
-        if ($schema === null && $operation['method'] !== Request::METHOD_POST) {
+        $pathUri = $messageClass::__pathUri() ?? ($operation['path'] ? Uri::fromString($operation['path']) : null);
+
+        if ($pathUri === null || $operation['method'] !== Request::METHOD_POST) {
             return $this;
         }
 
-        if (
-            $schema
-            && method_exists($messageClass, '__requestBodyArrayProperty')
-            && $messageClass::__requestBodyArrayProperty()
-        ) {
-            $schema = $schema['properties'][$messageClass::__requestBodyArrayProperty()];
-        }
-
+        $schema = $messageClass::__requestBodySchema($pathUri);
         $content = [];
         $inputFormats = $this->formats($resourceMetadata, $operationType, $operationName);
 

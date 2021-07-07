@@ -15,9 +15,10 @@ services:
         tags:
             - 'api_platform.data_persister'
 
-    ADS\Bundle\ApiPlatformEventEngineBundle\PropertyExtractor\PropertyStateExtractor:
+    ADS\Bundle\ApiPlatformEventEngineBundle\PropertyExtractor\PropertySchemaStateExtractor:
         arguments:
             - '@api_platform.property_info'
+            - '@serializer.mapping.class_metadata_factory'
         tags:
             - 'property_info.list_extractor'
             - 'property_info.type_extractor'
@@ -34,6 +35,12 @@ services:
         tags:
             - 'api_platform.item_data_provider'
 
+    ADS\Bundle\ApiPlatformEventEngineBundle\Provider\DocumentStoreSubresourceDataProvider:
+        arguments:
+            - '@EventEngine\EventEngine'
+        tags:
+            - { name: 'api_platform.subresource_data_provider', priority: 20 }
+
     ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory\ShortNameResourceMetadataFactory:
         decorates: 'api_platform.metadata.resource.metadata_factory.short_name'
         arguments:
@@ -46,6 +53,7 @@ services:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Config'
             - '@api_platform.operation_path_resolver.custom'
             - '%api_platform.formats%'
+            - '%api_platform.defaults%'
         calls:
             - setSchemaFactory: ['@api_platform.json_schema.schema_factory']
 
@@ -53,10 +61,19 @@ services:
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder'
             - '@EventEngine\EventEngine'
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Filter\FilterFinder'
             - '%api_platform.collection.pagination.page_parameter_name%'
             - '%api_platform.collection.order_parameter_name%'
         tags:
             - { name: serializer.normalizer, priority: -800 }
+
+    ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\ImmutableRecordNormalizer:
+        tags:
+            - { name: serializer.normalizer, priority: -900 }
+
+    ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\ValueObjectNormalizer:
+        tags:
+            - { name: serializer.normalizer, priority: --700 }
 
     ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageSchemaFactory:
         decorates: 'api_platform.json_schema.schema_factory'
@@ -66,6 +83,8 @@ services:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder'
             - '@ADS\Bundle\EventEngineBundle\Config'
             - '@EventEngine\EventEngine'
+            - '@api_platform.metadata.property.name_collection_factory'
+            - '%api_platform.defaults%'
 
     ADS\Bundle\ApiPlatformEventEngineBundle\SymfonyCommand\ApiMappingMessageCommand:
         arguments:
@@ -122,9 +141,15 @@ services:
 
     ADS\Bundle\ApiPlatformEventEngineBundle\Filter\FilterConverter:
         arguments:
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Filter\FilterFinder'
             - '%api_platform.collection.pagination.page_parameter_name%'
             - '%api_platform.collection.pagination.items_per_page_parameter_name%'
             - '%api_platform.collection.order_parameter_name%'
+
+    ADS\Bundle\ApiPlatformEventEngineBundle\Filter\FilterFinder:
+        arguments:
+            - '@api_platform.metadata.resource.metadata_factory'
+            - '@api_platform.filter_locator'
 
     ADS\Bundle\ApiPlatformEventEngineBundle\Filter\DocumentStoreFilterConverter:
         parent: 'ADS\Bundle\ApiPlatformEventEngineBundle\Filter\FilterConverter'

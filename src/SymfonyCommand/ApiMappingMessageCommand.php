@@ -69,20 +69,22 @@ class ApiMappingMessageCommand extends Command
     {
         $table = [];
 
-        foreach ($mapping as $messageClass => $operationData) {
-            if ($filter !== null) {
-                $allData = array_merge($operationData, [$messageClass]);
-                $matches = preg_grep(sprintf('/%s/i', $filter), $allData);
+        foreach ($mapping as $messageClass => $operations) {
+            foreach ($operations as $operationData) {
+                if ($filter !== null) {
+                    $allData = array_merge($operationData, [$messageClass]);
+                    $matches = preg_grep(sprintf('/%s/i', $filter), $allData);
 
-                if (empty($matches)) {
-                    continue;
+                    if (empty($matches)) {
+                        continue;
+                    }
                 }
-            }
 
-            $table[] = array_merge(
-                $operationData,
-                ['message' => $messageClass]
-            );
+                $table[] = array_merge(
+                    $operationData,
+                    ['message' => $messageClass]
+                );
+            }
         }
 
         return $table;

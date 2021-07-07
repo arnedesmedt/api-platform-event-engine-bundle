@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\PropertyExtractor;
 
 use ADS\Util\ArrayUtil;
+use ADS\ValueObjects\ValueObject;
 use ApiPlatform\Core\Api\IdentifiersExtractorInterface;
+
+use function array_map;
 
 class IdentifierExtractor implements IdentifiersExtractorInterface
 {
@@ -36,6 +39,11 @@ class IdentifierExtractor implements IdentifiersExtractorInterface
     public function getIdentifiersFromItem($item): array
     {
         $identifiers = $this->identifiersExtractor->getIdentifiersFromItem($item);
+
+        $identifiers = array_map(
+            static fn ($identifier) => $identifier instanceof ValueObject ? $identifier->toValue() : $identifier,
+            $identifiers
+        );
 
         return ArrayUtil::toSnakeCasedValues($identifiers);
     }

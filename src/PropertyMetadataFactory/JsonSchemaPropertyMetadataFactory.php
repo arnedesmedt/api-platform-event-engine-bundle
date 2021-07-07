@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory;
 
+use ADS\Util\StringUtil;
 use ApiPlatform\Core\Metadata\Property\Factory\PropertyMetadataFactoryInterface;
 use ApiPlatform\Core\Metadata\Property\PropertyMetadata;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
@@ -24,11 +25,12 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
     }
 
     /**
-     * @param class-string<JsonSchemaAwareRecord> $resourceClass
+     * @param class-string $resourceClass
      * @param array<mixed> $options
      */
     public function create(string $resourceClass, string $property, array $options = []): PropertyMetadata
     {
+        $property = StringUtil::camelize($property);
         $propertyMetadata = $this->decorated->create($resourceClass, $property, $options);
         $reflectionClass = new ReflectionClass($resourceClass);
 

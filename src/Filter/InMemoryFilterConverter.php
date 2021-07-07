@@ -20,21 +20,21 @@ use const SORT_DESC;
 final class InMemoryFilterConverter extends FilterConverter
 {
     /**
-     * @param array<mixed> $apiPlatformFilters
+     * @inheritDoc
      */
-    public function order(array $apiPlatformFilters): ?Closure
+    public function order(array $filters): ?Closure
     {
         if (
-            ! isset($apiPlatformFilters[$this->orderParameterName])
-            || empty($apiPlatformFilters[$this->orderParameterName])
+            ! isset($filters[$this->orderParameterName])
+            || empty($filters[$this->orderParameterName])
         ) {
             return null;
         }
 
-        return function (array $items) use ($apiPlatformFilters) {
+        return function (array $items) use ($filters) {
             $arguments = [];
 
-            foreach ($apiPlatformFilters[$this->orderParameterName] as $orderParameter => $sorting) {
+            foreach ($filters[$this->orderParameterName] as $orderParameter => $sorting) {
                 $arguments = array_merge(
                     $arguments,
                     [
@@ -56,11 +56,11 @@ final class InMemoryFilterConverter extends FilterConverter
     }
 
     /**
-     * @param array<mixed> $apiPlatformFilters
+     * @inheritDoc
      */
-    public function filter(array $apiPlatformFilters): ?Filter
+    public function filter(array $filters, string $resourceClass): ?Filter
     {
-        if (! isset($apiPlatformFilters[$this->pageParameterName])) {
+        if (! isset($filters[$this->pageParameterName])) {
             return null;
         }
 
@@ -68,17 +68,17 @@ final class InMemoryFilterConverter extends FilterConverter
     }
 
     /**
-     * @param array<mixed> $apiPlatformFilters
+     * @inheritDoc
      */
-    public function skip(array $apiPlatformFilters): ?int
+    public function skip(array $filters): ?int
     {
         return null;
     }
 
     /**
-     * @param array<mixed> $apiPlatformFilters
+     * @inheritDoc
      */
-    public function limit(array $apiPlatformFilters): ?int
+    public function limit(array $filters): ?int
     {
         return null;
     }

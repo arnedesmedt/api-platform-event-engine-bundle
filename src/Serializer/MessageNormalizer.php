@@ -4,22 +4,23 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Serializer;
 
+use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\FilterFinder;
+use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\SearchFilter;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder;
 use ADS\Util\ArrayUtil;
-use ArrayObject;
-use EventEngine\Data\ImmutableRecord;
 use EventEngine\EventEngine;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
-use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
+use function array_diff_key;
 use function array_key_exists;
 use function array_merge;
 use function method_exists;
 
-final class MessageNormalizer implements NormalizerInterface, DenormalizerInterface
+final class MessageNormalizer implements DenormalizerInterface
 {
     private Finder $messageFinder;
     private EventEngine $eventEngine;
+    private FilterFinder $filterFinder;
     private string $pageParameterName;
     private string $orderParameterName;
     private string $itemsPerPageParameterName;
@@ -27,12 +28,14 @@ final class MessageNormalizer implements NormalizerInterface, DenormalizerInterf
     public function __construct(
         Finder $messageFinder,
         EventEngine $eventEngine,
+        FilterFinder $filterFinder,
         string $pageParameterName = 'page',
         string $orderParameterName = 'order',
         string $itemsPerPageParameterName = 'items-per-page'
     ) {
         $this->messageFinder = $messageFinder;
         $this->eventEngine = $eventEngine;
+        $this->filterFinder = $filterFinder;
         $this->pageParameterName = $pageParameterName;
         $this->orderParameterName = $orderParameterName;
         $this->itemsPerPageParameterName = $itemsPerPageParameterName;
@@ -56,7 +59,7 @@ final class MessageNormalizer implements NormalizerInterface, DenormalizerInterf
         return $this->eventEngine->messageFactory()->createMessageFromArray(
             $message,
             [
-                'payload' => $this->messageData($message, $data, $context),
+                'payload' => $this->messageData($message, $data, $type, $context),
             ]
         );
     }
@@ -71,38 +74,26 @@ final class MessageNormalizer implements NormalizerInterface, DenormalizerInterf
     }
 
     /**
-     * @param mixed $object
-     * @param array<mixed> $context
-     *
-     * @return array<mixed>|ArrayObject<mixed, mixed>|string|int|float|bool|null
-     */
-    public function normalize($object, ?string $format = null, array $context = [])
-    {
-        return ArrayUtil::toSnakeCasedKeys($object->toArray(), true);
-    }
-
-    /**
-     * @param mixed $data
-     */
-    public function supportsNormalization($data, ?string $format = null): bool
-    {
-        return $data instanceof ImmutableRecord;
-    }
-
-    /**
      * @param class-string $message
      * @param mixed $data
      * @param array<mixed> $context
      *
      * @return array<mixed>
      */
-    private function messageData(string $message, $data, array $context): array
+    private function messageData(string $message, $data, string $type, array $context): array
     {
         if (
             method_exists($message, '__requestBodyArrayProperty')
             && $message::__requestBodyArrayProperty()
         ) {
             $data = [$message::__requestBodyArrayProperty() => $data];
+        }
+
+        $filter = ($this->filterFinder)($type, SearchFilter::class);
+
+        if ($filter !== null) {
+            $descriptions = $filter->getDescription($type);
+            $context['query_parameters'] = array_diff_key($context['query_parameters'], $descriptions);
         }
 
         if (array_key_exists($this->pageParameterName, $context['query_parameters'])) {

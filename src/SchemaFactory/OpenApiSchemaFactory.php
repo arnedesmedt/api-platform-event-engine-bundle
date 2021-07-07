@@ -18,6 +18,7 @@ use function is_array;
 use function mb_strtolower;
 use function preg_match;
 use function reset;
+use function sprintf;
 use function str_replace;
 
 final class OpenApiSchemaFactory
@@ -209,9 +210,9 @@ final class OpenApiSchemaFactory
     {
         $definitions = [];
 
-        foreach ($schema as $name => $value) {
+        foreach ($schema as $name => &$value) {
             if ($name === '$ref') {
-                preg_match('~#/definitions/(.+)~', $schema['$ref'], $matches);
+                preg_match('~#/components/schemas/(.+)~', $value, $matches);
 
                 $definitions[] = $matches[1];
 
@@ -229,5 +230,29 @@ final class OpenApiSchemaFactory
         }
 
         return array_unique($definitions);
+    }
+
+    /**
+     * @param array<string, mixed> $schema
+     */
+    public static function replaceRefs(array &$schema, string $refName, string $newRefName): void
+    {
+        foreach ($schema as $name => &$value) {
+            if ($name === '$ref') {
+                preg_match('~#/components/schemas/(.+)~', $value, $matches);
+
+                if ($matches[1] === $refName) {
+                    $value = sprintf('#/components/schemas/%s', $newRefName);
+                }
+
+                continue;
+            }
+
+            if (! is_array($value)) {
+                continue;
+            }
+
+            self::replaceRefs($value, $refName, $newRefName);
+        }
     }
 }
