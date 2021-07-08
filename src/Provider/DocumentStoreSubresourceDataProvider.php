@@ -12,6 +12,7 @@ final class DocumentStoreSubresourceDataProvider extends DataProvider implements
     RestrictedDataProviderInterface
 {
     /**
+     * @param class-string $resourceClass
      * @param array<string, mixed> $identifiers
      * @param array<string, mixed> $context
      *
@@ -23,12 +24,6 @@ final class DocumentStoreSubresourceDataProvider extends DataProvider implements
         array $context,
         ?string $operationName = null
     ) {
-        $message = $this->message($context, $resourceClass, $operationName);
-
-        if (! empty($context['filters'] ?? [])) {
-            $message = $message->withAddedMetadata('filters', $context['filters']);
-        }
-
-        return $this->eventEngine->dispatch($message);
+        return $this->collectionProvider($resourceClass, $operationName, $context);
     }
 }

@@ -6,6 +6,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Provider;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\FinderException;
 use ApiPlatform\Core\Api\OperationType;
+use ApiPlatform\Core\DataProvider\PartialPaginatorInterface;
 use EventEngine\EventEngine;
 use EventEngine\Messaging\Message;
 
@@ -44,5 +45,22 @@ abstract class DataProvider
     public function supports(string $resourceClass, ?string $operationName = null, array $context = []): bool
     {
         return (bool) ($context['message'] ?? null);
+    }
+
+    /**
+     * @param class-string $resourceClass
+     * @param array<mixed> $context
+     *
+     * @return array<mixed>|PartialPaginatorInterface<mixed>
+     */
+    protected function collectionProvider(string $resourceClass, ?string $operationName = null, array $context = [])
+    {
+        $message = $this->message($context, $resourceClass, $operationName);
+
+        if (! empty($context['filters'] ?? [])) {
+            $message = $message->withAddedMetadata('context', $context);
+        }
+
+        return $this->eventEngine->dispatch($message);
     }
 }

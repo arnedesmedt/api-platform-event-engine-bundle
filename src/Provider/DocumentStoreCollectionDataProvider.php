@@ -20,12 +20,6 @@ final class DocumentStoreCollectionDataProvider extends DataProvider implements
      */
     public function getCollection(string $resourceClass, ?string $operationName = null, array $context = [])
     {
-        $message = $this->message($context, $resourceClass, $operationName);
-
-        if (! empty($context['filters'] ?? [])) {
-            $message = $message->withAddedMetadata('context', $context);
-        }
-
-        return $this->eventEngine->dispatch($message);
+        return $this->collectionProvider($resourceClass, $operationName, $context);
     }
 }
