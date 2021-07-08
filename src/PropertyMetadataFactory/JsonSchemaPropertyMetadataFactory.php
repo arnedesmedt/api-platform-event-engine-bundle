@@ -61,6 +61,7 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
             ->withRequired(in_array($property, $schema['required'] ?? []))
             ->withSchema($schema['properties'][$property] ?? null)
             ->withExample($example)
-            ->withDefault($propertyDefault);
+            ->withDefault($propertyDefault)
+            ->withReadable(true);
     }
 }
