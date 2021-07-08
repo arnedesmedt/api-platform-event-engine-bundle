@@ -24,7 +24,7 @@ class FilterFinder
     public function __invoke(string $resourceClass, string $type): ?FilterInterface
     {
         $resourceMetadata = $this->resourceMetadataFactory->create($resourceClass);
-        $filterIds = $resourceMetadata->getAttribute('filters');
+        $filterIds = $resourceMetadata->getAttribute('filters', []);
 
         foreach ($filterIds as $filterId) {
             if (! $this->filterLocator->has($filterId)) {
