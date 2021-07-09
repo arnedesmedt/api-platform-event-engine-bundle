@@ -41,7 +41,7 @@ final class HalSchemaFactory implements SchemaFactoryInterface
             return;
         }
 
-        $schemaFactory->addDistinctFormat('hal');
+        $schemaFactory->addDistinctFormat('jsonhal');
     }
 
     /**
