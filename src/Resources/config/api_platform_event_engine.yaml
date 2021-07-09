@@ -47,7 +47,8 @@ services:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory\ShortNameResourceMetadataFactory.inner'
 
     ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory\MessageResourceMetadataFactory:
-        decorates: 'api_platform.metadata.resource.metadata_factory.formats'
+        decorates: 'api_platform.metadata.resource.metadata_factory'
+        decoration_priority: 7
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory\MessageResourceMetadataFactory.inner'
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Config'
@@ -85,6 +86,12 @@ services:
             - '@EventEngine\EventEngine'
             - '@api_platform.metadata.property.name_collection_factory'
             - '%api_platform.defaults%'
+
+    ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\HalSchemaFactory:
+        decorates: 'api_platform.json_schema.schema_factory'
+        decoration_priority: -5
+        arguments:
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\HalSchemaFactory.inner'
 
     ADS\Bundle\ApiPlatformEventEngineBundle\SymfonyCommand\ApiMappingMessageCommand:
         arguments:
