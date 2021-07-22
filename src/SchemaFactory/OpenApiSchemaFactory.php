@@ -106,13 +106,6 @@ final class OpenApiSchemaFactory
     private static function oneOf(array $jsonSchema): array
     {
         if (isset($jsonSchema['oneOf']) && is_array($jsonSchema['oneOf'])) {
-//            $key = array_search('null', $jsonSchema['oneOf']);
-//            if ($key !== false) {
-//                $jsonSchema['nullable'] = true;
-//
-//                unset($jsonSchema['oneOf'][$key]);
-//            }
-
             foreach ($jsonSchema['oneOf'] as $oneOfName => $oneOfSchema) {
                 $jsonSchema['oneOf'][$oneOfName] = self::toOpenApiSchema($oneOfSchema);
             }
