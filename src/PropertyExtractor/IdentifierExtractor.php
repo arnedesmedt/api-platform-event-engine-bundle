@@ -45,6 +45,6 @@ class IdentifierExtractor implements IdentifiersExtractorInterface
             $identifiers
         );
 
-        return ArrayUtil::toSnakeCasedValues($identifiers);
+        return ArrayUtil::toSnakeCasedKeys($identifiers);
     }
 }
