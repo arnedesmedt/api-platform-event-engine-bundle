@@ -27,6 +27,6 @@ final class ImmutableRecordNormalizer implements NormalizerInterface
      */
     public function supportsNormalization($data, ?string $format = null): bool
     {
-        return $data instanceof ImmutableRecord;
+        return $data instanceof ImmutableRecord && ! $data instanceof NoImmutableRecordSerializer;
     }
 }
