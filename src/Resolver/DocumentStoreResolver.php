@@ -6,78 +6,47 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Resolver;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\DocumentStoreFilterConverter;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\Paginator;
-use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
 use ADS\Bundle\EventEngineBundle\Repository\Repository;
-use ADS\Bundle\EventEngineBundle\Resolver\MetaDataResolver;
+use EventEngine\DocumentStore\Filter\AndFilter;
 use EventEngine\DocumentStore\Filter\AnyFilter;
 use EventEngine\DocumentStore\Filter\Filter;
-use EventEngine\DocumentStore\OrderBy\OrderBy;
 
-class DocumentStoreResolver implements MetaDataResolver
+final class DocumentStoreResolver extends FilterResolver
 {
     protected Repository $repository;
-    /** @required */
-    public DocumentStoreFilterConverter $filterConverter;
-    private ?OrderBy $orderBy = null;
-    private ?Filter $filter = null;
-    private ?int $skip = null;
-    private ?int $itemsPerPage = null;
-    private ?int $page = null;
-    /** @var array<mixed> */
-    private array $filters = [];
-    /** @var array<mixed> */
-    private array $context = [];
 
-    /**
-     * @param array<mixed> $metaData
-     *
-     * @inheritDoc
-     */
-    public function setMetaData(array $metaData)
+    public function __construct(DocumentStoreFilterConverter $filterConverter)
     {
-        $this->context = $metaData['context'] ?? [];
-        $this->filters = $this->context['filters'] ?? [];
-        $this->orderBy = $this->filterConverter->order($this->filters);
-        $this->filter = $this->filterConverter->filter($this->filters, $this->repository->stateClass());
-        $this->skip = $this->filterConverter->skip($this->filters);
-        $this->itemsPerPage = $this->filterConverter->itemsPerPage($this->filters);
-        $this->page = $this->filterConverter->page($this->filters);
+        $this->filterConverter = $filterConverter;
+    }
+
+    public function setRepository(Repository $repository): self
+    {
+        $this->repository = $repository;
 
         return $this;
     }
 
-    public function orderBy(): ?OrderBy
+    public function addFilter(Filter $filter): self
     {
-        return $this->orderBy;
-    }
+        if ($this->filter instanceof Filter) {
+            $this->filter = new AndFilter($this->filter, $filter);
 
-    public function filter(?ApiPlatformMessage $query = null): ?Filter
-    {
-        return $this->filter;
-    }
+            return $this;
+        }
 
-    public function skip(): ?int
-    {
-        return $this->skip;
-    }
+        $this->filter = $filter;
 
-    public function itemsPerPage(): ?int
-    {
-        return $this->itemsPerPage;
-    }
-
-    public function page(): ?int
-    {
-        return $this->page;
+        return $this;
     }
 
     /**
      * @return array<mixed>
      */
-    public function arguments(?ApiPlatformMessage $query = null): array
+    public function arguments(): array
     {
         return [
-            $this->filter($query),
+            $this->filter(),
             $this->skip(),
             $this->itemsPerPage(),
             $this->orderBy(),
@@ -85,20 +54,26 @@ class DocumentStoreResolver implements MetaDataResolver
     }
 
     /**
-     * @return array<mixed>|Paginator<mixed>
+     * @inheritDoc
      */
-    public function __invoke(?ApiPlatformMessage $query = null)
+    protected function states(): array
     {
-        $states = $this->repository->findDocumentStates(...$this->arguments($query));
-        $totalItems = $this->repository->countDocuments(new AnyFilter());
-        $skip = $this->skip();
-        $itemsPerPage = $this->itemsPerPage();
-        $page = $this->page();
+        return $this->repository->findDocumentStates(...$this->arguments());
+    }
 
-        if ($skip === null || $itemsPerPage === null || $page === null) {
-            return $states;
-        }
+    /**
+     * @inheritDoc
+     */
+    protected function totalItems(array $states): int
+    {
+        return $this->repository->countDocuments(new AnyFilter());
+    }
 
+    /**
+     * @inheritDoc
+     */
+    protected function result(array $states, int $page, int $itemsPerPage, int $totalItems)
+    {
         return new Paginator(
             $states,
             $page,
