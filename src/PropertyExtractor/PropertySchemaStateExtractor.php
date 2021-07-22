@@ -4,32 +4,31 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\PropertyExtractor;
 
-use ADS\Util\StringUtil;
 use ADS\ValueObjects\Implementation\TypeDetector;
 use ADS\ValueObjects\ListValue;
 use EventEngine\JsonSchema\JsonSchema;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use ReflectionClass;
-use ReflectionException;
 use ReflectionNamedType;
-use ReflectionProperty;
+use ReflectionType;
 use RuntimeException;
-use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
 use Symfony\Component\PropertyInfo\PropertyListExtractorInterface;
 use Symfony\Component\PropertyInfo\PropertyTypeExtractorInterface;
 use Symfony\Component\PropertyInfo\Type;
 use Symfony\Component\Serializer\Mapping\AttributeMetadataInterface;
 use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactoryInterface;
 
+use function array_diff;
 use function array_filter;
 use function array_intersect;
 use function array_keys;
 use function array_map;
-use function array_reduce;
 use function array_unique;
 use function class_exists;
 use function in_array;
 use function is_array;
+use function is_string;
+use function reset;
 use function sprintf;
 use function stripslashes;
 use function strpos;
@@ -38,8 +37,6 @@ use function trim;
 
 final class PropertySchemaStateExtractor implements PropertyListExtractorInterface, PropertyTypeExtractorInterface
 {
-    // phpcs:ignore SlevomatCodingStandard.Classes.UnusedPrivateElements.WriteOnlyProperty
-    private PropertyInfoExtractorInterface $propertyInfo;
     private ClassMetadataFactoryInterface $classMetadataFactory;
 
     private const TYPE_MAPPING = [
@@ -53,10 +50,8 @@ final class PropertySchemaStateExtractor implements PropertyListExtractorInterfa
     ];
 
     public function __construct(
-        PropertyInfoExtractorInterface $propertyInfo,
         ClassMetadataFactoryInterface $classMetadataFactory
     ) {
-        $this->propertyInfo = $propertyInfo;
         $this->classMetadataFactory = $classMetadataFactory;
     }
 
@@ -111,15 +106,16 @@ final class PropertySchemaStateExtractor implements PropertyListExtractorInterfa
 
         [$serializerGroups, $blackListedSerializerGroups] = self::splitSerializerGroups($context['serializer_groups']);
 
+        $schema = $this->schemaFrom($class);
         // Only allow the properties that are listed in the json schema aware record, if it's such an object.
         $filteredPropertyNames = array_keys(
-            $this->schemaFrom($class, false)['properties'] ?? []
+            $schema['properties'] ?? []
         );
 
         $serializerClassMetadata = $this->classMetadataFactory->getMetadataFor($class);
 
         foreach ($serializerClassMetadata->getAttributesMetadata() as $serializerAttributeMetadata) {
-            $jsonSchemaAndPropertyNotInSchema = ! empty($filteredPropertyNames)
+            $jsonSchemaAndPropertyNotInSchema = $schema !== null
                 && ! in_array($serializerAttributeMetadata->getName(), $filteredPropertyNames);
             $ignoredProperty = $serializerAttributeMetadata instanceof AttributeMetadataInterface
                 && $serializerAttributeMetadata->isIgnored();
@@ -137,7 +133,7 @@ final class PropertySchemaStateExtractor implements PropertyListExtractorInterfa
                 continue;
             }
 
-            $properties[] = StringUtil::decamelize($serializerAttributeMetadata->getName());
+            $properties[] = $serializerAttributeMetadata->getName();
         }
 
         return $properties;
@@ -157,7 +153,18 @@ final class PropertySchemaStateExtractor implements PropertyListExtractorInterfa
             return null;
         }
 
-        return self::typeMapper($schema, $property);
+        $propertySchema = $schema['properties'][$property] ?? null;
+
+        if ($propertySchema === null) {
+            return null;
+        }
+
+        $reflectionClass = new ReflectionClass($class);
+        $reflectionProperty = $reflectionClass->getProperty($property);
+        /** @var ReflectionNamedType $reflectionNamedType */
+        $reflectionNamedType = $reflectionProperty->getType();
+
+        return self::types($propertySchema, $reflectionNamedType);
     }
 
     /**
@@ -165,7 +172,7 @@ final class PropertySchemaStateExtractor implements PropertyListExtractorInterfa
      *
      * @return array<mixed>
      */
-    private function schemaFrom(string $stateClass, bool $withReflectionProperties = true): ?array
+    private function schemaFrom(string $stateClass): ?array
     {
         $reflectionClass = new ReflectionClass($stateClass);
 
@@ -176,34 +183,17 @@ final class PropertySchemaStateExtractor implements PropertyListExtractorInterfa
             return null;
         }
 
-        $schema = $stateClass::__schema()->toArray();
-
-        if (! $withReflectionProperties) {
-            return $schema;
-        }
-
-        $schema['reflectionProperties'] = array_reduce(
-            array_keys($schema['properties'] ?? []),
-            static function ($reflectionProperties, $property) use ($reflectionClass) {
-                $reflectionProperties[$property] = $reflectionClass->getProperty($property);
-
-                return $reflectionProperties;
-            },
-            []
-        );
-
-        return $schema;
+        return $stateClass::__schema()->toArray();
     }
 
     /**
-     * @param array<string, mixed> $schema
+     * @param array<string, mixed>|null $propertySchema
+     * @param ReflectionNamedType|class-string|null $reflectionNamedType
      *
      * @return array<Type>|null
      */
-    private static function typeMapper(array $schema, string $property): ?array
+    private static function types(?array $propertySchema, $reflectionNamedType): ?array
     {
-        $propertySchema = $schema['properties'][$property] ?? null;
-
         if ($propertySchema === null) {
             return null;
         }
@@ -212,21 +202,65 @@ final class PropertySchemaStateExtractor implements PropertyListExtractorInterfa
             return [new Type(Type::BUILTIN_TYPE_NULL)];
         }
 
-        if (is_array($propertySchema['type'])) {
-            return array_map(
-                static fn (string $type) => self::type($schema, $property, $type),
-                array_unique(
-                    array_map(
-                        static fn (string $type) => self::convertTypeIfComplex($type),
-                        $propertySchema['type']
-                    )
-                )
-            );
+        if (! is_array($propertySchema['type'])) {
+            $propertySchema['type'] = [$propertySchema['type']];
         }
 
-        $type = self::convertTypeIfComplex($propertySchema['type']);
+        /** @var class-string|null $class */
+        $class = null;
+        $nullable = false;
+        $itemClass = null;
 
-        return [self::type($schema, $property, $type)];
+        if (is_string($reflectionNamedType)) {
+            /** @var class-string $class */
+            $class = $reflectionNamedType;
+        } elseif ($reflectionNamedType instanceof ReflectionType) {
+            /** @var class-string|null $class */
+            $class = $reflectionNamedType->isBuiltin() ? null : $reflectionNamedType->getName();
+            $nullable = $reflectionNamedType->allowsNull();
+        }
+
+        if ($class) {
+            $classReflection = new ReflectionClass($class);
+            $itemClass = $classReflection->implementsInterface(ListValue::class) ? $class::itemType() : null;
+        }
+
+        if (in_array('null', $propertySchema['type'])) {
+            $nullable = true;
+            $propertySchema['type'] = array_diff($propertySchema['type'], ['null']);
+        }
+
+        return array_map(
+            static function (string $type) use ($propertySchema, $nullable, $class, $itemClass) {
+                $symfonyType = self::mapToSymfonyType($type);
+                $collection = $symfonyType === Type::BUILTIN_TYPE_ARRAY;
+                $collectionKeyType = null;
+                $collectionValueType = null;
+
+                if ($collection) {
+                    $collectionKeyType = new Type(Type::BUILTIN_TYPE_INT);
+                    /** @var array<Type> $collectionValueTypes */
+                    $collectionValueTypes = self::types($propertySchema['items'], $itemClass);
+                    /** @var Type $collectionValueType */
+                    $collectionValueType = reset($collectionValueTypes);
+                }
+
+                return new Type(
+                    $symfonyType,
+                    $nullable,
+                    $class,
+                    $collection,
+                    $collectionKeyType,
+                    $collectionValueType
+                );
+            },
+            array_unique(
+                array_map(
+                    static fn (string $type) => self::convertTypeIfComplex($type),
+                    $propertySchema['type']
+                )
+            )
+        );
     }
 
     private static function convertTypeIfComplex(string $type): string
@@ -238,59 +272,6 @@ final class PropertySchemaStateExtractor implements PropertyListExtractorInterfa
         }
 
         return TypeDetector::getTypeFromClass($type, true, false)->toArray()['type'];
-    }
-
-    /**
-     * @param array<string, mixed> $schema
-     */
-    private static function type(array $schema, string $property, string $type): Type
-    {
-        $symfonyType = self::mapToSymfonyType($type);
-        $nullable = ! in_array($property, $schema['required'] ?? [$property]);
-//        $class = $schema['reflectionProperties'][$property]->
-        $collection = $symfonyType === Type::BUILTIN_TYPE_ARRAY;
-        $collectionKeyType = $collection ? new Type(Type::BUILTIN_TYPE_INT) : null;
-        $collectionValueType = $collection ? self::collectionValueType($schema, $property) : null;
-
-        $type = new Type($symfonyType, $nullable, null, $collection, $collectionKeyType, $collectionValueType);
-//        $type = new Type($symfonyType, $nullable, $class, $collection, $collectionKeyType, $collectionValueType);
-
-        return $type;
-    }
-
-    /**
-     * @param array<string, mixed> $schema
-     */
-    private static function collectionValueType(array $schema, string $property): Type
-    {
-        /** @var ReflectionProperty|null $reflectionProperty */
-        $reflectionProperty = $schema['reflectionProperties'][$property] ?? null;
-
-        if ($reflectionProperty === null) {
-            return new Type(Type::BUILTIN_TYPE_OBJECT);
-        }
-
-        /** @var ReflectionNamedType|null $type */
-        $type = $reflectionProperty->getType();
-
-        if ($type === null) {
-            return new Type(Type::BUILTIN_TYPE_OBJECT);
-        }
-
-        /** @var class-string $valueObjectClass */
-        $valueObjectClass = $type->getName();
-
-        try {
-            $reflectionClass = new ReflectionClass($valueObjectClass);
-        } catch (ReflectionException $exception) {
-            return new Type(Type::BUILTIN_TYPE_OBJECT);
-        }
-
-        $typeClass = $reflectionClass->implementsInterface(ListValue::class)
-            ? $valueObjectClass::itemType()
-            : $valueObjectClass;
-
-        return new Type(Type::BUILTIN_TYPE_OBJECT, false, $typeClass);
     }
 
     private static function mapToSymfonyType(string $jsonSchemaType): string

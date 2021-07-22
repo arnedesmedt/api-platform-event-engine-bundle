@@ -159,6 +159,11 @@ trait DefaultApiPlatformMessage
         return null;
     }
 
+    public static function __schemaStateClass(): ?string
+    {
+        return null;
+    }
+
     /**
      * @inheritDoc
      */

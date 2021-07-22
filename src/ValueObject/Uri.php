@@ -103,7 +103,7 @@ final class Uri extends StringValue
     {
         preg_match_all('/{([^({})]+)}/', $string, $matches);
 
-        return $matches[1] ?? [];
+        return ArrayUtil::toCamelCasedValues($matches[1] ?? []);
     }
 
     public function toQueryPart(): string

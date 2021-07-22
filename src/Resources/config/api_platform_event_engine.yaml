@@ -17,7 +17,6 @@ services:
 
     ADS\Bundle\ApiPlatformEventEngineBundle\PropertyExtractor\PropertySchemaStateExtractor:
         arguments:
-            - '@api_platform.property_info'
             - '@serializer.mapping.class_metadata_factory'
         tags:
             - 'property_info.list_extractor'
@@ -53,10 +52,6 @@ services:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory\MessageResourceMetadataFactory.inner'
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Config'
             - '@api_platform.operation_path_resolver.custom'
-            - '%api_platform.formats%'
-            - '%api_platform.defaults%'
-        calls:
-            - setSchemaFactory: ['@api_platform.json_schema.schema_factory']
 
     ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\MessageNormalizer:
         arguments:
@@ -72,9 +67,24 @@ services:
         tags:
             - { name: serializer.normalizer, priority: -900 }
 
+    ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\CommandDispatchResultNormalizer:
+        tags:
+            - { name: serializer.normalizer, priority: -800 }
+
     ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\ValueObjectNormalizer:
         tags:
-            - { name: serializer.normalizer, priority: --700 }
+            - { name: serializer.normalizer, priority: -700 }
+
+    ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\PropertyExtractorNormalizer:
+        arguments:
+            - '@api_platform.metadata.property.name_collection_factory'
+            - '@?serializer.mapping.class_metadata_factory'
+            - '@?api_platform.name_converter'
+            - '@api_platform.property_accessor'
+            - '@?property_info'
+            - '@?serializer.mapping.class_discriminator_resolver'
+        tags:
+            - { name: serializer.normalizer, priority: -899 }
 
     ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageSchemaFactory:
         decorates: 'api_platform.json_schema.schema_factory'
@@ -82,10 +92,8 @@ services:
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageSchemaFactory.inner'
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder'
-            - '@ADS\Bundle\EventEngineBundle\Config'
-            - '@EventEngine\EventEngine'
-            - '@api_platform.metadata.property.name_collection_factory'
-            - '%api_platform.defaults%'
+            - '@api_platform.metadata.resource.metadata_factory'
+            - '@api_platform.resource_class_resolver'
 
     ADS\Bundle\ApiPlatformEventEngineBundle\SymfonyCommand\ApiMappingMessageCommand:
         arguments:
@@ -158,10 +166,22 @@ services:
     ADS\Bundle\ApiPlatformEventEngineBundle\Filter\InMemoryFilterConverter:
         parent: 'ADS\Bundle\ApiPlatformEventEngineBundle\Filter\FilterConverter'
 
+    ADS\Bundle\ApiPlatformEventEngineBundle\Resolver\InMemoryResolver:
+        arguments:
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Filter\InMemoryFilterConverter'
+    ADS\Bundle\ApiPlatformEventEngineBundle\Resolver\DocumentStoreResolver:
+        arguments:
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Filter\DocumentStoreFilterConverter'
+
     api_platform.event_engine.order_filter:
         class: ADS\Bundle\ApiPlatformEventEngineBundle\Filter\OrderFilter
         arguments:
-            -   $oderParameterName: '%api_platform.collection.order_parameter_name%'
+            - $oderParameterName: '%api_platform.collection.order_parameter_name%'
 
     api_platform.event_engine.search_filter:
         class: ADS\Bundle\ApiPlatformEventEngineBundle\Filter\SearchFilter
+
+    ADS\Bundle\ApiPlatformEventEngineBundle\TypeFactory\MessageTypeFactory:
+        decorates: 'api_platform.json_schema.type_factory'
+        arguments:
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\TypeFactory\MessageTypeFactory.inner'

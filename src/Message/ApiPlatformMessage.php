@@ -31,6 +31,11 @@ interface ApiPlatformMessage extends JsonSchemaAwareRecord
     public static function __stateless(): ?bool;
 
     /**
+     * @return class-string
+     */
+    public static function __schemaStateClass(): ?string;
+
+    /**
      * @return array<string>
      */
     public static function __tags(): array;

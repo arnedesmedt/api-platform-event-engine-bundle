@@ -5,25 +5,21 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Config;
-use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\ApiPlatformException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
+use ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageSchemaFactory;
+use ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\OpenApiSchemaFactory;
 use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
 use ADS\Bundle\EventEngineBundle\Response\HasResponses;
-use ADS\Util\ArrayUtil;
+use ADS\Util\StringUtil;
 use ApiPlatform\Core\Api\OperationType;
-use ApiPlatform\Core\JsonSchema\Schema;
-use ApiPlatform\Core\JsonSchema\SchemaFactoryInterface;
 use ApiPlatform\Core\Metadata\Resource\Factory\ResourceMetadataFactoryInterface;
 use ApiPlatform\Core\Metadata\Resource\ResourceMetadata;
-use ApiPlatform\Core\OpenApi\Model\MediaType;
 use ApiPlatform\Core\PathResolver\OperationPathResolverInterface;
-use ArrayObject;
 use InvalidArgumentException;
 use phpDocumentor\Reflection\DocBlockFactory;
 use ReflectionClass;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 use function array_combine;
 use function array_diff_key;
@@ -55,29 +51,16 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
     private Config $config;
     private DocBlockFactory $docBlockFactory;
     private OperationPathResolverInterface $operationPathResolver;
-    private SchemaFactoryInterface $schemaFactory;
-    /** @var array<mixed> */
-    private array $formats;
 
-    /**
-     * @param array<mixed> $formats
-     */
     public function __construct(
         ResourceMetadataFactoryInterface $decorated,
         Config $config,
-        OperationPathResolverInterface $operationPathResolver,
-        array $formats
+        OperationPathResolverInterface $operationPathResolver
     ) {
         $this->decorated = $decorated;
         $this->config = $config;
         $this->docBlockFactory = DocBlockFactory::createInstance();
         $this->operationPathResolver = $operationPathResolver;
-        $this->formats = $formats;
-    }
-
-    public function setSchemaFactory(SchemaFactoryInterface $schemaFactory): void
-    {
-        $this->schemaFactory = $schemaFactory;
     }
 
     /**
@@ -195,7 +178,6 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
                 ) use (
                     $messagesByOperationName,
                     $resourceMetadata,
-                    $resourceClass,
                     $operationType
                 ) {
                     $messageClass = $messagesByOperationName[$operationName] ?? false;
@@ -219,25 +201,8 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
                             ->addInputClass($operation, $messageClass)
                             ->addOutputClass($operation, $messageClass)
                             ->addTags($openApiContext, $messageClass)
-                            ->addDocumentation($openApiContext, $messageClass, $reflectionClass)
-                            ->addParameters($operation, $messageClass)
-                            ->addRequestBody(
-                                $operation,
-                                $operationType,
-                                $operationName,
-                                $messageClass,
-                                $resourceClass,
-                                $resourceMetadata
-                            )
-                            ->addResponses(
-                                $operation,
-                                $messageClass,
-                                $resourceClass,
-                                $resourceMetadata,
-                                $operationType,
-                                $operationName,
-                                $reflectionClass
-                            );
+                            ->addDocumentation($openApiContext, $reflectionClass)
+                            ->addParameters($operation, $messageClass);
                     }
 
                     return $operation;
@@ -411,7 +376,6 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
      */
     private function addDocumentation(
         array &$openApiContext,
-        string $messageClass,
         ReflectionClass $reflectionClass
     ): self {
         try {
@@ -440,174 +404,33 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
             return $this;
         }
 
-        /** @var array<string, mixed> $pathSchema */
-        $pathSchema = $messageClass::__pathSchema($pathUri);
+        $schema = $messageClass::__schema()->toArray();
+
+        $allParameterNames = $pathUri->toAllParameterNames();
         $pathParameterNames = $pathUri->toPathParameterNames();
 
-        foreach ($pathUri->toAllParameterNames() as $parameterName) {
+        $pathSchema = MessageSchemaFactory::filterParameters($schema, $allParameterNames);
+
+        if ($pathSchema === null) {
+            throw new RuntimeException(
+                sprintf(
+                    'The uri parameter names are not present in the message schema for message \'%s\'.',
+                    $messageClass
+                )
+            );
+        }
+
+        foreach ($allParameterNames as $parameterName) {
+            $propertySchema = $pathSchema['properties'][$parameterName];
+
             $operation['openapi_context']['parameters'][] = [
-                'name' => $parameterName,
+                'name' => StringUtil::decamelize($parameterName),
                 'in' => in_array($parameterName, $pathParameterNames) ? 'path' : 'query',
-                'schema' => $pathSchema['properties'][$parameterName],
+                'schema' => OpenApiSchemaFactory::toOpenApiSchema($propertySchema),
                 'required' => in_array($parameterName, $pathSchema['required']),
             ];
         }
 
         return $this;
-    }
-
-    /**
-     * @param array<mixed> $operation
-     * @param class-string<ApiPlatformMessage> $messageClass
-     */
-    private function addRequestBody(
-        array &$operation,
-        string $operationType,
-        string $operationName,
-        string $messageClass,
-        string $resourceClass,
-        ResourceMetadata $resourceMetadata
-    ): self {
-        $pathUri = $messageClass::__pathUri() ?? ($operation['path'] ? Uri::fromString($operation['path']) : null);
-
-        if ($pathUri === null || $operation['method'] !== Request::METHOD_POST) {
-            return $this;
-        }
-
-        $schema = $messageClass::__requestBodySchema($pathUri);
-        $content = [];
-        $inputFormats = $this->formats($resourceMetadata, $operationType, $operationName);
-
-        $context = isset($schema['properties'])
-            ? [
-                'allowed_properties' => array_keys(ArrayUtil::toCamelCasedKeys($schema['properties'])),
-            ]
-            : null;
-
-        foreach ($inputFormats as $mimeType => $inputFormat) {
-            $schema = $this->schemaFactory
-                    ->buildSchema(
-                        $resourceClass,
-                        $inputFormat,
-                        Schema::TYPE_INPUT,
-                        $operationType,
-                        $operationName,
-                        null,
-                        $context
-                    )
-                    ->getArrayCopy(false);
-
-            $content[$mimeType] = new MediaType(new ArrayObject($schema));
-        }
-
-        $operation['openapi_context']['requestBody'] = [
-            'required' => true,
-            'content' => $content,
-        ];
-
-        return $this;
-    }
-
-    /**
-     * @param array<mixed> $operation
-     * @param ReflectionClass<ApiPlatformMessage> $reflectionClass
-     */
-    private function addResponses(
-        array &$operation,
-        string $messageClass,
-        string $resourceClass,
-        ResourceMetadata $resourceMetadata,
-        string $operationType,
-        string $operationName,
-        ReflectionClass $reflectionClass
-    ): self {
-        $operation['openapi_context']['responses'] ??= [];
-
-        if (! $reflectionClass->implementsInterface(HasResponses::class)) {
-            return $this;
-        }
-
-        $responses = $messageClass::__responseSchemasPerStatusCode();
-
-        if ($operation['openapi_context']['requestBody'] ?? false) {
-            $responses[SymfonyResponse::HTTP_BAD_REQUEST] = ApiPlatformException::badRequest();
-        }
-
-        $responseMimeTypes = $this->formats($resourceMetadata, $operationType, $operationName, 'output_formats');
-
-        foreach ($responses as $statusCode => $responseSchema) {
-            $description = '';
-            $serializerContext = $statusCode === 'default'
-                ? []
-                : [
-                    'status_code' => $statusCode,
-                    'response_schema' => $responseSchema,
-                ];
-
-            $content = [];
-            foreach ($responseMimeTypes as $mimeType => $format) {
-                $schema = $this->schemaFactory
-                    ->buildSchema(
-                        $resourceClass,
-                        $format,
-                        Schema::TYPE_OUTPUT,
-                        $operationType,
-                        $operationName,
-                        null,
-                        $serializerContext
-                    )
-                    ->getArrayCopy(false);
-
-                if ($mimeType === 'application/json') {
-                    $description = $schema['description'] ?? '';
-                }
-
-                $content[$mimeType] = new MediaType(new ArrayObject($schema));
-            }
-
-            $operation['openapi_context']['responses'][$statusCode] = [
-                'description' => $description,
-                'content' => $content,
-            ];
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return array<mixed>
-     */
-    private function formats(
-        ResourceMetadata $resourceMetadata,
-        string $operationType,
-        string $operationName,
-        string $type = 'input_formats'
-    ): array {
-        $formats = $resourceMetadata->getTypedOperationAttribute(
-            $operationType,
-            $operationName,
-            $type,
-            $this->formats,
-            true
-        );
-
-        return $this->flattenMimeTypes($formats);
-    }
-
-    /**
-     * @param array<mixed> $formats
-     *
-     * @return array<mixed>
-     */
-    private function flattenMimeTypes(array $formats): array
-    {
-        $allMimeTypes = [];
-        foreach ($formats as $responseFormat => $mimeTypes) {
-            foreach ($mimeTypes as $mimeType) {
-                $allMimeTypes[$mimeType] = $responseFormat;
-            }
-        }
-
-        return $allMimeTypes;
     }
 }

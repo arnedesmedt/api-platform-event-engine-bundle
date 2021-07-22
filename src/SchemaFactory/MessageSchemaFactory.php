@@ -6,56 +6,56 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\FinderException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder;
-use ADS\Bundle\EventEngineBundle\Config;
-use ADS\Bundle\EventEngineBundle\Exception\ResponseException;
-use ADS\Bundle\EventEngineBundle\Response\HasResponses;
+use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
 use ADS\Util\ArrayUtil;
+use ADS\Util\StringUtil;
+use ApiPlatform\Core\Api\OperationType;
+use ApiPlatform\Core\Api\ResourceClassResolverInterface;
 use ApiPlatform\Core\JsonSchema\Schema;
 use ApiPlatform\Core\JsonSchema\SchemaFactoryInterface;
-use ApiPlatform\Core\Metadata\Property\Factory\PropertyNameCollectionFactoryInterface;
-use EventEngine\EventEngine;
+use ApiPlatform\Core\Metadata\Resource\Factory\ResourceMetadataFactoryInterface;
+use ApiPlatform\Core\Metadata\Resource\ResourceMetadata;
+use ApiPlatform\Core\OpenApi\Factory\OpenApiFactory;
+use ArrayObject;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
-use EventEngine\Schema\TypeSchema;
 use ReflectionClass;
 use RuntimeException;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\HttpFoundation\Request;
 
 use function array_flip;
 use function array_merge;
-use function array_merge_recursive;
-use function array_unique;
 use function array_values;
+use function assert;
+use function in_array;
 use function is_callable;
-use function iterator_to_array;
+use function is_string;
+use function method_exists;
 use function sprintf;
 
 final class MessageSchemaFactory implements SchemaFactoryInterface
 {
+    public const COMMAND_METHODS = [
+        Request::METHOD_POST,
+        Request::METHOD_DELETE,
+        Request::METHOD_PATCH,
+        Request::METHOD_PUT,
+    ];
+
     private SchemaFactoryInterface $schemaFactory;
     private Finder $messageFinder;
-    private Config $config;
-    private EventEngine $eventEngine;
-    private PropertyNameCollectionFactoryInterface $propertyNameCollectionFactory;
-    /** @var array<mixed> */
-    private array $defaults;
+    private ResourceMetadataFactoryInterface $resourceMetadataFactory;
+    private ResourceClassResolverInterface $resourceClassResolver;
 
-    /**
-     * @param array<mixed> $defaults
-     */
     public function __construct(
         SchemaFactoryInterface $schemaFactory,
         Finder $messageFinder,
-        Config $config,
-        EventEngine $eventEngine,
-        PropertyNameCollectionFactoryInterface $propertyNameCollectionFactory,
-        array $defaults
+        ResourceMetadataFactoryInterface $resourceMetadataFactory,
+        ResourceClassResolverInterface $resourceClassResolver
     ) {
         $this->schemaFactory = $schemaFactory;
         $this->messageFinder = $messageFinder;
-        $this->config = $config;
-        $this->eventEngine = $eventEngine;
-        $this->propertyNameCollectionFactory = $propertyNameCollectionFactory;
-        $this->defaults = $defaults;
+        $this->resourceMetadataFactory = $resourceMetadataFactory;
+        $this->resourceClassResolver = $resourceClassResolver;
     }
 
     /**
@@ -74,96 +74,152 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
         ?array $serializerContext = null,
         bool $forceCollection = false
     ): Schema {
-        $message = $this->message($className, $operationType, $operationName);
-
-        if (! $message || $operationType === null || $operationName === null) {
-            return $this->schemaFactory->buildSchema(
-                $className,
-                $format,
-                $type,
-                $operationType,
-                $operationName,
-                $schema,
-                $serializerContext,
-                $forceCollection
-            );
-        }
-
         // Set the defaults
-        $schema ??= new Schema(Schema::VERSION_OPENAPI);
+        $schema = $schema ? clone $schema : new Schema();
         $serializerContext ??= [];
 
-        $reflectionClass = new ReflectionClass($message);
-        if ($type === Schema::TYPE_OUTPUT && ! $reflectionClass->implementsInterface(HasResponses::class)) {
-            return $schema;
-        }
-
+        $version = $schema->getVersion();
         $definitions = $schema->getDefinitions();
-        $schema = new Schema(Schema::VERSION_OPENAPI);
-        $schema->setDefinitions($definitions);
-        $schemaArray = $schema->getArrayCopy();
+        $formatExtension = $format === 'json' ? '' : '.' . $format;
+        $emptyDefinitionName = sprintf('EmptyObject%s', $formatExtension);
 
-        $openApiSchema = $this->openApiSchema($type, $message, $serializerContext);
-        $openApiSchemaArray = $openApiSchema->toArray();
+        if ($this->resourceClassResolver->isResourceClass($className)) {
+            assert(is_string($operationType));
+            assert(is_string($operationName));
+            $resourceMetadata = $this->resourceMetadataFactory->create($className);
+            $httpMethod = $this->httpMethod($type, $operationType, $operationName, $resourceMetadata);
 
-        $schemaArray = array_merge_recursive(
-            $schemaArray,
-            $openApiSchemaArray
-        );
-
-        $schemaArray = OpenApiSchemaFactory::toOpenApiSchema($schemaArray);
-        $refs = OpenApiSchemaFactory::findTypeRefs($schemaArray);
-
-        if (empty($refs)) {
-            $schema->exchangeArray($schemaArray);
-
-            return $schema;
-        }
-
-        $serializerContext += $this->serializerContext($message, $type);
-        $responseTypes = $this->config->config()['responseTypes'];
-
-        foreach ($refs as $ref) {
-            if (! $this->eventEngine->isKnownType($ref)) {
-                continue;
-            }
-
-            if ($format !== 'json') {
-                $formatRef = sprintf('%s-%s', $ref, $format);
-                OpenApiSchemaFactory::replaceRefs($schemaArray, $ref, $formatRef);
-
-                if (isset($definitions[$ref]) && isset($definitions[$formatRef])) {
-                    continue;
-                }
-
-                if (isset($definitions[$ref])) {
-                    $definitions[$formatRef] = $definitions[$ref];
-                    continue;
-                }
-            }
-
-            $schemaRef = $this->filterProperties(
-                $className,
-                $message,
-                $type,
-                $responseTypes[$ref],
-                $serializerContext,
+            $key = sprintf('%snormalization_context', $type === Schema::TYPE_INPUT ? 'de' : '');
+            $extraContext = $resourceMetadata->getTypedOperationAttribute(
                 $operationType,
-                $operationName
+                $operationName,
+                $key,
+                [],
+                true
+            );
+            $serializerContext = array_merge(
+                $serializerContext,
+                $extraContext
             );
 
-            $definitions[$ref] = OpenApiSchemaFactory::toOpenApiSchema($schemaRef);
+            if ($type === Schema::TYPE_OUTPUT && in_array($httpMethod, self::COMMAND_METHODS)) {
+                // CQRS => Commands have no output
+                if (! isset($definitions[$emptyDefinitionName])) {
+                    /** @var ArrayObject<string, mixed> $definition */
+                    $definition = new ArrayObject(['type' => 'object']);
+                    $definitions[$emptyDefinitionName] = $definition;
+                }
 
-            if (! isset($formatRef)) {
-                continue;
+                $schema['$ref'] = $this->refName($version, $emptyDefinitionName);
+
+                return $schema;
             }
 
-            $definitions[$formatRef] = $definitions[$ref];
+            $message = $this->message($className, $operationType, $operationName);
+
+            if ($type === Schema::TYPE_INPUT) {
+                $className = $message ?? $className;
+
+                $path = Uri::fromString(
+                    $resourceMetadata->getTypedOperationAttribute($operationType, $operationName, 'path')
+                );
+
+                $operationType = $operationName = null;
+            }
+
+            if (
+                $type === Schema::TYPE_OUTPUT
+                && $message !== null
+                && method_exists($message, '__schemaStateClass')
+                && $message::__schemaStateClass()
+            ) {
+                $className = $message::__schemaStateClass();
+                if ($operationType === OperationType::COLLECTION) {
+                    $forceCollection = true;
+                }
+
+                $operationType = $operationName = null;
+            }
         }
 
-        $schema->exchangeArray($schemaArray);
+        $serializerContext['type'] ??= $type; // fix to pass type to the sub schema factory
+        $previousDefinitionName = $serializerContext['previous_definition_name'] ?? '';
+        $serializerContext['previous_definition_name'] = sprintf(
+            '%s%s',
+            isset($resourceMetadata)
+                ? $resourceMetadata->getShortName()
+                : (new ReflectionClass($className))->getShortName(),
+            $previousDefinitionName ? sprintf('-%s', $previousDefinitionName) : ''
+        );
+
+        $serializerContext[OpenApiFactory::OPENAPI_DEFINITION_NAME] = sprintf(
+            '%s%s%s%s',
+            $previousDefinitionName,
+            $previousDefinitionName ? '-' : '',
+            $serializerContext['type'] === Schema::TYPE_INPUT
+                ? (
+                    $previousDefinitionName
+                        ? 'Input'
+                        : sprintf('%s-Input', StringUtil::entityNameFromClassName($className))
+                )
+                : 'Output',
+            $formatExtension
+        );
+
+        $schema = $this->schemaFactory->buildSchema(
+            $className,
+            $format,
+            $type,
+            $operationType,
+            $operationName,
+            $schema,
+            $serializerContext,
+            $forceCollection
+        );
+
+        if (isset($path)) {
+            // remove the path parameters from the schema
+            $pathParameters = ArrayUtil::toSnakeCasedValues($path->toAllParameterNames());
+
+            $definition = $definitions->offsetGet($schema->getRootDefinitionKey());
+            $definition = self::removeParameters($definition->getArrayCopy(), $pathParameters);
+
+            if ($definition === null) {
+                return new Schema(Schema::VERSION_OPENAPI);
+            }
+
+            $definition = new ArrayObject($definition);
+            $definitions->offsetSet($schema->getRootDefinitionKey(), $definition);
+        }
 
         return $schema;
+    }
+
+    private function refName(string $version, string $definitionName): string
+    {
+        return $version === Schema::VERSION_OPENAPI
+            ? '#/components/schemas/' . $definitionName
+            : '#/definitions/' . $definitionName;
+    }
+
+    private function httpMethod(
+        string $type,
+        ?string $operationType = null,
+        ?string $operationName = null,
+        ?ResourceMetadata $resourceMetadata = null
+    ): string {
+        if ($operationType === null || $operationName === null) {
+            return $type === Schema::TYPE_INPUT ? Request::METHOD_POST : Request::METHOD_GET;
+        }
+
+        if ($resourceMetadata === null) {
+            throw new RuntimeException(
+                'We cannot get the http method if the resource meta data ' .
+                'and the opration type and name are empty.'
+            );
+        }
+
+        return $resourceMetadata->getTypedOperationAttribute($operationType, $operationName, 'method');
     }
 
     /**
@@ -187,29 +243,6 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
         $reflectionClass = new ReflectionClass($message);
 
         return $reflectionClass->implementsInterface(JsonSchemaAwareRecord::class) ? $message : null;
-    }
-
-    /**
-     * @param array<string, mixed> $serializerContext
-     */
-    private function openApiSchema(string $type, string $message, array $serializerContext): TypeSchema
-    {
-        if ($type === Schema::TYPE_INPUT) {
-            return $message::__schema();
-        }
-
-        if (isset($serializerContext['status_code'])) {
-            if (isset($serializerContext['response_schema'])) {
-                return $serializerContext['response_schema'];
-            }
-
-            try {
-                return $message::__responseSchemaForStatusCode($serializerContext['status_code']);
-            } catch (ResponseException $exception) {
-            }
-        }
-
-        return $message::__defaultResponseSchema();
     }
 
     /**
@@ -269,89 +302,10 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
 
         $filteredSchema['required'] = array_values($filterMethod($schema['required'], $parameterNames));
 
+        if (empty($filteredSchema['required'])) {
+            unset($filteredSchema['required']);
+        }
+
         return $filteredSchema;
-    }
-
-    /**
-     * @return array<mixed>
-     */
-    private function serializerContext(
-        string $messageClass,
-        string $type = Schema::TYPE_OUTPUT
-    ): array {
-        $contextType = $type === Schema::TYPE_OUTPUT ? 'normalization' : 'denormalization';
-        $method = sprintf('__%sContext', $contextType);
-        $attribute = sprintf('%s_context', $contextType);
-        $context = $messageClass::$method();
-
-        if (! empty($context)) {
-            return $context;
-        }
-
-        return $this->defaults['attributes'][$attribute] ?? [];
-    }
-
-    /**
-     * @param array<mixed> $schemaArray
-     * @param array<mixed> $serializerContext
-     *
-     * @return array<mixed>
-     */
-    private function filterProperties(
-        string $className,
-        string $message,
-        string $type,
-        array $schemaArray,
-        array $serializerContext,
-        ?string $operationType,
-        ?string $operationName
-    ): array {
-        $options = $this->options($serializerContext, $operationType, $operationName);
-        $inputOrOutputClass = $this->inputOrOutputClass($message, $type, $className);
-        $propertyNames = $this->propertyNameCollectionFactory->create($inputOrOutputClass, $options);
-        $filteredSchemaArray = self::filterParameters(
-            $schemaArray,
-            array_unique(
-                array_merge(
-                    $serializerContext['allowed_properties'] ?? [],
-                    ArrayUtil::toCamelCasedValues(
-                        iterator_to_array($propertyNames->getIterator())
-                    )
-                )
-            )
-        );
-
-        if (empty($filteredSchemaArray)) {
-            return $schemaArray;
-        }
-
-        return $filteredSchemaArray;
-    }
-
-    /**
-     * @param array<mixed> $serializerContext
-     *
-     * @return array<string, mixed>
-     */
-    private function options(array $serializerContext, ?string $operationType, ?string $operationName): array
-    {
-        $options = [];
-
-        if (isset($serializerContext[AbstractNormalizer::GROUPS])) {
-            $options['serializer_groups'] = (array) $serializerContext[AbstractNormalizer::GROUPS];
-        }
-
-        if ($operationType !== null && $operationName !== null) {
-            $options[sprintf('%s_operation_name', $operationType)] = $operationName;
-        }
-
-        return $options;
-    }
-
-    private function inputOrOutputClass(string $messageClass, string $type, string $className): string
-    {
-        $method = sprintf('__%sClass', $type);
-
-        return $messageClass::$method() ?? $className;
     }
 }
