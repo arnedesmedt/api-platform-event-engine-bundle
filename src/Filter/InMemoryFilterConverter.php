@@ -6,12 +6,21 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Filter;
 
 use ApiPlatform\Core\Bridge\Doctrine\Common\Filter\OrderFilterInterface;
 use Closure;
-use EventEngine\DocumentStore\Filter\Filter;
 
 use function array_column;
+use function array_filter;
+use function array_flip;
+use function array_intersect_key;
+use function array_keys;
+use function array_map;
 use function array_merge;
 use function array_multisort;
 use function array_pop;
+use function array_replace;
+use function array_values;
+use function preg_match;
+use function preg_quote;
+use function sprintf;
 use function strtoupper;
 
 use const SORT_ASC;
@@ -31,14 +40,18 @@ final class InMemoryFilterConverter extends FilterConverter
             return null;
         }
 
-        return function (array $items) use ($filters) {
+        $orderParameters = $filters[$this->orderParameterName];
+
+        return static function (array $items) use ($orderParameters) {
+            $itemArrays = array_map(static fn ($item) => $item->toArray(), $items);
+            $itemKeys = array_keys($itemArrays);
             $arguments = [];
 
-            foreach ($filters[$this->orderParameterName] as $orderParameter => $sorting) {
+            foreach ($orderParameters as $orderParameter => $sorting) {
                 $arguments = array_merge(
                     $arguments,
                     [
-                        array_column($items, $orderParameter),
+                        array_column($itemArrays, $orderParameter),
                         strtoupper($sorting) === OrderFilterInterface::DIRECTION_ASC
                             ? SORT_ASC
                             : SORT_DESC,
@@ -46,40 +59,56 @@ final class InMemoryFilterConverter extends FilterConverter
                 );
             }
 
-            $arguments[] = $items;
+            $arguments[] = $itemKeys;
 
             // @phpstan-ignore-next-line
             array_multisort(...$arguments);
 
-            return array_pop($arguments);
+            /** @var array<mixed> $keysSort */
+            $keysSort = array_pop($arguments);
+
+            return array_values(
+                array_replace(
+                    array_flip($keysSort),
+                    $items
+                )
+            );
         };
     }
 
     /**
      * @inheritDoc
      */
-    public function filter(array $filters, string $resourceClass): ?Filter
+    public function filter(array $filters, string $resourceClass): ?Closure
     {
-        if (! isset($filters[$this->pageParameterName])) {
+        $searchFilter = ($this->filterFinder)($resourceClass, SearchFilter::class);
+
+        if ($searchFilter === null) {
             return null;
         }
 
-        return null;
-    }
+        $descriptions = $searchFilter->getDescription($resourceClass);
+        $filters = array_intersect_key($filters, $descriptions);
 
-    /**
-     * @inheritDoc
-     */
-    public function skip(array $filters): ?int
-    {
-        return null;
-    }
+        return static function (array $items) use ($filters) {
+            $itemArrays = array_map(static fn ($item) => $item->toArray(), $items);
 
-    /**
-     * @inheritDoc
-     */
-    public function limit(array $filters): ?int
-    {
-        return null;
+            foreach ($filters as $filter => $value) {
+                $itemArrays = array_filter(
+                    $itemArrays,
+                    static fn (array $item) => (bool) preg_match(
+                        sprintf('#.*%s.*#', preg_quote($value, '#')),
+                        $item[$filter]
+                    )
+                );
+            }
+
+            return array_values(
+                array_intersect_key(
+                    $items,
+                    array_flip(array_keys($itemArrays))
+                )
+            );
+        };
     }
 }

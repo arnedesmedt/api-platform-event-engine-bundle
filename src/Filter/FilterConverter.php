@@ -43,12 +43,39 @@ abstract class FilterConverter
      *
      * @return mixed
      */
-    abstract public function skip(array $filters);
+    public function skip(array $filters)
+    {
+        if (
+            $this->page($filters) === null
+            || $this->itemsPerPage($filters) === null
+        ) {
+            return null;
+        }
+
+        return ($this->page($filters) - 1) * $this->itemsPerPage($filters);
+    }
 
     /**
      * @param array<mixed> $filters
-     *
-     * @return mixed
      */
-    abstract public function limit(array $filters);
+    public function itemsPerPage(array $filters): ?int
+    {
+        if (! isset($filters[$this->itemsPerPageParameterName])) {
+            return null;
+        }
+
+        return (int) $filters[$this->itemsPerPageParameterName];
+    }
+
+    /**
+     * @param array<mixed> $filters
+     */
+    public function page(array $filters): ?int
+    {
+        if (! isset($filters[$this->pageParameterName])) {
+            return null;
+        }
+
+        return (int) $filters[$this->pageParameterName];
+    }
 }
