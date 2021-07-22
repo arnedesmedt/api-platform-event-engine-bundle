@@ -26,8 +26,6 @@ interface ApiPlatformMessage extends JsonSchemaAwareRecord
 
     public static function __pathUri(): ?Uri;
 
-    public function replacedPathUri(?Uri $pathUri = null): ?Uri;
-
     public static function __apiPlatformController(): string;
 
     public static function __stateless(): ?bool;
@@ -55,24 +53,4 @@ interface ApiPlatformMessage extends JsonSchemaAwareRecord
      * @return array<string, mixed>
      */
     public static function __denormalizationContext(): array;
-
-    /**
-     * @return array<string, mixed>|null
-     */
-    public static function __pathSchema(?Uri $pathUri = null): ?array;
-
-    /**
-     * @return array<string, mixed>|null
-     */
-    public static function __requestBodySchema(?Uri $pathUri = null): ?array;
-
-    /**
-     * @return array<mixed>
-     */
-    public function toPathArray(?Uri $pathUri = null): ?array;
-
-    /**
-     * @return array<mixed>
-     */
-    public function toRequestBodyArray(?Uri $pathUri = null): ?array;
 }
