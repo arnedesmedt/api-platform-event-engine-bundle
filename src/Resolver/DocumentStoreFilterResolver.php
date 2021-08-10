@@ -11,7 +11,7 @@ use EventEngine\DocumentStore\Filter\AndFilter;
 use EventEngine\DocumentStore\Filter\AnyFilter;
 use EventEngine\DocumentStore\Filter\Filter;
 
-final class DocumentStoreResolver extends FilterResolver
+final class DocumentStoreFilterResolver extends FilterResolver
 {
     protected Repository $repository;
 

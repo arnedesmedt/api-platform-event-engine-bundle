@@ -166,10 +166,10 @@ services:
     ADS\Bundle\ApiPlatformEventEngineBundle\Filter\InMemoryFilterConverter:
         parent: 'ADS\Bundle\ApiPlatformEventEngineBundle\Filter\FilterConverter'
 
-    ADS\Bundle\ApiPlatformEventEngineBundle\Resolver\InMemoryResolver:
+    ADS\Bundle\ApiPlatformEventEngineBundle\Resolver\InMemoryFilterResolver:
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Filter\InMemoryFilterConverter'
-    ADS\Bundle\ApiPlatformEventEngineBundle\Resolver\DocumentStoreResolver:
+    ADS\Bundle\ApiPlatformEventEngineBundle\Resolver\DocumentStoreFilterResolver:
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Filter\DocumentStoreFilterConverter'
 

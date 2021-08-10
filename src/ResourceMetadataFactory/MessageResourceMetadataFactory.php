@@ -411,13 +411,17 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
 
         $pathSchema = MessageSchemaFactory::filterParameters($schema, $allParameterNames);
 
-        if ($pathSchema === null) {
+        if ($pathSchema === null && ! empty($allParameterNames)) {
             throw new RuntimeException(
                 sprintf(
                     'The uri parameter names are not present in the message schema for message \'%s\'.',
                     $messageClass
                 )
             );
+        }
+
+        if ($pathSchema === null) {
+            return $this;
         }
 
         foreach ($allParameterNames as $parameterName) {

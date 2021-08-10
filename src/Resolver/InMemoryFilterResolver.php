@@ -11,7 +11,7 @@ use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 
 use function count;
 
-final class InMemoryResolver extends FilterResolver
+final class InMemoryFilterResolver extends FilterResolver
 {
     /** @var array<JsonSchemaAwareRecord> */
     private array $states;
@@ -60,7 +60,7 @@ final class InMemoryResolver extends FilterResolver
      */
     protected function totalItems(array $states): int
     {
-        return count($this->states);
+        return count($states);
     }
 
     /**
@@ -69,7 +69,7 @@ final class InMemoryResolver extends FilterResolver
     protected function result(array $states, int $page, int $itemsPerPage, int $totalItems)
     {
         return new ArrayPaginator(
-            $this->states,
+            $states,
             ($page - 1) * $itemsPerPage,
             $itemsPerPage,
         );

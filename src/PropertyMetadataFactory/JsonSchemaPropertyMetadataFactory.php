@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory;
 
+use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
 use ADS\JsonImmutableObjects\HasPropertyExamples;
+use ADS\Util\StringUtil;
+use ADS\ValueObjects\ValueObject;
 use ApiPlatform\Core\Metadata\Property\Factory\PropertyMetadataFactoryInterface;
 use ApiPlatform\Core\Metadata\Property\PropertyMetadata;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
@@ -13,6 +16,7 @@ use phpDocumentor\Reflection\DocBlockFactory;
 use ReflectionClass;
 use ReflectionNamedType;
 use RuntimeException;
+use Symfony\Component\HttpFoundation\Request;
 
 use function in_array;
 use function method_exists;
@@ -63,8 +67,20 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
             $propertyType = $reflectionProperty->getType();
         }
 
+        $patchPropertyDescription = $reflectionClass->implementsInterface(ApiPlatformMessage::class)
+                && $resourceClass::__httpMethod() === Request::METHOD_PATCH
+                && isset($propertyType)
+                && $propertyType->allowsNull()
+            ? sprintf(
+                '<br/> If \'%s\' is not added in the payload, then it will not be used.',
+                StringUtil::decamelize($property)
+            )
+            : '';
+
         if ($propertySchema['description'] ?? false) {
-            $propertyMetadata = $propertyMetadata->withDescription($propertySchema['description']);
+            $propertyMetadata = $propertyMetadata->withDescription(
+                $propertySchema['description'] . $patchPropertyDescription
+            );
         } elseif (isset($propertyType) && ! $propertyType->isBuiltin()) {
             /** @var class-string $className */
             $className = $propertyType->getName();
@@ -74,9 +90,10 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
                 $docBlock = $this->docBlockFactory->create($propertyReflectionClass);
                 $propertyMetadata = $propertyMetadata->withDescription(
                     sprintf(
-                        '%s<br/>%s',
+                        '%s<br/>%s%s',
                         $docBlock->getSummary(),
-                        $docBlock->getDescription()->render()
+                        $docBlock->getDescription()->render(),
+                        $patchPropertyDescription
                     )
                 );
             } catch (InvalidArgumentException $exception) {
@@ -88,6 +105,10 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
             $example = $examples[$property] ?? null;
 
             if ($example) {
+                if ($example instanceof ValueObject) {
+                    $example = $example->toValue();
+                }
+
                 $propertyMetadata = $propertyMetadata->withExample($example);
             }
         }
