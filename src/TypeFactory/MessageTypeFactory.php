@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\TypeFactory;
 
 use ADS\ValueObjects\HasExamples;
+use ADS\ValueObjects\ValueObject;
 use ApiPlatform\Core\JsonSchema\Schema;
 use ApiPlatform\Core\JsonSchema\TypeFactoryInterface;
 use EventEngine\JsonSchema\ProvidesValidationRules;
@@ -73,6 +74,7 @@ final class MessageTypeFactory implements TypeFactoryInterface
         if (
             isset($_GET['complex'])
             && preg_match(sprintf('#%s#', preg_quote($_GET['complex'], '#')), $className)
+            && $reflectionClass->implementsInterface(ValueObject::class)
         ) {
             $existingType['type'] = '\\' . addslashes($className);
         }
