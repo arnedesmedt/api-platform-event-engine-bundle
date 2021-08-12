@@ -22,7 +22,7 @@ final class RemoveComplexResourceMetadataFactory implements ResourceMetadataFact
     public function create(string $resourceClass): ResourceMetadata
     {
         if (isset($_GET['complex'])) {
-            $resourceClass = substr($resourceClass, -strlen('_' . $_GET['complex']));
+            $resourceClass = substr($resourceClass, 0, -strlen('_' . $_GET['complex']));
         }
 
         return $this->resourceMetadataFactory->create($resourceClass);
