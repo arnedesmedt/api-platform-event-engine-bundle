@@ -53,6 +53,18 @@ services:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Config'
             - '@api_platform.operation_path_resolver.custom'
 
+    ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory\AddComplexResourceMetadataFactory:
+        decorates: 'api_platform.metadata.resource.metadata_factory'
+        decoration_priority: -11
+        arguments:
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory\AddComplexResourceMetadataFactory.inner'
+
+    ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory\RemoveComplexResourceMetadataFactory:
+        decorates: 'api_platform.metadata.resource.metadata_factory'
+        decoration_priority: -9
+        arguments:
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory\RemoveComplexResourceMetadataFactory.inner'
+
     ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\MessageNormalizer:
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder'
