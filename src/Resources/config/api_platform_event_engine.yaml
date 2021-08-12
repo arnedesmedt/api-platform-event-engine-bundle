@@ -101,12 +101,6 @@ services:
         tags:
             - console.command
 
-    ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\ExtraCachedPropertyMetadataFactory:
-        decorates: 'api_platform.metadata.property.metadata_factory'
-        decoration_priority: -11
-        arguments:
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\ExtraCachedPropertyMetadataFactory.inner'
-
     ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\JsonSchemaPropertyMetadataFactory:
         decorates: 'api_platform.metadata.property.metadata_factory'
         decoration_priority: -9
