@@ -11,6 +11,11 @@ use EventEngine\JsonSchema\ProvidesValidationRules;
 use ReflectionClass;
 use Symfony\Component\PropertyInfo\Type;
 
+use function addslashes;
+use function preg_match;
+use function preg_quote;
+use function sprintf;
+
 final class MessageTypeFactory implements TypeFactoryInterface
 {
     private TypeFactoryInterface $typeFactory;
@@ -35,8 +40,6 @@ final class MessageTypeFactory implements TypeFactoryInterface
     ): array {
         $newType = $this->typeFactory->getType($type, $format, $readableLink, $serializerContext, $schema);
 
-        $extraType = $this->extraMessageTypeConversion($type);
-
         if ($type->isCollection()) {
             $keyType = $type->getCollectionKeyType();
 
@@ -44,37 +47,45 @@ final class MessageTypeFactory implements TypeFactoryInterface
                 ? 'additionalProperties'
                 : 'items';
 
-            $newType[$key] += $extraType;
+            $newType[$key] = $this->extraMessageTypeConversion($newType[$key], $type);
         } else {
-            $newType += $extraType;
+            $newType = $this->extraMessageTypeConversion($newType, $type);
         }
 
         return $newType;
     }
 
     /**
+     * @param array<mixed> $existingType
+     *
      * @return array<mixed>
      */
-    private function extraMessageTypeConversion(Type $type): array
+    private function extraMessageTypeConversion(array $existingType, Type $type): array
     {
-        $typeArray = [];
         /** @var class-string|null $className */
         $className = $type->getClassName();
         if ($className === null) {
-            return $typeArray;
+            return $existingType;
         }
 
         $reflectionClass = new ReflectionClass($className);
 
+        if (
+            isset($_GET['complex'])
+            && preg_match(sprintf('#%s#', preg_quote($_GET['complex'], '#')), $className)
+        ) {
+            $existingType['type'] = '\\' . addslashes($className);
+        }
+
         if ($reflectionClass->implementsInterface(ProvidesValidationRules::class)) {
-            $typeArray += $className::validationRules();
+            $existingType += $className::validationRules();
         }
 
         if ($reflectionClass->implementsInterface(HasExamples::class)) {
             $example = $className::example();
-            $typeArray += ['example' => $example->toValue()];
+            $existingType += ['example' => $example->toValue()];
         }
 
-        return $typeArray;
+        return $existingType;
     }
 }
