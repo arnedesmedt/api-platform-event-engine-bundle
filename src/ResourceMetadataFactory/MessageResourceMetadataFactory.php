@@ -426,10 +426,16 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
 
         foreach ($allParameterNames as $parameterName) {
             $propertySchema = $pathSchema['properties'][$parameterName];
+            $in = in_array($parameterName, $pathParameterNames) ? 'path' : 'query';
+            $name = StringUtil::decamelize($parameterName);
+
+            if ($in === 'path' && isset($propertySchema['pattern'])) {
+                $operation['requirements'][$name] = $propertySchema['pattern'];
+            }
 
             $operation['openapi_context']['parameters'][] = [
-                'name' => StringUtil::decamelize($parameterName),
-                'in' => in_array($parameterName, $pathParameterNames) ? 'path' : 'query',
+                'name' => $name,
+                'in' => $in,
                 'schema' => OpenApiSchemaFactory::toOpenApiSchema($propertySchema),
                 'required' => in_array($parameterName, $pathSchema['required']),
             ];
