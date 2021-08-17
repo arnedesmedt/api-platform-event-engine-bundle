@@ -13,10 +13,8 @@ use ReflectionClass;
 use Symfony\Component\Cache\Adapter\AbstractAdapter;
 use Symfony\Component\HttpKernel\CacheClearer\CacheClearerInterface;
 
-use function array_combine;
 use function array_filter;
 use function array_keys;
-use function array_map;
 use function array_merge_recursive;
 use function array_reduce;
 use function is_array;
@@ -253,16 +251,15 @@ final class Config implements CacheClearerInterface
         $operationMapping = $this->operationMapping();
 
         /** @var array<string, class-string> $operationIdMapping */
-        $operationIdMapping = array_combine(
-            array_map(
-                static fn (array $operations) => array_map(
-                    static fn (array $operation) => $operation['operationId'],
-                    $operations
-                ),
-                $operationMapping
-            ),
-            array_keys($operationMapping)
-        );
+        $operationIdMapping = [];
+
+        foreach ($operationMapping as $operationClass => $operations) {
+            foreach ($operations as $operation) {
+                /** @var string $operationId */
+                $operationId = $operation['operationId'];
+                $operationIdMapping[$operationId] = $operationClass;
+            }
+        }
 
         $this->operationIdMapping = $operationIdMapping;
 

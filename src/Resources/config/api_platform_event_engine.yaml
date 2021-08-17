@@ -45,6 +45,11 @@ services:
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory\ShortNameResourceMetadataFactory.inner'
 
+    ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory\NoCompositeIdentifierResourceMetadataFactory:
+        decorates: 'api_platform.metadata.resource.metadata_factory'
+        arguments:
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory\NoCompositeIdentifierResourceMetadataFactory.inner'
+
     ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory\MessageResourceMetadataFactory:
         decorates: 'api_platform.metadata.resource.metadata_factory'
         decoration_priority: 7
