@@ -48,9 +48,68 @@ final class OpenApiFactory implements OpenApiFactoryInterface
         $openApi = ($this->openApiFactory)($context);
 
         // todo remove api platform response codes
+        $this->overrideOperationResponses($openApi);
 
         return $openApi
             ->withTags($this->tags)
             ->withServers($this->servers);
+    }
+
+    private function overrideOperationResponses(OpenApi &$openApi): void
+    {
+//        foreach ($openApi->getPaths()->getPaths() as $path => &$pathItem) {
+//            foreach (self::OPERATIONS as $operationName) {
+//                $operationName = ucfirst(strtolower($operationName));
+//                $getter = sprintf('get%s', $operationName);
+//                $with = sprintf('with%s', $operationName);
+//
+//                /** @var Operation|null $operation */
+//                $operation = $pathItem->{$getter}();
+//
+//                if ($operation === null) {
+//                    continue;
+//                }
+//
+//                $operationId = $operation->getOperationId();
+//                $operationIdMapping = $this->config->operationIdMapping();
+//
+//                if (! isset($operationIdMapping[$operationId])) {
+//                    continue;
+//                }
+//
+//                /** @var class-string<ApiPlatformMessage> $messageClass */
+//                $messageClass = $operationIdMapping[$operationId];
+//                $reflectionClass = new ReflectionClass($messageClass);
+//
+//                if (! $reflectionClass->implementsInterface(HasResponses::class)) {
+//                    $pathItem = $pathItem->{$with}($operation->withResponses([]));
+//                    continue;
+//                }
+//
+//                $responseSchemasPerStatusCode = $messageClass::__responseSchemasPerStatusCode();
+//
+//                $pathItem = $pathItem->{$with}(
+//                    $operation->withResponses(
+//                        array_map(
+//                            static function (TypeSchema $response) {
+//                                return [
+//                                    'description' => $response instanceof AnnotatedType
+//                                        ? $response->toArray()['description'] ?? ''
+//                                        : '',
+//                                    'content' => [
+//                                        'application/json' => [
+//                                            'schema' => OpenApiSchemaFactory::toOpenApiSchema(
+//                                                $response->toArray()
+//                                            ),
+//                                        ],
+//                                    ],
+//                                ];
+//                            },
+//
+//                        )
+//                    )
+//                );
+//            }
+//        }
     }
 }

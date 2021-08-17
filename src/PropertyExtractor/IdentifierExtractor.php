@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\PropertyExtractor;
 
+use ADS\Bundle\ApiPlatformEventEngineBundle\Resource\ChangeIdentifierResource;
 use ADS\Util\ArrayUtil;
 use ADS\ValueObjects\ValueObject;
 use ApiPlatform\Core\Api\IdentifiersExtractorInterface;
@@ -39,6 +40,10 @@ class IdentifierExtractor implements IdentifiersExtractorInterface
     public function getIdentifiersFromItem($item): array
     {
         $identifiers = $this->identifiersExtractor->getIdentifiersFromItem($item);
+
+        if ($item instanceof ChangeIdentifierResource) {
+            $identifiers = $item::changeIdentifiers($identifiers);
+        }
 
         $identifiers = array_map(
             static fn ($identifier) => $identifier instanceof ValueObject ? $identifier->toValue() : $identifier,
