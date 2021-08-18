@@ -42,7 +42,16 @@ class IdentifierExtractor implements IdentifiersExtractorInterface
         $identifiers = $this->identifiersExtractor->getIdentifiersFromItem($item);
 
         if ($item instanceof ChangeIdentifierResource) {
-            $identifiers = $item::changeIdentifiers($identifiers);
+            $identifierNameMapping = $item::identifierNameMapping();
+
+            foreach ($identifierNameMapping as $oldIdentifierName => $newIdentifierName) {
+                if (! isset($identifiers[$oldIdentifierName])) {
+                    continue;
+                }
+
+                $identifiers[$newIdentifierName] = $identifiers[$oldIdentifierName];
+                unset($identifiers[$oldIdentifierName]);
+            }
         }
 
         $identifiers = array_map(

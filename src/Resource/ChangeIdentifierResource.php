@@ -7,9 +7,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Resource;
 interface ChangeIdentifierResource
 {
     /**
-     * @param array<string, mixed> $identifiers
-     *
-     * @return array<string, mixed>
+     * @return array<string, string>
      */
-    public static function changeIdentifiers(array $identifiers): array;
+    public static function identifierNameMapping(): array;
 }
