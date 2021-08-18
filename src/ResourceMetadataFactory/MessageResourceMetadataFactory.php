@@ -191,7 +191,7 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
                         $openApiContext = &$operation['openapi_context'];
 
                         $this
-                            ->addMessageClass($operation, $operApiContext, $messageClass)
+                            ->addMessageClass($operation, $openApiContext, $messageClass)
                             ->addHttpMethod($operation, $messageClass)
                             ->addPath($operation, $operationType, $resourceMetadata, $messageClass)
                             ->addController($operation, $messageClass)
