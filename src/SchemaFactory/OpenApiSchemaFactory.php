@@ -7,7 +7,6 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\DocumentationException;
 use ADS\Util\StringUtil;
 use ApiPlatform\Core\JsonSchema\Schema;
-use ApiPlatform\Core\OpenApi\OpenApi;
 
 use function array_filter;
 use function array_map;
@@ -29,7 +28,7 @@ final class OpenApiSchemaFactory
      *
      * @return array<mixed>
      */
-    public static function toOpenApiSchema(array $jsonSchema, string $version = OpenApi::VERSION): array
+    public static function toOpenApiSchema(array $jsonSchema, string $version = Schema::VERSION_OPENAPI): array
     {
         if ($_SERVER['APP_ENV'] === 'test') {
             // TODO: Testing framework uses new open api to validate
@@ -69,23 +68,25 @@ final class OpenApiSchemaFactory
      */
     private static function addNullableProperty(array $jsonSchema, string $version = Schema::VERSION_OPENAPI): array
     {
-        if (isset($jsonSchema['type']) && is_array($jsonSchema['type'])) {
-            $type = null;
-            foreach ($jsonSchema['type'] as $possibleType) {
-                if (mb_strtolower($possibleType) !== 'null') {
-                    if ($type) {
-                        throw DocumentationException::moreThanOneNullType($jsonSchema);
-                    }
+        if (! isset($jsonSchema['type']) || ! is_array($jsonSchema['type'])) {
+            return $jsonSchema;
+        }
 
-                    $type = $possibleType;
-                } elseif ($version === Schema::VERSION_OPENAPI) {
-                    $jsonSchema['nullable'] = true;
+        $type = null;
+        foreach ($jsonSchema['type'] as $possibleType) {
+            if (mb_strtolower($possibleType) !== 'null') {
+                if ($type) {
+                    throw DocumentationException::moreThanOneNullType($jsonSchema);
                 }
-            }
 
-            if ($version === Schema::VERSION_OPENAPI) {
-                $jsonSchema['type'] = $type;
+                $type = $possibleType;
+            } elseif ($version === Schema::VERSION_OPENAPI) {
+                $jsonSchema['nullable'] = true;
             }
+        }
+
+        if ($version === Schema::VERSION_OPENAPI) {
+            $jsonSchema['type'] = $type;
         }
 
         return $jsonSchema;
