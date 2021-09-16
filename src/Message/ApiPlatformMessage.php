@@ -58,4 +58,6 @@ interface ApiPlatformMessage extends JsonSchemaAwareRecord
      * @return array<string, mixed>
      */
     public static function __denormalizationContext(): array;
+
+    public static function __overrideDefaultApiPlatformResponse(): bool;
 }

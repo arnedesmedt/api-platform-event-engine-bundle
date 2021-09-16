@@ -162,6 +162,9 @@ services:
         decorates: 'api_platform.openapi.factory'
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Documentation\OpenApiFactory.inner'
+            - '@api_platform.metadata.resource.metadata_factory'
+            - '@api_platform.json_schema.schema_factory'
+            - '%api_platform.formats%'
             - '%api_platform_event_engine.open_api.servers%'
             - '%api_platform_event_engine.open_api.tags%'
 

@@ -178,7 +178,8 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
                 ) use (
                     $messagesByOperationName,
                     $resourceMetadata,
-                    $operationType
+                    $operationType,
+                    $resourceClass
                 ) {
                     $messageClass = $messagesByOperationName[$operationName] ?? false;
 
@@ -202,7 +203,14 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
                             ->addOutputClass($operation, $messageClass)
                             ->addTags($openApiContext, $messageClass)
                             ->addDocumentation($openApiContext, $reflectionClass)
-                            ->addParameters($operation, $messageClass);
+                            ->addParameters($operation, $messageClass)
+                            ->addExtensionProperties(
+                                $operation,
+                                $openApiContext,
+                                $resourceClass,
+                                $operationType,
+                                $operationName
+                            );
                     }
 
                     return $operation;
@@ -223,7 +231,6 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
     private function addMessageClass(array &$operation, array &$openApiContext, string $messageClass): self
     {
         $operation['message_class'] ??= $messageClass;
-        $openApiContext['x-message-class'] ??= $messageClass;
 
         return $this;
     }
@@ -442,6 +449,25 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
                 'required' => in_array($parameterName, $pathSchema['required']),
             ];
         }
+
+        return $this;
+    }
+
+    /**
+     * @param array<mixed> $operation
+     * @param array<mixed> $openApiContext
+     */
+    private function addExtensionProperties(
+        array &$operation,
+        array &$openApiContext,
+        string $resourceClass,
+        string $operationType,
+        string $operationName
+    ): self {
+        $openApiContext['x-message-class'] ??= $operation['message_class'];
+        $openApiContext['x-resource-class'] ??= $resourceClass;
+        $openApiContext['x-operation-type'] ??= $operationType;
+        $openApiContext['x-operation-name'] ??= $operationName;
 
         return $this;
     }

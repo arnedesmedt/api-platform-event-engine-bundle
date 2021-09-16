@@ -234,6 +234,11 @@ trait DefaultApiPlatformMessage
         return [];
     }
 
+    public static function __overrideDefaultApiPlatformResponse(): bool
+    {
+        return false;
+    }
+
     private static function shortName(): string
     {
         $reflectionClass = new ReflectionClass(static::class);

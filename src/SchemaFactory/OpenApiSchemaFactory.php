@@ -6,6 +6,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\DocumentationException;
 use ADS\Util\StringUtil;
+use ApiPlatform\Core\JsonSchema\Schema;
 use ApiPlatform\Core\OpenApi\OpenApi;
 
 use function array_filter;
@@ -49,9 +50,24 @@ final class OpenApiSchemaFactory
     /**
      * @param array<mixed> $jsonSchema
      *
+     * @return Schema<string, mixed>
+     */
+    public static function toApiPlatformSchema(array $jsonSchema, string $version = Schema::VERSION_OPENAPI): Schema
+    {
+        $schema = new Schema($version);
+        foreach (self::toOpenApiSchema($jsonSchema, $version) as $key => $value) {
+            $schema[$key] = $value;
+        }
+
+        return $schema;
+    }
+
+    /**
+     * @param array<mixed> $jsonSchema
+     *
      * @return array<mixed>
      */
-    private static function addNullableProperty(array $jsonSchema, string $version = OpenApi::VERSION): array
+    private static function addNullableProperty(array $jsonSchema, string $version = Schema::VERSION_OPENAPI): array
     {
         if (isset($jsonSchema['type']) && is_array($jsonSchema['type'])) {
             $type = null;
@@ -62,12 +78,12 @@ final class OpenApiSchemaFactory
                     }
 
                     $type = $possibleType;
-                } elseif ($version === OpenApi::VERSION) {
+                } elseif ($version === Schema::VERSION_OPENAPI) {
                     $jsonSchema['nullable'] = true;
                 }
             }
 
-            if ($version === OpenApi::VERSION) {
+            if ($version === Schema::VERSION_OPENAPI) {
                 $jsonSchema['type'] = $type;
             }
         }
