@@ -84,16 +84,6 @@ final class OpenApiFactory implements OpenApiFactoryInterface
     {
         $openApi = ($this->openApiFactory)($context);
 
-        // todo remove api platform response codes
-        $openApi = $this->overrideOperationResponses($openApi);
-
-        return $openApi
-            ->withTags($this->tags)
-            ->withServers($this->servers);
-    }
-
-    private function overrideOperationResponses(OpenApi $openApi): OpenApi
-    {
         $schemas = new ArrayObject();
         $pathsModel = $openApi->getPaths();
         $paths = $pathsModel->getPaths();
@@ -111,97 +101,157 @@ final class OpenApiFactory implements OpenApiFactoryInterface
                     continue;
                 }
 
-                $extensionProperties = $operation->getExtensionProperties();
+                // todo remove api platform response codes
+                $operation = $this->overrideResponses($operation, $schemas);
+                $operation = $this->removeEmptyRequestBodies($operation);
 
-                if (! isset($extensionProperties['x-message-class'])) {
-                    continue;
-                }
-
-                /** @var class-string $messageClass */
-                $messageClass = $extensionProperties['x-message-class'];
-                $reflectionClass = new ReflectionClass($messageClass);
-
-                if (! $reflectionClass->implementsInterface(HasResponses::class)) {
-                    $pathItem = $pathItem->{$with}($operation->withResponses([]));
-                    continue;
-                }
-
-                /** @var class-string<ImmutableRecord> $resourceClass */
-                $resourceClass = $extensionProperties['x-resource-class'];
-                $operationName = $extensionProperties['x-operation-name'];
-                $operationType = $extensionProperties['x-operation-type'];
-                $resourceMetadata = $this->resourceMetadataFactory->create($resourceClass);
-
-                $responseFormats = $resourceMetadata->getTypedOperationAttribute(
-                    $operationType,
-                    $operationName,
-                    'output_formats',
-                    $this->formats,
-                    true
-                );
-                $responseMimeTypes = $this->flattenMimeTypes($responseFormats);
-
-                /** @var array<Response> $responses */
-                $responses = $operation->getResponses();
-                $messageClassResponses = $messageClass::__responseSchemasPerStatusCode();
-
-                foreach ($messageClassResponses as $statusCode => $messageClassResponse) {
-                    $messageResponseArray = $messageClassResponse->toArray();
-                    $response = $responses[$statusCode] ?? null;
-
-                    if (
-                        $response !== null
-                        && $messageClass::__defaultStatusCode() === $statusCode
-                        && ! $messageClass::__overrideDefaultApiPlatformResponse()
-                    ) {
-                        $responses[$statusCode] = $response->withDescription(
-                            $messageResponseArray['description'] ?? $response->getDescription()
-                        );
-
-                        continue;
-                    }
-
-                    $schema = new Schema('openapi');
-                    $schema->setDefinitions($schemas);
-                    $content = new ArrayObject();
-
-                    foreach ($responseMimeTypes as $mimeType => $operationFormat) {
-                        $schema = $this->jsonSchemaFactory->buildSchema(
-                            $resourceClass,
-                            $operationFormat,
-                            Schema::TYPE_OUTPUT,
-                            $operationType,
-                            $operationName,
-                            $schema,
-                            [
-                                'statusCode' => $statusCode,
-                                'isDefaultResponse' => false,
-                                'response' => $messageResponseArray,
-                            ],
-                            false
-                        );
-
-                        $this->appendSchemaDefinitions($schemas, $schema->getDefinitions());
-                        $content[$mimeType] = new MediaType(new ArrayObject($schema->getArrayCopy(false)));
-                    }
-
-                    $responses[$statusCode] = new Response(
-                        $messageResponseArray['description'] ?? '',
-                        $content
-                    );
-                }
-
-                if (isset($responses['default']) && count($responses) > 1) {
-                    unset($responses['default']);
-                }
-
-                $pathItem = $pathItem->{$with}($operation->withResponses($responses));
+                $pathItem = $pathItem->{$with}($operation);
             }
 
             $pathsModel->addPath($path, $pathItem);
         }
 
-        return $openApi->withPaths($pathsModel);
+        return $openApi
+            ->withPaths($pathsModel)
+            ->withTags($this->tags)
+            ->withServers($this->servers);
+    }
+
+    /**
+     * @param ArrayObject<string, mixed> $schemas
+     */
+    private function overrideResponses(Operation $operation, ArrayObject &$schemas): Operation
+    {
+        $extensionProperties = $operation->getExtensionProperties();
+
+        if (! isset($extensionProperties['x-message-class'])) {
+            return $operation;
+        }
+
+        /** @var class-string $messageClass */
+        $messageClass = $extensionProperties['x-message-class'];
+        $reflectionClass = new ReflectionClass($messageClass);
+
+        if (! $reflectionClass->implementsInterface(HasResponses::class)) {
+            return $operation->withResponses([]);
+        }
+
+        /** @var class-string<ImmutableRecord> $resourceClass */
+        $resourceClass = $extensionProperties['x-resource-class'];
+        $operationName = $extensionProperties['x-operation-name'];
+        $operationType = $extensionProperties['x-operation-type'];
+        $resourceMetadata = $this->resourceMetadataFactory->create($resourceClass);
+
+        $responseFormats = $resourceMetadata->getTypedOperationAttribute(
+            $operationType,
+            $operationName,
+            'output_formats',
+            $this->formats,
+            true
+        );
+        $responseMimeTypes = $this->flattenMimeTypes($responseFormats);
+
+        /** @var array<Response> $responses */
+        $responses = $operation->getResponses();
+        $messageClassResponses = $messageClass::__responseSchemasPerStatusCode();
+
+        foreach ($messageClassResponses as $statusCode => $messageClassResponse) {
+            $messageResponseArray = $messageClassResponse->toArray();
+            $response = $responses[$statusCode] ?? null;
+
+            if (
+                $response !== null
+                && $messageClass::__defaultStatusCode() === $statusCode
+                && ! $messageClass::__overrideDefaultApiPlatformResponse()
+            ) {
+                $responses[$statusCode] = $response->withDescription(
+                    $messageResponseArray['description'] ?? $response->getDescription()
+                );
+
+                continue;
+            }
+
+            $schema = new Schema('openapi');
+            $schema->setDefinitions($schemas);
+            $content = new ArrayObject();
+
+            foreach ($responseMimeTypes as $mimeType => $operationFormat) {
+                $schema = $this->jsonSchemaFactory->buildSchema(
+                    $resourceClass,
+                    $operationFormat,
+                    Schema::TYPE_OUTPUT,
+                    $operationType,
+                    $operationName,
+                    $schema,
+                    [
+                        'statusCode' => $statusCode,
+                        'isDefaultResponse' => false,
+                        'response' => $messageResponseArray,
+                    ],
+                    false
+                );
+
+                $this->appendSchemaDefinitions($schemas, $schema->getDefinitions());
+                $content[$mimeType] = new MediaType(new ArrayObject($schema->getArrayCopy(false)));
+            }
+
+            $responses[$statusCode] = new Response(
+                $messageResponseArray['description'] ?? '',
+                $content
+            );
+        }
+
+        if (isset($responses['default']) && count($responses) > 1) {
+            unset($responses['default']);
+        }
+
+        return $operation->withResponses($responses);
+    }
+
+    private function removeEmptyRequestBodies(Operation $operation): Operation
+    {
+        $requestBody = $operation->getRequestBody();
+
+        if ($requestBody === null) {
+            return $operation;
+        }
+
+        /** @var ArrayObject<string, MediaType> $content */
+        $content = $requestBody->getContent();
+        $contentArray = $content->getArrayCopy();
+
+        foreach ($contentArray as $mimeType => $mediaType) {
+            $schema = $mediaType->getSchema();
+
+            if ($schema !== null && count($schema) !== 0) {
+                continue;
+            }
+
+            unset($contentArray[$mimeType]);
+        }
+
+        return count($contentArray) === 0
+            ? $this->removeRequestBody($operation)
+            : $operation;
+    }
+
+    private function removeRequestBody(Operation $operation): Operation
+    {
+        return new Operation(
+            $operation->getOperationId(),
+            $operation->getTags(),
+            $operation->getResponses(),
+            $operation->getSummary(),
+            $operation->getDescription(),
+            $operation->getExternalDocs(),
+            $operation->getParameters(),
+            null,
+            $operation->getCallbacks(),
+            $operation->getDeprecated(),
+            $operation->getSecurity(),
+            $operation->getServers(),
+            $operation->getExtensionProperties()
+        );
     }
 
     /**
