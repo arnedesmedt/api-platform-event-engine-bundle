@@ -20,10 +20,14 @@ use ReflectionClass;
 use Symfony\Component\HttpFoundation\Request;
 
 use function array_map;
+use function ceil;
 use function count;
+use function floor;
+use function similar_text;
 use function sprintf;
 use function strtolower;
 use function ucfirst;
+use function usort;
 
 final class OpenApiFactory implements OpenApiFactoryInterface
 {
@@ -65,10 +69,22 @@ final class OpenApiFactory implements OpenApiFactoryInterface
         $this->resourceMetadataFactory = $resourceMetadataFactory;
         $this->jsonSchemaFactory = $jsonSchemaFactory;
         $this->formats = $formats;
+
+        usort(
+            $servers,
+            static function (array $server1, array $server2) {
+                $diff = (similar_text($server2['url'], $_SERVER['HTTP_HOST'])
+                        - similar_text($server1['url'], $_SERVER['HTTP_HOST'])) / 100;
+
+                return (int) ($diff > 0 ? ceil($diff) : floor($diff));
+            }
+        );
+
         $this->servers = array_map(
             static fn (array $server) => new Server($server['url'], $server['description']),
             $servers
         );
+
         $this->tags = array_map(
             static fn (string $tag) => ['name' => $tag],
             $tags['order'] ?? []
