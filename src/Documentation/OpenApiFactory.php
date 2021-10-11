@@ -70,15 +70,17 @@ final class OpenApiFactory implements OpenApiFactoryInterface
         $this->jsonSchemaFactory = $jsonSchemaFactory;
         $this->formats = $formats;
 
-        usort(
-            $servers,
-            static function (array $server1, array $server2) {
-                $diff = (similar_text($server2['url'], $_SERVER['HTTP_HOST'])
-                        - similar_text($server1['url'], $_SERVER['HTTP_HOST'])) / 100;
+        if (isset($_SERVER['HTTP_HOST'])) {
+            usort(
+                $servers,
+                static function (array $server1, array $server2) {
+                    $diff = (similar_text($server2['url'], $_SERVER['HTTP_HOST'])
+                            - similar_text($server1['url'], $_SERVER['HTTP_HOST'])) / 100;
 
-                return (int) ($diff > 0 ? ceil($diff) : floor($diff));
-            }
-        );
+                    return (int) ($diff > 0 ? ceil($diff) : floor($diff));
+                }
+            );
+        }
 
         $this->servers = array_map(
             static fn (array $server) => new Server($server['url'], $server['description']),
