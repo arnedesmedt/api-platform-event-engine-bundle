@@ -159,9 +159,9 @@ trait DefaultApiPlatformMessage
         return null;
     }
 
-    public static function __schemaStateClass(): ?string
+    public static function __schemaStateClass(): string
     {
-        return null;
+        return static::__entity();
     }
 
     /**

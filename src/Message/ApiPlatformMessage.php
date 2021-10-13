@@ -33,7 +33,7 @@ interface ApiPlatformMessage extends JsonSchemaAwareRecord
     /**
      * @return class-string
      */
-    public static function __schemaStateClass(): ?string;
+    public static function __schemaStateClass(): string;
 
     /**
      * @return array<string>
