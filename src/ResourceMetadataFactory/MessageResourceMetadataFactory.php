@@ -16,6 +16,7 @@ use ApiPlatform\Core\Metadata\Resource\Factory\ResourceMetadataFactoryInterface;
 use ApiPlatform\Core\Metadata\Resource\ResourceMetadata;
 use ApiPlatform\Core\PathResolver\OperationPathResolverInterface;
 use InvalidArgumentException;
+use phpDocumentor\Reflection\DocBlock;
 use phpDocumentor\Reflection\DocBlockFactory;
 use ReflectionClass;
 use RuntimeException;
@@ -190,9 +191,14 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
 
                         $reflectionClass = new ReflectionClass($messageClass);
                         $openApiContext = &$operation['openapi_context'];
+                        try {
+                            $docBlock = $this->docBlockFactory->create($reflectionClass);
+                        } catch (InvalidArgumentException $exception) {
+                            $docBlock = null;
+                        }
 
                         $this
-                            ->addMessageClass($operation, $openApiContext, $messageClass)
+                            ->addMessageClass($operation, $messageClass)
                             ->addHttpMethod($operation, $messageClass)
                             ->addPath($operation, $operationType, $resourceMetadata, $messageClass)
                             ->addController($operation, $messageClass)
@@ -202,7 +208,8 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
                             ->addInputClass($operation, $messageClass)
                             ->addOutputClass($operation, $messageClass)
                             ->addTags($openApiContext, $messageClass)
-                            ->addDocumentation($openApiContext, $reflectionClass)
+                            ->addDocumentation($openApiContext, $docBlock)
+                            ->addDeprecated($operation, $docBlock)
                             ->addParameters($operation, $messageClass)
                             ->addExtensionProperties(
                                 $operation,
@@ -225,10 +232,9 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
 
     /**
      * @param array<mixed> $operation
-     * @param array<mixed> $openApiContext
      * @param class-string<ApiPlatformMessage> $messageClass
      */
-    private function addMessageClass(array &$operation, array &$openApiContext, string $messageClass): self
+    private function addMessageClass(array &$operation, string $messageClass): self
     {
         $operation['message_class'] ??= $messageClass;
 
@@ -381,18 +387,42 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
 
     /**
      * @param array<mixed> $openApiContext
-     * @param ReflectionClass<ApiPlatformMessage> $reflectionClass
      */
     private function addDocumentation(
         array &$openApiContext,
-        ReflectionClass $reflectionClass
+        ?DocBlock $docBlock = null
     ): self {
-        try {
-            $docBlock = $this->docBlockFactory->create($reflectionClass);
-            $openApiContext['summary'] ??= $docBlock->getSummary();
-            $openApiContext['description'] ??= $docBlock->getDescription()->render();
-        } catch (InvalidArgumentException $exception) {
+        if ($docBlock === null) {
+            return $this;
         }
+
+        $openApiContext['summary'] ??= $docBlock->getSummary();
+        $openApiContext['description'] ??= $docBlock->getDescription()->render();
+
+        return $this;
+    }
+
+    /**
+     * @param array<mixed> $operation
+     */
+    private function addDeprecated(
+        array &$operation,
+        ?DocBlock $docBlock = null
+    ): self {
+        if ($docBlock === null) {
+            return $this;
+        }
+
+        $tags = $docBlock->getTagsByName('deprecated');
+
+        if (empty($tags)) {
+            return $this;
+        }
+
+        /** @var DocBlock\Tags\Deprecated $deprecatedTag */
+        $deprecatedTag = $tags[0];
+        $description = $deprecatedTag->getDescription();
+        $operation['deprecation_reason'] = $description ? $description->render() : 'deprecated';
 
         return $this;
     }
