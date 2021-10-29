@@ -10,8 +10,10 @@ use ADS\Util\StringUtil;
 use ADS\ValueObjects\ValueObject;
 use ApiPlatform\Core\Metadata\Property\Factory\PropertyMetadataFactoryInterface;
 use ApiPlatform\Core\Metadata\Property\PropertyMetadata;
+use EventEngine\Data\ImmutableRecord;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use InvalidArgumentException;
+use phpDocumentor\Reflection\DocBlock;
 use phpDocumentor\Reflection\DocBlockFactory;
 use ReflectionClass;
 use ReflectionNamedType;
@@ -41,6 +43,7 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
     public function create(string $resourceClass, string $property, array $options = []): PropertyMetadata
     {
         $propertyMetadata = $this->decorated->create($resourceClass, $property, $options);
+        /** @var ReflectionClass<ImmutableRecord> $reflectionClass */
         $reflectionClass = new ReflectionClass($resourceClass);
 
         if (! $reflectionClass->implementsInterface(JsonSchemaAwareRecord::class)) {
@@ -50,27 +53,56 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
         $schema = $resourceClass::__schema()->toArray();
         $propertySchema = $schema['properties'][$property] ?? [];
 
-        $propertyDefault = null;
+        $this
+            ->addDefault($propertyMetadata, $resourceClass, $property)
+            ->addDescription($propertyMetadata, $resourceClass, $property, $reflectionClass, $propertySchema)
+            ->addExample($propertyMetadata, $resourceClass, $property, $reflectionClass)
+            ->addDeprecated($propertyMetadata, $property, $reflectionClass);
+
+        return $propertyMetadata
+            ->withRequired(in_array($property, $schema['required'] ?? []))
+            ->withReadable(true)
+            ->withWritable(true)
+            ->withReadableLink(true);
+    }
+
+    private function addDefault(PropertyMetadata &$propertyMetadata, string $resourceClass, string $property): self
+    {
         try {
             if (
                 method_exists($resourceClass, 'propertyDefault')
                 && method_exists($resourceClass, 'defaultProperties')
             ) {
-                $propertyDefault = $resourceClass::propertyDefault($property, $resourceClass::defaultProperties());
+                $default = $resourceClass::propertyDefault($property, $resourceClass::defaultProperties());
             }
         } catch (RuntimeException $exception) {
         }
 
-        if ($reflectionClass->hasProperty($property)) {
-            $reflectionProperty = $reflectionClass->getProperty($property);
-            /** @var ReflectionNamedType|null $propertyType */
-            $propertyType = $reflectionProperty->getType();
-        }
+        $propertyMetadata = $propertyMetadata->withDefault($default ?? null);
+
+        return $this;
+    }
+
+    /**
+     * @param ReflectionClass<ImmutableRecord> $reflectionClass
+     * @param array<mixed> $propertySchema
+     */
+    private function addDescription(
+        PropertyMetadata &$propertyMetadata,
+        string $resourceClass,
+        string $property,
+        ReflectionClass $reflectionClass,
+        array $propertySchema
+    ): self {
+        /** @var ReflectionNamedType|null $propertyType */
+        $propertyType = $reflectionClass->hasProperty($property)
+            ? $reflectionClass->getProperty($property)->getType()
+            : null;
 
         $patchPropertyDescription = $reflectionClass->implementsInterface(ApiPlatformMessage::class)
-                && $resourceClass::__httpMethod() === Request::METHOD_PATCH
-                && isset($propertyType)
-                && $propertyType->allowsNull()
+        && $resourceClass::__httpMethod() === Request::METHOD_PATCH
+        && isset($propertyType)
+        && $propertyType->allowsNull()
             ? sprintf(
                 '<br/> If \'%s\' is not added in the payload, then it will not be used.',
                 StringUtil::decamelize($property)
@@ -81,7 +113,12 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
             $propertyMetadata = $propertyMetadata->withDescription(
                 $propertySchema['description'] . $patchPropertyDescription
             );
-        } elseif (isset($propertyType) && ! $propertyType->isBuiltin()) {
+
+            return $this;
+        }
+
+        if (isset($propertyType) && ! $propertyType->isBuiltin()) {
+            // Get the description of the value object
             /** @var class-string $className */
             $className = $propertyType->getName();
             $propertyReflectionClass = new ReflectionClass($className);
@@ -100,6 +137,18 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
             }
         }
 
+        return $this;
+    }
+
+    /**
+     * @param ReflectionClass<ImmutableRecord> $reflectionClass
+     */
+    private function addExample(
+        PropertyMetadata &$propertyMetadata,
+        string $resourceClass,
+        string $property,
+        ReflectionClass $reflectionClass
+    ): self {
         if ($reflectionClass->implementsInterface(HasPropertyExamples::class)) {
             $examples = $resourceClass::examples();
             $example = $examples[$property] ?? null;
@@ -110,14 +159,54 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
                 }
 
                 $propertyMetadata = $propertyMetadata->withExample($example);
+
+                return $this;
             }
         }
 
-        return $propertyMetadata
-            ->withRequired(in_array($property, $schema['required'] ?? []))
-            ->withDefault($propertyDefault)
-            ->withReadable(true)
-            ->withWritable(true)
-            ->withReadableLink(true);
+        $reflectionProperty = $reflectionClass->getProperty($property);
+        $docBlock = $this->docBlockFactory->create($reflectionProperty);
+        $tags = $docBlock->getTagsByName('example');
+
+        if (empty($tags)) {
+            return $this;
+        }
+
+        /** @var DocBlock\Tags\Example $exampleTag */
+        $exampleTag = $tags[0];
+        $description = $exampleTag->getDescription();
+
+        $propertyMetadata = $propertyMetadata->withExample($description);
+
+        return $this;
+    }
+
+    /**
+     * @param ReflectionClass<ImmutableRecord> $reflectionClass
+     */
+    private function addDeprecated(
+        PropertyMetadata &$propertyMetadata,
+        string $property,
+        ReflectionClass $reflectionClass
+    ): self {
+        $reflectionProperty = $reflectionClass->getProperty($property);
+        $docBlock = $this->docBlockFactory->create($reflectionProperty);
+        $tags = $docBlock->getTagsByName('deprecated');
+
+        if (empty($tags)) {
+            return $this;
+        }
+
+        /** @var DocBlock\Tags\Deprecated $deprecatedTag */
+        $deprecatedTag = $tags[0];
+        $description = $deprecatedTag->getDescription();
+
+        $propertyMetadata = $propertyMetadata->withAttributes(
+            [
+                'deprcation_reason' => $description ? $description->render() : 'deprecated',
+            ]
+        );
+
+        return $this;
     }
 }
