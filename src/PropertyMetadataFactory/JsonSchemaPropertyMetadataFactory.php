@@ -214,6 +214,10 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
      */
     private function docTagsFromProperty(ReflectionClass $reflectionClass, string $property, string $tagName): array
     {
+        if (! $reflectionClass->hasProperty($property)) {
+            return [];
+        }
+
         $reflectionProperty = $reflectionClass->getProperty($property);
 
         try {
