@@ -164,9 +164,7 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
             }
         }
 
-        $reflectionProperty = $reflectionClass->getProperty($property);
-        $docBlock = $this->docBlockFactory->create($reflectionProperty);
-        $tags = $docBlock->getTagsByName('example');
+        $tags = $this->docTagsFromProperty($reflectionClass, $property, 'example');
 
         if (empty($tags)) {
             return $this;
@@ -189,9 +187,7 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
         string $property,
         ReflectionClass $reflectionClass
     ): self {
-        $reflectionProperty = $reflectionClass->getProperty($property);
-        $docBlock = $this->docBlockFactory->create($reflectionProperty);
-        $tags = $docBlock->getTagsByName('deprecated');
+        $tags = $this->docTagsFromProperty($reflectionClass, $property, 'deprecated');
 
         if (empty($tags)) {
             return $this;
@@ -208,5 +204,24 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
         );
 
         return $this;
+    }
+
+    /**
+     * @param ReflectionClass<ImmutableRecord> $reflectionClass
+     *
+     * @return array<DocBlock\Tag>
+     */
+    private function docTagsFromProperty(ReflectionClass $reflectionClass, string $property, string $tagName): array
+    {
+        $reflectionProperty = $reflectionClass->getProperty($property);
+
+        try {
+            $docBlock = $this->docBlockFactory->create($reflectionProperty);
+            $tags = $docBlock->getTagsByName($tagName);
+        } catch (InvalidArgumentException $exception) {
+            return [];
+        }
+
+        return $tags;
     }
 }
