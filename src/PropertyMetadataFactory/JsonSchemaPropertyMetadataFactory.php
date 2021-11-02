@@ -42,6 +42,7 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
      */
     public function create(string $resourceClass, string $property, array $options = []): PropertyMetadata
     {
+        $property = StringUtil::camelize($property); // todo change the way we work with camelize and decamilize
         $propertyMetadata = $this->decorated->create($resourceClass, $property, $options);
         /** @var ReflectionClass<ImmutableRecord> $reflectionClass */
         $reflectionClass = new ReflectionClass($resourceClass);
