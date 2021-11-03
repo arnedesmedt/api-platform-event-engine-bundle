@@ -173,9 +173,8 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
 
         /** @var DocBlock\Tags\Example $exampleTag */
         $exampleTag = $tags[0];
-        $description = $exampleTag->getDescription();
 
-        $propertyMetadata = $propertyMetadata->withExample($description);
+        $propertyMetadata = $propertyMetadata->withExample($exampleTag->render());
 
         return $this;
     }
@@ -196,11 +195,11 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
 
         /** @var DocBlock\Tags\Deprecated $deprecatedTag */
         $deprecatedTag = $tags[0];
-        $description = $deprecatedTag->getDescription();
+        $reason = $deprecatedTag->render();
 
         $propertyMetadata = $propertyMetadata->withAttributes(
             [
-                'deprcation_reason' => $description ? $description->render() : 'deprecated',
+                'deprcation_reason' =>  empty($reason) ? 'deprecated' : $reason,
             ]
         );
 
