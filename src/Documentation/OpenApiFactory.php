@@ -74,8 +74,11 @@ final class OpenApiFactory implements OpenApiFactoryInterface
             usort(
                 $servers,
                 static function (array $server1, array $server2) {
-                    $diff = (similar_text($server2['url'], $_SERVER['HTTP_HOST'])
-                            - similar_text($server1['url'], $_SERVER['HTTP_HOST'])) / 100;
+                    $percentage1 = $percentage2 = 0.0;
+                    similar_text($server2['url'], $_SERVER['HTTP_HOST'], $percentage2);
+                    similar_text($server1['url'], $_SERVER['HTTP_HOST'], $percentage1);
+
+                    $diff = ($percentage2 - $percentage1) / 100;
 
                     return (int) ($diff > 0 ? ceil($diff) : floor($diff));
                 }
