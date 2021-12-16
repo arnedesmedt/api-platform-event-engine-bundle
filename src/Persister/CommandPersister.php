@@ -24,7 +24,7 @@ final class CommandPersister implements ContextAwareDataPersisterInterface
      */
     public function supports($data, array $context = []): bool
     {
-        return $data instanceof MessageBag && $data->get('message') instanceof Command;
+        return $data instanceof MessageBag && $data->get(MessageBag::MESSAGE) instanceof Command;
     }
 
     /**
