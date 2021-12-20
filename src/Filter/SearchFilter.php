@@ -16,15 +16,11 @@ use function sprintf;
 
 class SearchFilter implements FilterInterface
 {
-    /** @var array<mixed> */
-    protected array $properties = [];
-
     /**
      * @param array<mixed> $properties
      */
-    public function __construct(array $properties = [])
+    public function __construct(protected array $properties = [])
     {
-        $this->properties = $properties;
     }
 
     /**

@@ -347,7 +347,7 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
     }
 
     /**
-     * @param array<mixed> $operation
+     * @param array<string, array<string, mixed>> $operation
      */
     private function addInputClass(array &$operation, string $messageClass): self
     {
@@ -361,7 +361,7 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
     }
 
     /**
-     * @param array<mixed> $operation
+     * @param array<string, array<string, mixed>> $operation
      */
     private function addOutputClass(array &$operation, string $messageClass): self
     {
@@ -428,7 +428,7 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
     }
 
     /**
-     * @param array<mixed> $operation
+     * @param array<string, array<string, mixed>> $operation
      * @param class-string<ApiPlatformMessage> $messageClass
      */
     private function addParameters(
@@ -437,7 +437,9 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
     ): self {
         $operation['openapi_context']['parameters'] ??= [];
 
-        $pathUri = $messageClass::__pathUri() ?? ($operation['path'] ? Uri::fromString($operation['path']) : null);
+        /** @var string $path */
+        $path = $operation['path'];
+        $pathUri = $messageClass::__pathUri() ?? ($path ? Uri::fromString($path) : null);
 
         if ($pathUri === null) {
             return $this;
@@ -448,6 +450,7 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
         $allParameterNames = $pathUri->toAllParameterNames();
         $pathParameterNames = $pathUri->toPathParameterNames();
 
+        /** @var array<string, array<string, mixed>>|null $pathSchema */
         $pathSchema = MessageSchemaFactory::filterParameters($schema, $allParameterNames);
 
         if ($pathSchema === null && ! empty($allParameterNames)) {
@@ -464,6 +467,7 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
         }
 
         foreach ($allParameterNames as $parameterName) {
+            /** @var array<string, mixed> $propertySchema */
             $propertySchema = $pathSchema['properties'][$parameterName];
             $in = in_array($parameterName, $pathParameterNames) ? 'path' : 'query';
             $name = StringUtil::decamelize($parameterName);
@@ -472,6 +476,7 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
                 $operation['requirements'][$name] = $propertySchema['pattern'];
             }
 
+            /* @phpstan-ignore-next-line */
             $operation['openapi_context']['parameters'][] = [
                 'name' => $name,
                 'in' => $in,

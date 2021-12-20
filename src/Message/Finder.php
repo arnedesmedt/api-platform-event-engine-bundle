@@ -11,29 +11,29 @@ use function sprintf;
 
 final class Finder
 {
-    private Config $config;
-
-    public function __construct(Config $config)
+    public function __construct(private readonly Config $config)
     {
-        $this->config = $config;
     }
 
     /**
-     * @param array<mixed> $context
+     * @param array<string, mixed> $context
      *
      * @return string|class-string
      */
     public function byContext(array $context): string
     {
+        /** @var string $entity */
         $entity = $context['resource_class'];
+        /** @var string $operationType */
         $operationType = $context['operation_type'];
+        /** @var string $operationName */
         $operationName = $context[sprintf('%s_operation_name', $operationType)];
 
         return $this->byResourceAndOperation($entity, $operationType, $operationName);
     }
 
     /**
-     * @param array<mixed> $context
+     * @param array<string, mixed> $context
      */
     public function hasMessageByContext(array $context): bool
     {
@@ -41,7 +41,7 @@ final class Finder
             $this->byContext($context);
 
             return true;
-        } catch (FinderException $exception) {
+        } catch (FinderException) {
             return false;
         }
     }

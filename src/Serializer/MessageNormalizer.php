@@ -14,6 +14,8 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use function array_diff_key;
 use function array_key_exists;
 use function array_merge;
+use function assert;
+use function is_array;
 use function method_exists;
 
 final class MessageNormalizer implements DenormalizerInterface
@@ -42,12 +44,9 @@ final class MessageNormalizer implements DenormalizerInterface
     }
 
     /**
-     * @param mixed $data
-     * @param array<mixed> $context
-     *
-     * @return mixed
+     * @param array<string, mixed> $context
      **/
-    public function denormalize($data, string $type, ?string $format = null, array $context = [])
+    public function denormalize(mixed $data, string $type, ?string $format = null, array $context = []): mixed
     {
         if ($context['message'] ?? null) {
             return $context['message'];
@@ -65,22 +64,24 @@ final class MessageNormalizer implements DenormalizerInterface
     }
 
     /**
-     * @param mixed $data
      * @param array<mixed> $context
      */
-    public function supportsDenormalization($data, string $type, ?string $format = null, array $context = []): bool
-    {
+    public function supportsDenormalization(
+        mixed $data,
+        string $type,
+        ?string $format = null,
+        array $context = []
+    ): bool {
         return $this->messageFinder->hasMessageByContext($context);
     }
 
     /**
      * @param class-string $message
-     * @param mixed $data
-     * @param array<mixed> $context
+     * @param array<string, mixed> $context
      *
      * @return array<mixed>
      */
-    private function messageData(string $message, $data, string $type, array $context): array
+    private function messageData(string $message, mixed $data, string $type, array $context): array
     {
         if (
             method_exists($message, '__requestBodyArrayProperty')
@@ -89,29 +90,36 @@ final class MessageNormalizer implements DenormalizerInterface
             $data = [$message::__requestBodyArrayProperty() => $data];
         }
 
+        assert(is_array($data));
+
         $filter = ($this->filterFinder)($type, SearchFilter::class);
+
+        /** @var array<string, mixed> $queryParameters */
+        $queryParameters = $context['query_parameters'] ?? [];
+        /** @var array<string, mixed> $pathParameters */
+        $pathParameters = $context['path_parameters'] ?? [];
 
         if ($filter !== null) {
             $descriptions = $filter->getDescription($type);
-            $context['query_parameters'] = array_diff_key($context['query_parameters'], $descriptions);
+            $queryParameters = array_diff_key($queryParameters, $descriptions);
         }
 
-        if (array_key_exists($this->pageParameterName, $context['query_parameters'])) {
-            unset($context['query_parameters'][$this->pageParameterName]);
+        if (array_key_exists($this->pageParameterName, $queryParameters)) {
+            unset($queryParameters[$this->pageParameterName]);
         }
 
-        if (array_key_exists($this->orderParameterName, $context['query_parameters'])) {
-            unset($context['query_parameters'][$this->orderParameterName]);
+        if (array_key_exists($this->orderParameterName, $queryParameters)) {
+            unset($queryParameters[$this->orderParameterName]);
         }
 
-        if (array_key_exists($this->itemsPerPageParameterName, $context['query_parameters'])) {
-            unset($context['query_parameters'][$this->itemsPerPageParameterName]);
+        if (array_key_exists($this->itemsPerPageParameterName, $queryParameters)) {
+            unset($queryParameters[$this->itemsPerPageParameterName]);
         }
 
         $data = array_merge(
             $data,
-            $context['path_parameters'] ?? [],
-            $context['query_parameters'] ?? []
+            $pathParameters,
+            $queryParameters
         );
 
         return ArrayUtil::toCamelCasedKeys($data, true);

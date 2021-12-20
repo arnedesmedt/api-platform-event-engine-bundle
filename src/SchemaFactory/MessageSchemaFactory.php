@@ -57,7 +57,7 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
     }
 
     /**
-     * @param array<mixed>|null $serializerContext
+     * @param array<string, mixed>|null $serializerContext
      * @param Schema<mixed> $schema
      *
      * @return Schema<mixed>
@@ -72,8 +72,10 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
         ?array $serializerContext = null,
         bool $forceCollection = false
     ): Schema {
-        if (isset($serializerContext['response'])) {
-            return OpenApiSchemaFactory::toApiPlatformSchema($serializerContext['response']);
+        /** @var array<string, mixed>|null $response */
+        $response = $serializerContext['response'] ?? null;
+        if (isset($response)) {
+            return OpenApiSchemaFactory::toApiPlatformSchema($response);
         }
 
         // Set the defaults
@@ -213,7 +215,7 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
      * @param array<mixed> $schema
      * @param array<string> $parametersNames
      *
-     * @return array<mixed>|null
+     * @return array<string, mixed>|null
      */
     public static function filterParameters(array $schema, array $parametersNames): ?array
     {
@@ -222,7 +224,7 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
 
     /**
      * @param array<mixed> $schema
-     * @param array<mixed> $parameterNames
+     * @param array<string> $parameterNames
      *
      * @return array<mixed>|null
      */
@@ -263,7 +265,7 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
     }
 
     /**
-     * @param array<string, mixed> $serializerContext
+     * @param array<string, string> $serializerContext
      * @param class-string $className
      */
     private function setDefinitionName(
@@ -378,10 +380,13 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
     private function removePathParameterFromSchema(Schema $schema, Uri $path): Schema
     {
         // remove the path parameters from the schema
+        /** @var array<string> $pathParameters */
         $pathParameters = ArrayUtil::toSnakeCasedValues($path->toAllParameterNames());
         $definitions = $schema->getDefinitions();
 
-        $definition = $definitions->offsetGet($schema->getRootDefinitionKey());
+        /** @var string $rootDefinitionKey */
+        $rootDefinitionKey = $schema->getRootDefinitionKey();
+        $definition = $definitions->offsetGet($rootDefinitionKey);
         $definition = self::removeParameters($definition->getArrayCopy(), $pathParameters);
 
         if ($definition === null) {

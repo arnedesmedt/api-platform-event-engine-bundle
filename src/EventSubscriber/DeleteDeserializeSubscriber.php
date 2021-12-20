@@ -15,17 +15,14 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 use function json_encode;
 
+use const JSON_THROW_ON_ERROR;
+
 final class DeleteDeserializeSubscriber implements EventSubscriberInterface
 {
-    private SerializerInterface $serializer;
-    private SerializerContextBuilderInterface $serializerContextBuilder;
-
     public function __construct(
-        SerializerInterface $serializer,
-        SerializerContextBuilderInterface $serializerContextBuilder
+        private readonly SerializerInterface $serializer,
+        private readonly SerializerContextBuilderInterface $serializerContextBuilder
     ) {
-        $this->serializer = $serializer;
-        $this->serializerContextBuilder = $serializerContextBuilder;
     }
 
     /**
@@ -59,7 +56,7 @@ final class DeleteDeserializeSubscriber implements EventSubscriberInterface
         $request->attributes->set(
             'data',
             $this->serializer->deserialize(
-                (string) json_encode($context['path_parameters']),
+                (string) json_encode($context['path_parameters'], JSON_THROW_ON_ERROR),
                 $context['resource_class'],
                 'json',
                 $context

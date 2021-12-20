@@ -26,13 +26,11 @@ use function sprintf;
 
 final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactoryInterface
 {
-    private PropertyMetadataFactoryInterface $decorated;
-    private DocBlockFactory $docBlockFactory;
+    private readonly DocBlockFactory $docBlockFactory;
 
     public function __construct(
-        PropertyMetadataFactoryInterface $decorated
+        private readonly PropertyMetadataFactoryInterface $decorated
     ) {
-        $this->decorated = $decorated;
         $this->docBlockFactory = DocBlockFactory::createInstance();
     }
 
@@ -76,7 +74,7 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
             ) {
                 $default = $resourceClass::propertyDefault($property, $resourceClass::defaultProperties());
             }
-        } catch (RuntimeException $exception) {
+        } catch (RuntimeException) {
         }
 
         $propertyMetadata = $propertyMetadata->withDefault($default ?? null);
@@ -134,7 +132,7 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
                         $patchPropertyDescription
                     )
                 );
-            } catch (InvalidArgumentException $exception) {
+            } catch (InvalidArgumentException) {
             }
         }
 
@@ -222,7 +220,7 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
         try {
             $docBlock = $this->docBlockFactory->create($reflectionProperty);
             $tags = $docBlock->getTagsByName($tagName);
-        } catch (InvalidArgumentException $exception) {
+        } catch (InvalidArgumentException) {
             return [];
         }
 

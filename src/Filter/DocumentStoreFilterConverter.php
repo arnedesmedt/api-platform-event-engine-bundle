@@ -96,31 +96,22 @@ final class DocumentStoreFilterConverter extends FilterConverter
     }
 
     /**
-     * @param array<string, mixed> $description
+     * @param array<string, string> $description
      */
     private function eventEngineSearchFilter(array $description, string $value): ?Filter
     {
         $property = sprintf('state.%s', StringUtil::camelize($description['property']));
-        switch ($description['strategy']) {
-            case SearchFilterInterface::STRATEGY_EXACT:
-                return new EqFilter($property, $value);
 
-            case SearchFilterInterface::STRATEGY_PARTIAL:
-                return new LikeFilter($property, '%' . $value . '%');
-
-            case SearchFilterInterface::STRATEGY_START:
-                return new LikeFilter($property, $value . '%');
-
-            case SearchFilterInterface::STRATEGY_END:
-                return new LikeFilter($property, '%' . $value);
-
-            case SearchFilterInterface::STRATEGY_WORD_START:
-                return new OrFilter(
-                    new LikeFilter($property, $value . '%'),
-                    new LikeFilter($property, '% ' . $value . '%'),
-                );
-        }
-
-        return null;
+        return match ($description['strategy']) {
+            SearchFilterInterface::STRATEGY_EXACT => new EqFilter($property, $value),
+            SearchFilterInterface::STRATEGY_PARTIAL => new LikeFilter($property, '%' . $value . '%'),
+            SearchFilterInterface::STRATEGY_START => new LikeFilter($property, $value . '%'),
+            SearchFilterInterface::STRATEGY_END => new LikeFilter($property, '%' . $value),
+            SearchFilterInterface::STRATEGY_WORD_START => new OrFilter(
+                new LikeFilter($property, $value . '%'),
+                new LikeFilter($property, '% ' . $value . '%'),
+            ),
+            default => null,
+        };
     }
 }

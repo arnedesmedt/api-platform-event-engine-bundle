@@ -14,11 +14,8 @@ use function array_map;
 
 class IdentifierExtractor implements IdentifiersExtractorInterface
 {
-    private IdentifiersExtractorInterface $identifiersExtractor;
-
-    public function __construct(IdentifiersExtractorInterface $identifiersExtractor)
+    public function __construct(private readonly IdentifiersExtractorInterface $identifiersExtractor)
     {
-        $this->identifiersExtractor = $identifiersExtractor;
     }
 
     /**
@@ -77,11 +74,10 @@ class IdentifierExtractor implements IdentifiersExtractorInterface
 
     /**
      * @param array<string, mixed> $identifiers
-     * @param mixed $resource
      *
      * @return array<string, mixed>
      */
-    private function changeMapOfIdentifiers(array $identifiers, $resource): array
+    private function changeMapOfIdentifiers(array $identifiers, mixed $resource): array
     {
         if (! $resource instanceof ChangeIdentifierResource) {
             return $identifiers;
@@ -127,10 +123,13 @@ class IdentifierExtractor implements IdentifiersExtractorInterface
     /**
      * @param array<int, string> $identifiers
      *
-     * @return array<string>
+     * @return array<int, string>
      */
     private function snakeCasedIdentifiers(array $identifiers): array
     {
-        return ArrayUtil::toSnakeCasedValues($identifiers);
+        /** @var array<int, string> $result */
+        $result = ArrayUtil::toSnakeCasedValues($identifiers);
+
+        return $result;
     }
 }

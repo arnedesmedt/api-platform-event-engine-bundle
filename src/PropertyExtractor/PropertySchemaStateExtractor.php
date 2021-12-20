@@ -30,15 +30,13 @@ use function is_array;
 use function is_string;
 use function reset;
 use function sprintf;
+use function str_starts_with;
 use function stripslashes;
-use function strpos;
 use function substr;
 use function trim;
 
 final class PropertySchemaStateExtractor implements PropertyListExtractorInterface, PropertyTypeExtractorInterface
 {
-    private ClassMetadataFactoryInterface $classMetadataFactory;
-
     private const TYPE_MAPPING = [
         JsonSchema::TYPE_ARRAY => Type::BUILTIN_TYPE_ARRAY,
         JsonSchema::TYPE_BOOL => Type::BUILTIN_TYPE_BOOL,
@@ -49,10 +47,8 @@ final class PropertySchemaStateExtractor implements PropertyListExtractorInterfa
         JsonSchema::TYPE_STRING => Type::BUILTIN_TYPE_STRING,
     ];
 
-    public function __construct(
-        ClassMetadataFactoryInterface $classMetadataFactory
-    ) {
-        $this->classMetadataFactory = $classMetadataFactory;
+    public function __construct(private readonly ClassMetadataFactoryInterface $classMetadataFactory)
+    {
     }
 
     /**
@@ -68,7 +64,7 @@ final class PropertySchemaStateExtractor implements PropertyListExtractorInterfa
 
         $whiteListedSerializerGroups = array_filter(
             $serializerGroups,
-            static fn (string $serializerGroup) => strpos($serializerGroup, '!') !== 0
+            static fn (string $serializerGroup) => ! str_starts_with($serializerGroup, '!')
         );
 
         if (empty($whiteListedSerializerGroups)) {
@@ -79,7 +75,7 @@ final class PropertySchemaStateExtractor implements PropertyListExtractorInterfa
             static fn (string $serializerGroup) => substr($serializerGroup, 1),
             array_filter(
                 $serializerGroups,
-                static fn (string $serializerGroup) => strpos($serializerGroup, '!') === 0
+                static fn (string $serializerGroup) => str_starts_with($serializerGroup, '!')
             )
         );
 
@@ -102,14 +98,17 @@ final class PropertySchemaStateExtractor implements PropertyListExtractorInterfa
     public function getProperties(string $class, array $context = []): ?array
     {
         $properties = [];
-        $context['serializer_groups'] ??= null;
+        /** @var array<string>|null $serializerGroups */
+        $serializerGroups = $context['serializer_groups'] ??= null;
 
-        [$serializerGroups, $blackListedSerializerGroups] = self::splitSerializerGroups($context['serializer_groups']);
+        [$serializerGroups, $blackListedSerializerGroups] = self::splitSerializerGroups($serializerGroups);
 
         $schema = $this->schemaFrom($class);
+        /** @var array<string, mixed> $schemaProperties */
+        $schemaProperties = $schema['properties'] ?? [];
         // Only allow the properties that are listed in the json schema aware record, if it's such an object.
         $filteredPropertyNames = array_keys(
-            $schema['properties'] ?? []
+            $schemaProperties
         );
 
         $serializerClassMetadata = $this->classMetadataFactory->getMetadataFor($class);
@@ -153,7 +152,9 @@ final class PropertySchemaStateExtractor implements PropertyListExtractorInterfa
             return null;
         }
 
-        $propertySchema = $schema['properties'][$property] ?? null;
+        /** @var array<string, array<string, mixed>> $schemaProperties */
+        $schemaProperties = $schema['properties'];
+        $propertySchema = $schemaProperties[$property] ?? null;
 
         if ($propertySchema === null) {
             return null;
@@ -192,7 +193,7 @@ final class PropertySchemaStateExtractor implements PropertyListExtractorInterfa
      *
      * @return array<Type>|null
      */
-    private static function types(?array $propertySchema, $reflectionNamedType): ?array
+    private static function types(?array $propertySchema, ReflectionNamedType|string|null $reflectionNamedType): ?array
     {
         if ($propertySchema === null) {
             return null;
@@ -239,8 +240,10 @@ final class PropertySchemaStateExtractor implements PropertyListExtractorInterfa
 
                 if ($collection) {
                     $collectionKeyType = new Type(Type::BUILTIN_TYPE_INT);
+                    /** @var array<string, mixed> $propertySchemaItems */
+                    $propertySchemaItems = $propertySchema['items'];
                     /** @var array<Type> $collectionValueTypes */
-                    $collectionValueTypes = self::types($propertySchema['items'], $itemClass);
+                    $collectionValueTypes = self::types($propertySchemaItems, $itemClass);
                     /** @var Type $collectionValueType */
                     $collectionValueType = reset($collectionValueTypes);
                 }

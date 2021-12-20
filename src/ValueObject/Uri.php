@@ -103,7 +103,10 @@ final class Uri extends StringValue
     {
         preg_match_all('/{([^({})]+)}/', $string, $matches);
 
-        return ArrayUtil::toCamelCasedValues($matches[1] ?? []);
+        /** @var array<string> $result */
+        $result = ArrayUtil::toCamelCasedValues($matches[1] ?? []);
+
+        return $result;
     }
 
     public function toQueryPart(): string
@@ -147,11 +150,14 @@ final class Uri extends StringValue
      */
     private function replaceParameters(array $parameters): self
     {
+        /** @var array<string, mixed> $parameters */
+        $parameters = ArrayUtil::toSnakeCasedKeys($parameters);
+
         $patterns = array_map(
             static function (string $pattern) {
                 return sprintf('/{%s}/', $pattern);
             },
-            array_keys(ArrayUtil::toSnakeCasedKeys($parameters))
+            array_keys($parameters)
         );
 
         $replacedUri = preg_replace($patterns, $parameters, $this->toString());

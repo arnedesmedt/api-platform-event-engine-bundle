@@ -41,35 +41,24 @@ final class OpenApiFactory implements OpenApiFactoryInterface
         Request::METHOD_OPTIONS,
         Request::METHOD_TRACE,
     ];
-
-    private OpenApiFactoryInterface $openApiFactory;
-    private ResourceMetadataFactoryInterface $resourceMetadataFactory;
-    private SchemaFactoryInterface $jsonSchemaFactory;
     /** @var Server[] */
-    private array $servers;
+    private readonly array $servers;
     /** @var array<mixed> */
-    private array $tags;
-    /** @var array<string> */
-    private array $formats;
+    private readonly array $tags;
 
     /**
      * @param array<string> $formats
-     * @param array<mixed> $servers
-     * @param array<mixed> $tags
+     * @param array<array<string, string>> $servers
+     * @param array<array<string>> $tags
      */
     public function __construct(
-        OpenApiFactoryInterface $openApiFactory,
-        ResourceMetadataFactoryInterface $resourceMetadataFactory,
-        SchemaFactoryInterface $jsonSchemaFactory,
-        array $formats = [],
+        private readonly OpenApiFactoryInterface $openApiFactory,
+        private readonly ResourceMetadataFactoryInterface $resourceMetadataFactory,
+        private readonly SchemaFactoryInterface $jsonSchemaFactory,
+        private readonly array $formats = [],
         array $servers = [],
         array $tags = []
     ) {
-        $this->openApiFactory = $openApiFactory;
-        $this->resourceMetadataFactory = $resourceMetadataFactory;
-        $this->jsonSchemaFactory = $jsonSchemaFactory;
-        $this->formats = $formats;
-
         if (isset($_SERVER['HTTP_HOST'])) {
             usort(
                 $servers,

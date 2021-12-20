@@ -53,14 +53,20 @@ abstract class DataProvider
      *
      * @return array<mixed>|PartialPaginatorInterface<mixed>
      */
-    protected function collectionProvider(string $resourceClass, ?string $operationName = null, array $context = [])
-    {
+    protected function collectionProvider(
+        string $resourceClass,
+        ?string $operationName = null,
+        array $context = []
+    ): array|PartialPaginatorInterface {
         $message = $this->message($context, $resourceClass, $operationName);
 
         if (! empty($context['filters'] ?? [])) {
             $message = $message->withAddedMetadata('context', $context);
         }
 
-        return $this->eventEngine->dispatch($message);
+        /** @var array<mixed>|PartialPaginatorInterface<mixed> $result */
+        $result = $this->eventEngine->dispatch($message);
+
+        return $result;
     }
 }

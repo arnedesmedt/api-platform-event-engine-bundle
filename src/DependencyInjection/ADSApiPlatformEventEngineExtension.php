@@ -12,7 +12,7 @@ use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 final class ADSApiPlatformEventEngineExtension extends Extension
 {
     /**
-     * @param array<mixed> $configs
+     * @param array<int, array<string, array<string, array<mixed>>>> $configs
      */
     public function load(array $configs, ContainerBuilder $container): void
     {

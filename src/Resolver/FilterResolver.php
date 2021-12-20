@@ -13,27 +13,27 @@ use EventEngine\DocumentStore\Filter\AndFilter;
 use EventEngine\DocumentStore\Filter\Filter;
 use EventEngine\DocumentStore\OrderBy\OrderBy;
 
+use function assert;
+
 abstract class FilterResolver implements MetaDataResolver
 {
     protected FilterConverter $filterConverter;
-    /** @var OrderBy|Closure|null  */
-    protected $orderBy = null;
-    /** @var Filter|Closure|null */
-    protected $filter = null;
+    protected OrderBy|Closure|null $orderBy = null;
+    protected Filter|Closure|null $filter = null;
     private ?int $skip = null;
     private ?int $itemsPerPage = null;
     private ?int $page = null;
-    /** @var array<mixed> */
+    /** @var array<string> */
     private array $filters = [];
-    /** @var array<mixed> */
+    /** @var array<string, array<string, string>> */
     private array $context = [];
 
     /**
-     * @param array<mixed> $metaData
+     * @param array<string, array<string, array<string, string>>> $metaData
      *
      * @inheritDoc
      */
-    public function setMetaData(array $metaData)
+    public function setMetaData(array $metaData): static
     {
         $this->context = $metaData['context'] ?? [];
         $this->filters = $this->context['filters'] ?? [];
@@ -41,18 +41,12 @@ abstract class FilterResolver implements MetaDataResolver
         return $this;
     }
 
-    /**
-     * @return Closure|OrderBy|null
-     */
-    public function orderBy()
+    public function orderBy(): Closure|OrderBy|null
     {
         return $this->orderBy;
     }
 
-    /**
-     * @return Closure|Filter|null
-     */
-    public function filter()
+    public function filter(): Closure|Filter|null
     {
         return $this->filter;
     }
@@ -72,21 +66,26 @@ abstract class FilterResolver implements MetaDataResolver
         return $this->page;
     }
 
-    /**
-     * @return mixed
-     */
-    public function __invoke(ApiPlatformMessage $message)
+    public function __invoke(mixed $message): mixed
     {
-        $this->orderBy = $this->filterConverter->order($this->filters);
+        assert($message instanceof ApiPlatformMessage);
+
+        /** @var array<array<string>> $filters */
+        $filters = $this->filters;
+        $this->orderBy = $this->filterConverter->order($filters);
+
         $filter = $this->filterConverter->filter($this->filters, $message::__entity());
-        $this->filter = $this->filter instanceof Filter && $filter !== null
+        $this->filter = $this->filter instanceof Filter && $filter instanceof Filter
             ? new AndFilter($this->filter, $filter)
             : ($this->filter ?? $filter);
-        $this->skip = $this->filterConverter->skip($this->filters);
-        $this->itemsPerPage = $this->filterConverter->itemsPerPage($this->filters);
-        $this->page = $this->filterConverter->page($this->filters);
 
-        $states ??= $this->states();
+        /** @var array<string, int> $filters */
+        $filters = $this->filters;
+        $this->skip = $this->filterConverter->skip($filters);
+        $this->itemsPerPage = $this->filterConverter->itemsPerPage($filters);
+        $this->page = $this->filterConverter->page($filters);
+
+        $states = $this->states();
         $totalItems = $this->totalItems($states);
         $skip = $this->skip();
         $itemsPerPage = $this->itemsPerPage();
@@ -114,13 +113,11 @@ abstract class FilterResolver implements MetaDataResolver
 
     /**
      * @param array<ImmutableRecord> $states
-     *
-     * @return mixed
      */
     abstract protected function result(
         array $states,
         int $page,
         int $itemsPerPage,
         int $totalItems
-    );
+    ): mixed;
 }

@@ -9,6 +9,8 @@ use Exception;
 use function json_encode;
 use function sprintf;
 
+use const JSON_THROW_ON_ERROR;
+
 final class DocumentationException extends Exception
 {
     /**
@@ -19,7 +21,7 @@ final class DocumentationException extends Exception
         return new self(
             sprintf(
                 'Got JSON Schema type defined as an array with more than one type + NULL set: %s',
-                json_encode($schema)
+                json_encode($schema, JSON_THROW_ON_ERROR)
             )
         );
     }

@@ -7,9 +7,12 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Resolver;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\DocumentStoreFilterConverter;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\Paginator;
 use ADS\Bundle\EventEngineBundle\Repository\Repository;
+use Closure;
 use EventEngine\DocumentStore\Filter\AndFilter;
 use EventEngine\DocumentStore\Filter\AnyFilter;
 use EventEngine\DocumentStore\Filter\Filter;
+
+use function assert;
 
 final class DocumentStoreFilterResolver extends FilterResolver
 {
@@ -41,24 +44,21 @@ final class DocumentStoreFilterResolver extends FilterResolver
     }
 
     /**
-     * @return array<mixed>
-     */
-    public function arguments(): array
-    {
-        return [
-            $this->filter(),
-            $this->skip(),
-            $this->itemsPerPage(),
-            $this->orderBy(),
-        ];
-    }
-
-    /**
      * @inheritDoc
      */
     protected function states(): array
     {
-        return $this->repository->findDocumentStates(...$this->arguments());
+        $filter = $this->filter();
+        assert(! $filter instanceof Closure);
+        $orderBy = $this->orderBy();
+        assert(! $orderBy instanceof Closure);
+
+        return $this->repository->findDocumentStates(
+            $filter,
+            $this->skip(),
+            $this->itemsPerPage(),
+            $orderBy
+        );
     }
 
     /**
@@ -72,7 +72,7 @@ final class DocumentStoreFilterResolver extends FilterResolver
     /**
      * @inheritDoc
      */
-    protected function result(array $states, int $page, int $itemsPerPage, int $totalItems)
+    protected function result(array $states, int $page, int $itemsPerPage, int $totalItems): mixed
     {
         return new Paginator(
             $states,

@@ -15,15 +15,10 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 final class MessageDeserializeSubscriber implements EventSubscriberInterface
 {
-    private SerializerInterface $deserializer;
-    private SerializerContextBuilderInterface $serializerContextBuilder;
-
     public function __construct(
-        SerializerContextBuilderInterface $serializerContextBuilder,
-        SerializerInterface $deserializer
+        private readonly SerializerContextBuilderInterface $serializerContextBuilder,
+        private readonly SerializerInterface $deserializer
     ) {
-        $this->serializerContextBuilder = $serializerContextBuilder;
-        $this->deserializer = $deserializer;
     }
 
     /**

@@ -21,8 +21,8 @@ use function usort;
  */
 trait ResourcesAreTags
 {
-    private ResourceNameCollectionFactoryInterface $resourceNameCollectionFactory;
-    private ResourceMetadataFactoryInterface $resourceMetadataFactory;
+    private readonly ResourceNameCollectionFactoryInterface $resourceNameCollectionFactory;
+    private readonly ResourceMetadataFactoryInterface $resourceMetadataFactory;
 
     public function __construct(
         ResourceNameCollectionFactoryInterface $resourceNameCollectionFactory,

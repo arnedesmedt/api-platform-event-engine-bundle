@@ -4,46 +4,37 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Filter;
 
+use Closure;
+use EventEngine\DocumentStore\Filter\Filter;
+use EventEngine\DocumentStore\OrderBy\OrderBy;
+
+use function intval;
+
 abstract class FilterConverter
 {
-    protected FilterFinder $filterFinder;
-    protected string $pageParameterName;
-    protected string $itemsPerPageParameterName;
-    protected string $orderParameterName;
-
     public function __construct(
-        FilterFinder $filterFinder,
-        string $pageParameterName = 'page',
-        string $itemsPerPageParameterName = 'items-per-page',
-        string $orderParameterName = 'order'
+        protected FilterFinder $filterFinder,
+        protected string $pageParameterName = 'page',
+        protected string $itemsPerPageParameterName = 'items-per-page',
+        protected string $orderParameterName = 'order'
     ) {
-        $this->filterFinder = $filterFinder;
-        $this->pageParameterName = $pageParameterName;
-        $this->itemsPerPageParameterName = $itemsPerPageParameterName;
-        $this->orderParameterName = $orderParameterName;
     }
 
     /**
-     * @param array<mixed> $filters
-     *
-     * @return mixed
+     * @param array<array<string>> $filters
      */
-    abstract public function order(array $filters);
+    abstract public function order(array $filters): OrderBy|Closure|null;
 
     /**
-     * @param array<mixed> $filters
+     * @param array<string> $filters
      * @param class-string $resourceClass
-     *
-     * @return mixed
      */
-    abstract public function filter(array $filters, string $resourceClass);
+    abstract public function filter(array $filters, string $resourceClass): Filter|Closure|null;
 
     /**
-     * @param array<mixed> $filters
-     *
-     * @return mixed
+     * @param array<string, int> $filters
      */
-    public function skip(array $filters)
+    public function skip(array $filters): ?int
     {
         if (
             $this->page($filters) === null
@@ -56,7 +47,7 @@ abstract class FilterConverter
     }
 
     /**
-     * @param array<mixed> $filters
+     * @param array<string, int> $filters
      */
     public function itemsPerPage(array $filters): ?int
     {
@@ -64,11 +55,11 @@ abstract class FilterConverter
             return null;
         }
 
-        return (int) $filters[$this->itemsPerPageParameterName];
+        return intval($filters[$this->itemsPerPageParameterName]);
     }
 
     /**
-     * @param array<mixed> $filters
+     * @param array<string, int> $filters
      */
     public function page(array $filters): ?int
     {
@@ -76,6 +67,6 @@ abstract class FilterConverter
             return null;
         }
 
-        return (int) $filters[$this->pageParameterName];
+        return intval($filters[$this->pageParameterName]);
     }
 }

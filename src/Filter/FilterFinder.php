@@ -10,15 +10,10 @@ use Psr\Container\ContainerInterface;
 
 class FilterFinder
 {
-    private ResourceMetadataFactoryInterface $resourceMetadataFactory;
-    private ContainerInterface $filterLocator;
-
     public function __construct(
-        ResourceMetadataFactoryInterface $resourceMetadataFactory,
-        ContainerInterface $filterLocator
+        private readonly ResourceMetadataFactoryInterface $resourceMetadataFactory,
+        private readonly ContainerInterface $filterLocator
     ) {
-        $this->resourceMetadataFactory = $resourceMetadataFactory;
-        $this->filterLocator = $filterLocator;
     }
 
     public function __invoke(string $resourceClass, string $type): ?FilterInterface

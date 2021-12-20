@@ -26,7 +26,7 @@ final class InMemoryFilterResolver extends FilterResolver
      *
      * @return static
      */
-    public function setStates(array $states)
+    public function setStates(array $states): static
     {
         $this->states = $states;
 
@@ -66,7 +66,7 @@ final class InMemoryFilterResolver extends FilterResolver
     /**
      * @inheritDoc
      */
-    protected function result(array $states, int $page, int $itemsPerPage, int $totalItems)
+    protected function result(array $states, int $page, int $itemsPerPage, int $totalItems): mixed
     {
         return new ArrayPaginator(
             $states,

@@ -55,8 +55,10 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
      */
     private function extractPathParameters(Request $request, array &$context): void
     {
+        /** @var array<string, string> $routeParameters */
+        $routeParameters = $request->attributes->get('_route_params', []);
         $pathParameters = array_filter(
-            $request->attributes->get('_route_params'),
+            $routeParameters,
             static function (string $attributeKey) {
                 return strpos($attributeKey, '_') !== 0;
             },
@@ -100,7 +102,9 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
             return;
         }
 
-        $identifiers = $this->identifiersExtractor->getIdentifiersFromResourceClass($context['resource_class']);
+        /** @var class-string $resourceClass */
+        $resourceClass = $context['resource_class'];
+        $identifiers = $this->identifiersExtractor->getIdentifiersFromResourceClass($resourceClass);
 
         if (empty($identifiers)) {
             return;

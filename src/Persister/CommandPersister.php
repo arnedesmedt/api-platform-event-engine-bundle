@@ -7,44 +7,40 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Persister;
 use ADS\Bundle\EventEngineBundle\Command\Command;
 use ApiPlatform\Core\DataPersister\ContextAwareDataPersisterInterface;
 use EventEngine\EventEngine;
+use EventEngine\Messaging\Message;
 use EventEngine\Messaging\MessageBag;
 
 final class CommandPersister implements ContextAwareDataPersisterInterface
 {
-    private EventEngine $eventEngine;
-
-    public function __construct(EventEngine $eventEngine)
+    public function __construct(private readonly EventEngine $eventEngine)
     {
-        $this->eventEngine = $eventEngine;
     }
 
     /**
-     * @param mixed $data
      * @param array<mixed> $context
      */
-    public function supports($data, array $context = []): bool
+    public function supports(mixed $data, array $context = []): bool
     {
         return $data instanceof MessageBag && $data->get(MessageBag::MESSAGE) instanceof Command;
     }
 
     /**
-     * @param mixed $data
+     * @param Message|class-string $data
      * @param array<mixed> $context
-     *
-     * @return mixed
      */
-    public function persist($data, array $context = [])
+    public function persist(mixed $data, array $context = []): object
     {
-        return $this->eventEngine->dispatch($data);
+        /** @var object $result */
+        $result = $this->eventEngine->dispatch($data);
+
+        return $result;
     }
 
     /**
-     * @param mixed $data
+     * @param Message|class-string $data
      * @param array<mixed> $context
-     *
-     * @return mixed
      */
-    public function remove($data, array $context = [])
+    public function remove(mixed $data, array $context = []): mixed
     {
         return $this->eventEngine->dispatch($data);
     }

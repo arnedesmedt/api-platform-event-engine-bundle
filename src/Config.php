@@ -29,10 +29,6 @@ final class Config implements CacheClearerInterface
     public const OPERATION_MAPPING = 'operationMapping';
     public const OPERATION_ID_MAPPING = 'operationIdMapping';
 
-    private EventEngineConfig $config;
-    private AbstractAdapter $cache;
-    private string $environment;
-
     /** @var array<string, array<string, array<string, class-string>>>|null */
     private ?array $messageMapping = null;
     /** @var array<class-string, array<int, array<string, mixed>>>|null */
@@ -40,11 +36,11 @@ final class Config implements CacheClearerInterface
     /** @var array<string, class-string>|null */
     private ?array $operationIdMapping = null;
 
-    public function __construct(EventEngineConfig $config, AbstractAdapter $cache, string $environment)
-    {
-        $this->config = $config;
-        $this->cache = $cache;
-        $this->environment = $environment;
+    public function __construct(
+        private readonly EventEngineConfig $config,
+        private readonly AbstractAdapter $cache,
+        private readonly string $environment
+    ) {
     }
 
     /**
@@ -56,12 +52,13 @@ final class Config implements CacheClearerInterface
             return $this->getMessageMapping();
         }
 
-        return $this->cache->get(
+        /** @var array<string, array<string, array<string, class-string>>> $result */
+        $result = $this->cache->get(
             self::API_PLATFORM_MAPPING,
-            function () {
-                return $this->getMessageMapping();
-            }
+            fn () => $this->getMessageMapping()
         );
+
+        return $result;
     }
 
     /**
@@ -73,12 +70,13 @@ final class Config implements CacheClearerInterface
             return $this->getOperationMapping();
         }
 
-        return $this->cache->get(
+        /** @var array<class-string, array<int, array<string, mixed>>> $result */
+        $result = $this->cache->get(
             self::OPERATION_MAPPING,
-            function () {
-                return $this->getOperationMapping();
-            }
+            fn () => $this->getOperationMapping()
         );
+
+        return $result;
     }
 
     /**
@@ -90,16 +88,18 @@ final class Config implements CacheClearerInterface
             return $this->getOperationIdMapping();
         }
 
-        return $this->cache->get(
+        /** @var array<string, string> $result */
+        $result = $this->cache->get(
             self::OPERATION_ID_MAPPING,
-            function () {
-                return $this->getOperationIdMapping();
-            }
+            fn () => $this->getOperationIdMapping()
         );
+
+        return $result;
     }
 
     /**
-     * @param array<mixed> $messageConfig
+     * @param array<string, array<string, array<string, class-string>>> $messageConfig
+     * @param class-string|null $classKey
      *
      * @return array<string, array<string, array<string, class-string>>>
      */
@@ -118,6 +118,7 @@ final class Config implements CacheClearerInterface
         return array_reduce(
             $apiPlatformMessageConfig,
             function (array $mapping, $config) use ($classKey) {
+                /** @var class-string<ApiPlatformMessage> $message */
                 $message = $classKey === null ? $config : $config[$classKey];
 
                 $entity = $message::__entity();

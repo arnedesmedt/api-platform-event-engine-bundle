@@ -6,15 +6,14 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Documentation;
 
 final class Tag
 {
-    private string $name;
-    private ?string $description;
     /** @var array<string, string>|null */
-    private ?array $externalDocs;
+    private readonly ?array $externalDocs;
 
-    public function __construct(string $name, ?string $description = null, ?string $url = null)
-    {
-        $this->name = $name;
-        $this->description = $description;
+    public function __construct(
+        private readonly string $name,
+        private readonly ?string $description = null,
+        ?string $url = null
+    ) {
         $this->externalDocs = $url
             ? ['url' => $url]
             : null;

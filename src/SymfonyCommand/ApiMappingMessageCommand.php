@@ -61,9 +61,9 @@ class ApiMappingMessageCommand extends Command
     }
 
     /**
-     * @param array<mixed> $mapping
+     * @param array<class-string, array<int, array<string, mixed>>> $mapping
      *
-     * @return array<array<string, string>>
+     * @return array<int, array<string, mixed>>
      */
     private function mappingToTable(array $mapping, ?string $filter = null): array
     {

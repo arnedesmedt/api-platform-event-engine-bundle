@@ -19,17 +19,13 @@ use function strtolower;
 
 class OrderFilter implements FilterInterface
 {
-    /** @var array<mixed>|null */
-    protected ?array $properties = null;
-    private string $orderParameterName;
-
     /**
-     * @param array<mixed>|null $properties
+     * @param array<string|null>|null $properties
      */
-    public function __construct(string $orderParameterName = 'order', ?array $properties = null)
-    {
-        $this->orderParameterName = $orderParameterName;
-        $this->properties = $properties;
+    public function __construct(
+        private readonly string $orderParameterName = 'order',
+        protected ?array $properties = null
+    ) {
     }
 
     /**

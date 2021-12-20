@@ -11,16 +11,15 @@ use function reset;
 
 final class QueryOperationRoutePathResolver implements OperationPathResolverInterface
 {
-    private OperationPathResolverInterface $deferred;
-
-    public function __construct(OperationPathResolverInterface $deferred)
+    public function __construct(private readonly OperationPathResolverInterface $deferred)
     {
-        $this->deferred = $deferred;
     }
 
     /**
      * @param array<mixed> $operation
      * @param bool|string $operationType
+     *
+     * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
      */
     public function resolveOperationPath(
         string $resourceShortName,

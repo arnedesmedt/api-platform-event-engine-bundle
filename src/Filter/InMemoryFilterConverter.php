@@ -64,7 +64,7 @@ final class InMemoryFilterConverter extends FilterConverter
             // @phpstan-ignore-next-line
             array_multisort(...$arguments);
 
-            /** @var array<mixed> $keysSort */
+            /** @var array<int|string> $keysSort */
             $keysSort = array_pop($arguments);
 
             return array_values(

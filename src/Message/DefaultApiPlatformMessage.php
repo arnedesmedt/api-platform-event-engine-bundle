@@ -62,15 +62,11 @@ trait DefaultApiPlatformMessage
 
         $shortName = self::shortName();
 
-        switch (true) {
-            case preg_match('/(Create|Add|GetAll|All|Enable|Import)/', $shortName):
-                return OperationType::COLLECTION;
-
-            case preg_match('/(Update|Get|Change|Delete|Remove|ByUuid|ById|Disable)/', $shortName):
-                return OperationType::ITEM;
-        }
-
-        throw ApiPlatformMappingException::noOperationTypeFound(static::class);
+        return match (true) {
+            preg_match('/(Create|Add|GetAll|All|Enable|Import)/', $shortName) => OperationType::COLLECTION,
+            preg_match('/(Update|Get|Change|Delete|Remove|ByUuid|ById|Disable)/', $shortName) => OperationType::ITEM,
+            default => throw ApiPlatformMappingException::noOperationTypeFound(static::class),
+        };
     }
 
     public static function __operationName(): string
@@ -85,24 +81,14 @@ trait DefaultApiPlatformMessage
 
         $shortName = self::shortName();
 
-        switch (true) {
-            case preg_match('/(Create|Add|Enable|Import)/', $shortName):
-                return Name::POST;
-
-            case preg_match('/(Get|GetAll|All|ById|ByUuid)/', $shortName):
-                return Name::GET;
-
-            case preg_match('/(Update)/', $shortName):
-                return Name::PUT;
-
-            case preg_match('/(Change)/', $shortName):
-                return Name::PATCH;
-
-            case preg_match('/(Delete|Remove|Disable)/', $shortName):
-                return Name::DELETE;
-        }
-
-        throw ApiPlatformMappingException::noOperationNameFound(static::class);
+        return match (true) {
+            preg_match('/(Create|Add|Enable|Import)/', $shortName) => Name::POST,
+            preg_match('/(Get|GetAll|All|ById|ByUuid)/', $shortName) => Name::GET,
+            preg_match('/(Update)/', $shortName) => Name::PUT,
+            preg_match('/(Change)/', $shortName) => Name::PATCH,
+            preg_match('/(Delete|Remove|Disable)/', $shortName) => Name::DELETE,
+            default => throw ApiPlatformMappingException::noOperationNameFound(static::class),
+        };
     }
 
     public static function __operationId(): string
@@ -114,24 +100,14 @@ trait DefaultApiPlatformMessage
 
     public static function __httpMethod(): ?string
     {
-        switch (self::__operationName()) {
-            case Name::POST:
-                return Request::METHOD_POST;
-
-            case Name::DELETE:
-                return Request::METHOD_DELETE;
-
-            case Name::PUT:
-                return Request::METHOD_PUT;
-
-            case Name::PATCH:
-                return Request::METHOD_PATCH;
-
-            case Name::GET:
-                return Request::METHOD_GET;
-        }
-
-        return null;
+        return match (self::__operationName()) {
+            Name::POST => Request::METHOD_POST,
+            Name::DELETE => Request::METHOD_DELETE,
+            Name::PUT => Request::METHOD_PUT,
+            Name::PATCH => Request::METHOD_PATCH,
+            Name::GET => Request::METHOD_GET,
+            default => null,
+        };
     }
 
     public static function __path(): ?string
@@ -190,20 +166,13 @@ trait DefaultApiPlatformMessage
     {
         $responses = [];
 
-        switch (self::__httpMethod()) {
-            case Request::METHOD_POST:
-                $responses[Response::HTTP_CREATED] = DefaultType::created();
-                break;
-            case Request::METHOD_DELETE:
-                $responses[Response::HTTP_NO_CONTENT] = DefaultType::emptyResponse();
-                break;
-            case Request::METHOD_PUT:
-            case Request::METHOD_PATCH:
-            case Request::METHOD_GET:
-            case Request::METHOD_OPTIONS:
-                $responses[Response::HTTP_OK] = DefaultType::ok();
-                break;
-        }
+        $responses[Response::HTTP_CREATED] = match (self::__httpMethod()) {
+            Request::METHOD_POST => DefaultType::created(),
+            Request::METHOD_DELETE => DefaultType::emptyResponse(),
+            Request::METHOD_PUT, Request::METHOD_PATCH,
+            Request::METHOD_GET, Request::METHOD_OPTIONS => DefaultType::ok(),
+            default => $responses,
+        };
 
         return $responses;
     }
