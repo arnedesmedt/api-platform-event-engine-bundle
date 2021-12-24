@@ -63,8 +63,14 @@ trait DefaultApiPlatformMessage
         $shortName = self::shortName();
 
         return match (true) {
-            preg_match('/(Create|Add|GetAll|All|Enable|Import)/', $shortName) => OperationType::COLLECTION,
-            preg_match('/(Update|Get|Change|Delete|Remove|ByUuid|ById|Disable)/', $shortName) => OperationType::ITEM,
+            (bool) preg_match(
+                '/(Create|Add|GetAll|All|Enable|Import)/',
+                $shortName
+            ) => OperationType::COLLECTION,
+            (bool) preg_match(
+                '/(Update|Get|Change|Delete|Remove|ByUuid|ById|Disable)/',
+                $shortName
+            ) => OperationType::ITEM,
             default => throw ApiPlatformMappingException::noOperationTypeFound(static::class),
         };
     }
@@ -82,11 +88,11 @@ trait DefaultApiPlatformMessage
         $shortName = self::shortName();
 
         return match (true) {
-            preg_match('/(Create|Add|Enable|Import)/', $shortName) => Name::POST,
-            preg_match('/(Get|GetAll|All|ById|ByUuid)/', $shortName) => Name::GET,
-            preg_match('/(Update)/', $shortName) => Name::PUT,
-            preg_match('/(Change)/', $shortName) => Name::PATCH,
-            preg_match('/(Delete|Remove|Disable)/', $shortName) => Name::DELETE,
+            (bool) preg_match('/(Create|Add|Enable|Import)/', $shortName) => Name::POST,
+            (bool) preg_match('/(Get|GetAll|All|ById|ByUuid)/', $shortName) => Name::GET,
+            (bool) preg_match('/(Update)/', $shortName) => Name::PUT,
+            (bool) preg_match('/(Change)/', $shortName) => Name::PATCH,
+            (bool) preg_match('/(Delete|Remove|Disable)/', $shortName) => Name::DELETE,
             default => throw ApiPlatformMappingException::noOperationNameFound(static::class),
         };
     }
