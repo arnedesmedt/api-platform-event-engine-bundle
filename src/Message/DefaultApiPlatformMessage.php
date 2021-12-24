@@ -172,13 +172,25 @@ trait DefaultApiPlatformMessage
     {
         $responses = [];
 
-        $responses[Response::HTTP_CREATED] = match (self::__httpMethod()) {
+        $value = match (self::__httpMethod()) {
             Request::METHOD_POST => DefaultType::created(),
             Request::METHOD_DELETE => DefaultType::emptyResponse(),
             Request::METHOD_PUT, Request::METHOD_PATCH,
             Request::METHOD_GET, Request::METHOD_OPTIONS => DefaultType::ok(),
-            default => $responses,
+            default => null,
         };
+
+        $key = match (self::__httpMethod()) {
+            Request::METHOD_POST => Response::HTTP_CREATED,
+            Request::METHOD_DELETE => Response::HTTP_NO_CONTENT,
+            Request::METHOD_PUT, Request::METHOD_PATCH,
+            Request::METHOD_GET, Request::METHOD_OPTIONS => Response::HTTP_OK,
+            default => null,
+        };
+
+        if ($key !== null && $value !== null) {
+            $responses[$key] = $value;
+        }
 
         return $responses;
     }
