@@ -11,7 +11,7 @@ use function reset;
 
 final class QueryOperationRoutePathResolver implements OperationPathResolverInterface
 {
-    public function __construct(private readonly OperationPathResolverInterface $deferred)
+    public function __construct(private OperationPathResolverInterface $deferred)
     {
     }
 

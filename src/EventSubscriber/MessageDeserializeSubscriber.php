@@ -16,8 +16,8 @@ use Symfony\Component\Serializer\SerializerInterface;
 final class MessageDeserializeSubscriber implements EventSubscriberInterface
 {
     public function __construct(
-        private readonly SerializerContextBuilderInterface $serializerContextBuilder,
-        private readonly SerializerInterface $deserializer
+        private SerializerContextBuilderInterface $serializerContextBuilder,
+        private SerializerInterface $deserializer
     ) {
     }
 

@@ -13,7 +13,7 @@ final class FinderException extends Exception
     /**
      * @return static
      */
-    public static function noMessageFound(string $resource, ?string $operationType, ?string $operationName)
+    public static function noMessageFound(string $resource, ?string $operationType, ?string $operationName): static
     {
         return new static(
             sprintf(

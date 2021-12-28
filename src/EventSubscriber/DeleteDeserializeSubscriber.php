@@ -20,8 +20,8 @@ use const JSON_THROW_ON_ERROR;
 final class DeleteDeserializeSubscriber implements EventSubscriberInterface
 {
     public function __construct(
-        private readonly SerializerInterface $serializer,
-        private readonly SerializerContextBuilderInterface $serializerContextBuilder
+        private SerializerInterface $serializer,
+        private SerializerContextBuilderInterface $serializerContextBuilder
     ) {
     }
 

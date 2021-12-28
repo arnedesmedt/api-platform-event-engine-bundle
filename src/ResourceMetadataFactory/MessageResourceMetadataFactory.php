@@ -32,7 +32,8 @@ use function array_map;
 use function array_merge;
 use function in_array;
 use function sprintf;
-use function strpos;
+use function str_ends_with;
+use function str_starts_with;
 use function strtoupper;
 use function substr;
 use function ucfirst;
@@ -47,21 +48,14 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
         Request::METHOD_PUT,
         Request::METHOD_PATCH,
     ];
-
-    private ResourceMetadataFactoryInterface $decorated;
-    private Config $config;
     private DocBlockFactory $docBlockFactory;
-    private OperationPathResolverInterface $operationPathResolver;
 
     public function __construct(
-        ResourceMetadataFactoryInterface $decorated,
-        Config $config,
-        OperationPathResolverInterface $operationPathResolver
+        private ResourceMetadataFactoryInterface $decorated,
+        private Config $config,
+        private OperationPathResolverInterface $operationPathResolver
     ) {
-        $this->decorated = $decorated;
-        $this->config = $config;
         $this->docBlockFactory = DocBlockFactory::createInstance();
-        $this->operationPathResolver = $operationPathResolver;
     }
 
     /**
@@ -193,7 +187,7 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
                         $openApiContext = &$operation['openapi_context'];
                         try {
                             $docBlock = $this->docBlockFactory->create($reflectionClass);
-                        } catch (InvalidArgumentException $exception) {
+                        } catch (InvalidArgumentException) {
                             $docBlock = null;
                         }
 
@@ -292,11 +286,11 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
         $resourceShortName = $resourceMetadata->getShortName();
 
         $path = $this->operationPathResolver->resolveOperationPath($resourceShortName, $operation, $operationType);
-        if (substr($path, -10) === '.{_format}') {
+        if (str_ends_with($path, '.{_format}')) {
             $path = substr($path, 0, -10);
         }
 
-        return strpos($path, '/') === 0 ? $path : '/' . $path;
+        return str_starts_with($path, '/') ? $path : '/' . $path;
     }
 
     /**

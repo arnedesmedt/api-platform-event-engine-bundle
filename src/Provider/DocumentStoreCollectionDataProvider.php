@@ -18,8 +18,11 @@ final class DocumentStoreCollectionDataProvider extends DataProvider implements
      *
      * @return array<mixed>|PartialPaginatorInterface<mixed>
      */
-    public function getCollection(string $resourceClass, ?string $operationName = null, array $context = [])
-    {
+    public function getCollection(
+        string $resourceClass,
+        ?string $operationName = null,
+        array $context = []
+    ): array|PartialPaginatorInterface {
         return $this->collectionProvider($resourceClass, $operationName, $context);
     }
 }

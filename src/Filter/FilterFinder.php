@@ -11,8 +11,8 @@ use Psr\Container\ContainerInterface;
 class FilterFinder
 {
     public function __construct(
-        private readonly ResourceMetadataFactoryInterface $resourceMetadataFactory,
-        private readonly ContainerInterface $filterLocator
+        private ResourceMetadataFactoryInterface $resourceMetadataFactory,
+        private ContainerInterface $filterLocator
     ) {
     }
 

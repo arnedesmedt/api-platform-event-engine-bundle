@@ -39,21 +39,12 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
         Request::METHOD_PUT,
     ];
 
-    private SchemaFactoryInterface $schemaFactory;
-    private Finder $messageFinder;
-    private ResourceMetadataFactoryInterface $resourceMetadataFactory;
-    private ResourceClassResolverInterface $resourceClassResolver;
-
     public function __construct(
-        SchemaFactoryInterface $schemaFactory,
-        Finder $messageFinder,
-        ResourceMetadataFactoryInterface $resourceMetadataFactory,
-        ResourceClassResolverInterface $resourceClassResolver
+        private SchemaFactoryInterface $schemaFactory,
+        private Finder $messageFinder,
+        private ResourceMetadataFactoryInterface $resourceMetadataFactory,
+        private ResourceClassResolverInterface $resourceClassResolver
     ) {
-        $this->schemaFactory = $schemaFactory;
-        $this->messageFinder = $messageFinder;
-        $this->resourceMetadataFactory = $resourceMetadataFactory;
-        $this->resourceClassResolver = $resourceClassResolver;
     }
 
     /**
@@ -191,7 +182,7 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
                     sprintf('%s_operation_name', $operationType) => $operationName,
                 ]
             );
-        } catch (FinderException $exception) {
+        } catch (FinderException) {
             return null;
         }
 
@@ -204,7 +195,7 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
      * @param array<mixed> $schema
      * @param array<string> $parameterNames
      *
-     * @return array<mixed>|null
+     * @return array<string, mixed>
      */
     public static function removeParameters(array $schema, array $parameterNames): ?array
     {
@@ -226,7 +217,7 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
      * @param array<mixed> $schema
      * @param array<string> $parameterNames
      *
-     * @return array<mixed>|null
+     * @return array<string, mixed>
      */
     private static function changeParameters(
         array $schema,

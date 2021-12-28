@@ -11,11 +11,8 @@ use function sprintf;
 
 final class AddComplexResourceMetadataFactory implements ResourceMetadataFactoryInterface
 {
-    private ResourceMetadataFactoryInterface $resourceMetadataFactory;
-
-    public function __construct(ResourceMetadataFactoryInterface $resourceMetadataFactory)
+    public function __construct(private ResourceMetadataFactoryInterface $resourceMetadataFactory)
     {
-        $this->resourceMetadataFactory = $resourceMetadataFactory;
     }
 
     public function create(string $resourceClass): ResourceMetadata

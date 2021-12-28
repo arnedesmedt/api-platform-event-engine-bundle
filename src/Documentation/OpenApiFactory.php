@@ -41,10 +41,18 @@ final class OpenApiFactory implements OpenApiFactoryInterface
         Request::METHOD_OPTIONS,
         Request::METHOD_TRACE,
     ];
-    /** @var Server[] */
-    private readonly array $servers;
-    /** @var array<mixed> */
-    private readonly array $tags;
+
+    /**
+     * @var Server[]
+     * @readonly
+     */
+    private array $servers;
+
+    /**
+     * @var array<mixed>
+     * @readonly
+     */
+    private array $tags;
 
     /**
      * @param array<string> $formats
@@ -52,10 +60,10 @@ final class OpenApiFactory implements OpenApiFactoryInterface
      * @param array<array<string>> $tags
      */
     public function __construct(
-        private readonly OpenApiFactoryInterface $openApiFactory,
-        private readonly ResourceMetadataFactoryInterface $resourceMetadataFactory,
-        private readonly SchemaFactoryInterface $jsonSchemaFactory,
-        private readonly array $formats = [],
+        private OpenApiFactoryInterface $openApiFactory,
+        private ResourceMetadataFactoryInterface $resourceMetadataFactory,
+        private SchemaFactoryInterface $jsonSchemaFactory,
+        private array $formats = [],
         array $servers = [],
         array $tags = []
     ) {

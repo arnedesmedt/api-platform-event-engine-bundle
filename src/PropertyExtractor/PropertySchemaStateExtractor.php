@@ -47,7 +47,7 @@ final class PropertySchemaStateExtractor implements PropertyListExtractorInterfa
         JsonSchema::TYPE_STRING => Type::BUILTIN_TYPE_STRING,
     ];
 
-    public function __construct(private readonly ClassMetadataFactoryInterface $classMetadataFactory)
+    public function __construct(private ClassMetadataFactoryInterface $classMetadataFactory)
     {
     }
 

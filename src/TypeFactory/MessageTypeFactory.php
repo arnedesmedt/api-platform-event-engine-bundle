@@ -15,20 +15,18 @@ use Symfony\Component\PropertyInfo\Type;
 use function addslashes;
 use function preg_match;
 use function preg_quote;
+use function reset;
 use function sprintf;
 
 final class MessageTypeFactory implements TypeFactoryInterface
 {
-    private TypeFactoryInterface $typeFactory;
-
-    public function __construct(TypeFactoryInterface $typeFactory)
+    public function __construct(private TypeFactoryInterface $typeFactory)
     {
-        $this->typeFactory = $typeFactory;
     }
 
     /**
-     * @param array<mixed>|null $serializerContext
      * @param Schema<mixed>|null $schema
+     * @param array<mixed>|null $serializerContext
      *
      * @return mixed[]
      */
@@ -42,9 +40,10 @@ final class MessageTypeFactory implements TypeFactoryInterface
         $newType = $this->typeFactory->getType($type, $format, $readableLink, $serializerContext, $schema);
 
         if ($type->isCollection()) {
-            $keyType = $type->getCollectionKeyType();
+            $keyType = $type->getCollectionKeyTypes();
+            $firstKeyType = reset($keyType);
 
-            $key = $keyType !== null && $keyType->getBuiltinType() === Type::BUILTIN_TYPE_STRING
+            $key = $firstKeyType !== false && $firstKeyType->getBuiltinType() === Type::BUILTIN_TYPE_STRING
                 ? 'additionalProperties'
                 : 'items';
 

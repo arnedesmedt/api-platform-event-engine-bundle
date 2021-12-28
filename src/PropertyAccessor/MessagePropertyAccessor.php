@@ -9,10 +9,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\PropertyAccessor;
  */
 trait MessagePropertyAccessor
 {
-    /**
-     * @return mixed
-     */
-    public function __get(string $property)
+    public function __get(string $property): mixed
     {
         return $this->{$property};
     }

@@ -17,17 +17,20 @@ use function count;
  */
 class Paginator implements PartialPaginatorInterface, IteratorAggregate, PaginatorInterface
 {
-    /** @var mixed[] */
-    private readonly array $results;
+    /**
+     * @var mixed[]
+     * @readonly
+     */
+    private array $results;
 
     /**
      * @param array<mixed> $results
      */
     public function __construct(
         array $results,
-        private readonly int $page,
-        private readonly int $itemsPerPage,
-        private readonly int $totalItems
+        private int $page,
+        private int $itemsPerPage,
+        private int $totalItems
     ) {
         $this->results = $results;
     }

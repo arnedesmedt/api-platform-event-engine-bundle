@@ -26,10 +26,11 @@ use function sprintf;
 
 final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactoryInterface
 {
-    private readonly DocBlockFactory $docBlockFactory;
+    /** @readonly */
+    private DocBlockFactory $docBlockFactory;
 
     public function __construct(
-        private readonly PropertyMetadataFactoryInterface $decorated
+        private PropertyMetadataFactoryInterface $decorated
     ) {
         $this->docBlockFactory = DocBlockFactory::createInstance();
     }

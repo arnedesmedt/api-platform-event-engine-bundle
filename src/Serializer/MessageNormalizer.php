@@ -20,27 +20,14 @@ use function method_exists;
 
 final class MessageNormalizer implements DenormalizerInterface
 {
-    private Finder $messageFinder;
-    private EventEngine $eventEngine;
-    private FilterFinder $filterFinder;
-    private string $pageParameterName;
-    private string $orderParameterName;
-    private string $itemsPerPageParameterName;
-
     public function __construct(
-        Finder $messageFinder,
-        EventEngine $eventEngine,
-        FilterFinder $filterFinder,
-        string $pageParameterName = 'page',
-        string $orderParameterName = 'order',
-        string $itemsPerPageParameterName = 'items-per-page'
+        private Finder $messageFinder,
+        private EventEngine $eventEngine,
+        private FilterFinder $filterFinder,
+        private string $pageParameterName = 'page',
+        private string $orderParameterName = 'order',
+        private string $itemsPerPageParameterName = 'items-per-page'
     ) {
-        $this->messageFinder = $messageFinder;
-        $this->eventEngine = $eventEngine;
-        $this->filterFinder = $filterFinder;
-        $this->pageParameterName = $pageParameterName;
-        $this->orderParameterName = $orderParameterName;
-        $this->itemsPerPageParameterName = $itemsPerPageParameterName;
     }
 
     /**

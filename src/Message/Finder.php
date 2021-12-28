@@ -11,7 +11,7 @@ use function sprintf;
 
 final class Finder
 {
-    public function __construct(private readonly Config $config)
+    public function __construct(private Config $config)
     {
     }
 

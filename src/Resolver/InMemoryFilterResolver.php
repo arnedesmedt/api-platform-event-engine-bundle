@@ -23,8 +23,6 @@ final class InMemoryFilterResolver extends FilterResolver
 
     /**
      * @param array<JsonSchemaAwareRecord> $states
-     *
-     * @return static
      */
     public function setStates(array $states): static
     {

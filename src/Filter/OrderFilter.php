@@ -23,7 +23,7 @@ class OrderFilter implements FilterInterface
      * @param array<string|null>|null $properties
      */
     public function __construct(
-        private readonly string $orderParameterName = 'order',
+        private string $orderParameterName = 'order',
         protected ?array $properties = null
     ) {
     }

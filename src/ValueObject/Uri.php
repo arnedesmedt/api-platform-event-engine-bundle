@@ -154,9 +154,7 @@ final class Uri extends StringValue
         $parameters = ArrayUtil::toSnakeCasedKeys($parameters);
 
         $patterns = array_map(
-            static function (string $pattern) {
-                return sprintf('/{%s}/', $pattern);
-            },
+            static fn (string $pattern) => sprintf('/{%s}/', $pattern),
             array_keys($parameters)
         );
 

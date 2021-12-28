@@ -12,19 +12,16 @@ use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactoryInterface;
 use Symfony\Component\Serializer\NameConverter\NameConverterInterface;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 
-use function get_class;
 use function is_string;
 use function iterator_to_array;
 
 final class PropertyExtractorNormalizer extends ObjectNormalizer
 {
-    private PropertyNameCollectionFactoryInterface $propertyNameCollectionFactory;
-
     /**
      * @param array<mixed> $defaultContext
      */
     public function __construct(
-        PropertyNameCollectionFactoryInterface $propertyNameCollectionFactory,
+        private PropertyNameCollectionFactoryInterface $propertyNameCollectionFactory,
         ?ClassMetadataFactoryInterface $classMetadataFactory = null,
         ?NameConverterInterface $nameConverter = null,
         ?PropertyAccessorInterface $propertyAccessor = null,
@@ -42,20 +39,20 @@ final class PropertyExtractorNormalizer extends ObjectNormalizer
             $objectClassResolver,
             $defaultContext
         );
-
-        $this->propertyNameCollectionFactory = $propertyNameCollectionFactory;
     }
 
     /**
-     * @param object|string $classOrObject
      * @param array<mixed> $context
      *
      * @return array<string>
      */
-    protected function getAllowedAttributes($classOrObject, array $context, bool $attributesAsString = false): array
-    {
+    protected function getAllowedAttributes(
+        object|string $classOrObject,
+        array $context,
+        bool $attributesAsString = false
+    ): array {
         $iterator = $this->propertyNameCollectionFactory->create(
-            is_string($classOrObject) ? $classOrObject : get_class($classOrObject),
+            is_string($classOrObject) ? $classOrObject : $classOrObject::class,
             $this->getFactoryOptions($context)
         )
             ->getIterator();

@@ -13,7 +13,7 @@ final class TypeException extends Exception
     /**
      * @return static
      */
-    public static function noToMethodForSchemaType(string $schemaType)
+    public static function noToMethodForSchemaType(string $schemaType): static
     {
         return new static(
             sprintf(

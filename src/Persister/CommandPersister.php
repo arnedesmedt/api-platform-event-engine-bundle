@@ -12,7 +12,7 @@ use EventEngine\Messaging\MessageBag;
 
 final class CommandPersister implements ContextAwareDataPersisterInterface
 {
-    public function __construct(private readonly EventEngine $eventEngine)
+    public function __construct(private EventEngine $eventEngine)
     {
     }
 

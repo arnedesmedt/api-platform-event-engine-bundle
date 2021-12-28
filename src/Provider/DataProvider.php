@@ -12,11 +12,8 @@ use EventEngine\Messaging\Message;
 
 abstract class DataProvider
 {
-    protected EventEngine $eventEngine;
-
-    public function __construct(EventEngine $eventEngine)
+    public function __construct(protected EventEngine $eventEngine)
     {
-        $this->eventEngine = $eventEngine;
     }
 
     /**

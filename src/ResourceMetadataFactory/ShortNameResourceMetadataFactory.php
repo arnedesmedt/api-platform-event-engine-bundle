@@ -10,11 +10,8 @@ use ApiPlatform\Core\Metadata\Resource\ResourceMetadata;
 
 final class ShortNameResourceMetadataFactory implements ResourceMetadataFactoryInterface
 {
-    private ResourceMetadataFactoryInterface $decorated;
-
-    public function __construct(ResourceMetadataFactoryInterface $decorated)
+    public function __construct(private ResourceMetadataFactoryInterface $decorated)
     {
-        $this->decorated = $decorated;
     }
 
     /**

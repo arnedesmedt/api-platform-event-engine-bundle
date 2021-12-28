@@ -12,11 +12,8 @@ use function substr;
 
 final class RemoveComplexResourceMetadataFactory implements ResourceMetadataFactoryInterface
 {
-    private ResourceMetadataFactoryInterface $resourceMetadataFactory;
-
-    public function __construct(ResourceMetadataFactoryInterface $resourceMetadataFactory)
+    public function __construct(private ResourceMetadataFactoryInterface $resourceMetadataFactory)
     {
-        $this->resourceMetadataFactory = $resourceMetadataFactory;
     }
 
     public function create(string $resourceClass): ResourceMetadata

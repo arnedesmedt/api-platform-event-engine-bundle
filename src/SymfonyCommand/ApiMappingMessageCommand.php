@@ -20,13 +20,9 @@ use function sprintf;
 
 class ApiMappingMessageCommand extends Command
 {
-    private Config $config;
-
-    public function __construct(Config $config)
+    public function __construct(private Config $config)
     {
         parent::__construct();
-
-        $this->config = $config;
     }
 
     protected function configure(): void

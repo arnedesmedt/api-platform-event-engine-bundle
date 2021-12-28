@@ -15,21 +15,16 @@ use function array_filter;
 use function array_map;
 use function is_string;
 use function reset;
-use function strpos;
+use function str_starts_with;
 
 use const ARRAY_FILTER_USE_KEY;
 
 final class CustomContextBuilder implements SerializerContextBuilderInterface
 {
-    private SerializerContextBuilderInterface $decorated;
-    private IdentifiersExtractorInterface $identifiersExtractor;
-
     public function __construct(
-        SerializerContextBuilder $decorated,
-        IdentifiersExtractorInterface $identifiersExtractor
+        private SerializerContextBuilder $decorated,
+        private IdentifiersExtractorInterface $identifiersExtractor
     ) {
-        $this->decorated = $decorated;
-        $this->identifiersExtractor = $identifiersExtractor;
     }
 
     /**
@@ -59,16 +54,12 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
         $routeParameters = $request->attributes->get('_route_params', []);
         $pathParameters = array_filter(
             $routeParameters,
-            static function (string $attributeKey) {
-                return strpos($attributeKey, '_') !== 0;
-            },
+            static fn (string $attributeKey) => ! str_starts_with($attributeKey, '_'),
             ARRAY_FILTER_USE_KEY
         );
 
         $context['path_parameters'] = array_map(
-            static function (string $pathParameter) {
-                return StringUtil::castFromString($pathParameter);
-            },
+            static fn (string $pathParameter) => StringUtil::castFromString($pathParameter),
             $pathParameters
         );
     }

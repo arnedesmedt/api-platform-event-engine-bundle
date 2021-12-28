@@ -14,7 +14,7 @@ use function array_map;
 
 class IdentifierExtractor implements IdentifiersExtractorInterface
 {
-    public function __construct(private readonly IdentifiersExtractorInterface $identifiersExtractor)
+    public function __construct(private IdentifiersExtractorInterface $identifiersExtractor)
     {
     }
 
