@@ -33,7 +33,7 @@ final class MessageDeserializeSubscriber implements EventSubscriberInterface
 
     public function messageDeserialize(RequestEvent $event): void
     {
-        if (! $event->isMasterRequest()) {
+        if (! $event->isMainRequest()) {
             return;
         }
 
