@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Security;
 
+use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\FinderException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\AuthorizationMessage;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder;
 use ApiPlatform\Core\Serializer\SerializerContextBuilderInterface;
@@ -23,20 +24,30 @@ abstract class MessageRequestMatcher implements RequestMatcherInterface
     }
 
     /**
-     * @return class-string|string
+     * @return class-string|string|null
      */
-    public function message(Request $request): string
+    public function message(Request $request): ?string
     {
         $attributes = RequestAttributesExtractor::extractAttributes($request);
         $context = $this->serializerContextBuilder->createFromRequest($request, true, $attributes);
 
-        return $this->finder->byContext($context);
+        try {
+            $message = $this->finder->byContext($context);
+        } catch (FinderException $exception) {
+            return null;
+        }
+
+        return $message;
     }
 
     public function matches(Request $request): bool
     {
-        /** @var class-string $message */
+        /** @var class-string|null $message */
         $message = $this->message($request);
+
+        if ($message === null) {
+            return false;
+        }
 
         $interfaces = class_implements($message);
 
