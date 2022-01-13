@@ -120,6 +120,8 @@ final class OpenApiSchemaFactory
             unset($properties[$propName]);
         }
 
+        $jsonSchema['properties'] = $properties;
+
         return $jsonSchema;
     }
 
