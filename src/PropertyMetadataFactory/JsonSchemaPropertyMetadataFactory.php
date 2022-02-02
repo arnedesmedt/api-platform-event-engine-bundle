@@ -198,7 +198,7 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
 
         $propertyMetadata = $propertyMetadata->withAttributes(
             [
-                'deprcation_reason' =>  empty($reason) ? 'deprecated' : $reason,
+                'deprecation_reason' =>  empty($reason) ? 'deprecated' : $reason,
             ]
         );
 
