@@ -15,10 +15,12 @@ use ApiPlatform\Core\Api\OperationType;
 use ApiPlatform\Core\Metadata\Resource\Factory\ResourceMetadataFactoryInterface;
 use ApiPlatform\Core\Metadata\Resource\ResourceMetadata;
 use ApiPlatform\Core\PathResolver\OperationPathResolverInterface;
+use EventEngine\Data\ImmutableRecord;
 use InvalidArgumentException;
 use phpDocumentor\Reflection\DocBlock;
 use phpDocumentor\Reflection\DocBlockFactory;
 use ReflectionClass;
+use ReflectionNamedType;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -135,6 +137,8 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
     }
 
     /**
+     * Add the operations that don't have a default name like get or post.
+     *
      * @param array<string, array<mixed>> $existingOperations
      * @param array<string, class-string<ApiPlatformMessage>> $messagesByOperationName
      *
@@ -470,12 +474,20 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
                 $operation['requirements'][$name] = $propertySchema['pattern'];
             }
 
+            $openApiSchema = OpenApiSchemaFactory::toOpenApiSchema($propertySchema);
             /* @phpstan-ignore-next-line */
             $operation['openapi_context']['parameters'][] = [
                 'name' => $name,
                 'in' => $in,
-                'schema' => OpenApiSchemaFactory::toOpenApiSchema($propertySchema),
+                'schema' => $openApiSchema,
                 'required' => in_array($parameterName, $pathSchema['required']),
+                'description' => $openApiSchema['description'] ?? self::typeDescription(
+                    $messageClass,
+                    $parameterName,
+                    $this->docBlockFactory
+                ),
+                'deprecated' => $openApiSchema['deprecated'] ?? false,
+                'example' => $openApiSchema['example'] ?? null,
             ];
         }
 
@@ -499,5 +511,41 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
         $openApiContext['x-operation-name'] ??= $operationName;
 
         return $this;
+    }
+
+    /**
+     * @param class-string<ImmutableRecord> $messageClass
+     */
+    public static function typeDescription(
+        string $messageClass,
+        string $property,
+        DocBlockFactory $docBlockFactory
+    ): ?string {
+        $reflectionClass = new ReflectionClass($messageClass);
+
+        /** @var ReflectionNamedType|null $propertyType */
+        $propertyType = $reflectionClass->hasProperty($property)
+            ? $reflectionClass->getProperty($property)->getType()
+            : null;
+
+        if (isset($propertyType) && ! $propertyType->isBuiltin()) {
+            // Get the description of the value object
+            /** @var class-string $className */
+            $className = $propertyType->getName();
+            $propertyReflectionClass = new ReflectionClass($className);
+
+            try {
+                $docBlock = $docBlockFactory->create($propertyReflectionClass);
+
+                return sprintf(
+                    "%s\n %s",
+                    $docBlock->getSummary(),
+                    $docBlock->getDescription()->render()
+                );
+            } catch (InvalidArgumentException) {
+            }
+        }
+
+        return null;
     }
 }
