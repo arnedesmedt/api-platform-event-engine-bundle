@@ -11,6 +11,7 @@ use ApiPlatform\Core\Metadata\Resource\Factory\ResourceMetadataFactoryInterface;
 use ApiPlatform\Core\OpenApi\Factory\OpenApiFactoryInterface;
 use ApiPlatform\Core\OpenApi\Model\MediaType;
 use ApiPlatform\Core\OpenApi\Model\Operation;
+use ApiPlatform\Core\OpenApi\Model\RequestBody;
 use ApiPlatform\Core\OpenApi\Model\Response;
 use ApiPlatform\Core\OpenApi\Model\Server;
 use ApiPlatform\Core\OpenApi\OpenApi;
@@ -121,7 +122,7 @@ final class OpenApiFactory implements OpenApiFactoryInterface
 
                 // todo remove api platform response codes
                 $operation = $this->overrideResponses($operation, $schemas);
-                $operation = $this->removeEmptyRequestBodies($operation);
+                $operation = $this->overrideRequestBodies($operation);
 
                 $pathItem = $pathItem->{$with}($operation);
             }
@@ -223,6 +224,7 @@ final class OpenApiFactory implements OpenApiFactoryInterface
             unset($responses['default']);
         }
 
+        // REMOVE LINKS
         foreach ($responses as &$response) {
             $response = $response->withLinks(new ArrayObject([]));
         }
@@ -230,7 +232,7 @@ final class OpenApiFactory implements OpenApiFactoryInterface
         return $operation->withResponses($responses);
     }
 
-    private function removeEmptyRequestBodies(Operation $operation): Operation
+    private function overrideRequestBodies(Operation $operation): Operation
     {
         $requestBody = $operation->getRequestBody();
 
@@ -252,12 +254,15 @@ final class OpenApiFactory implements OpenApiFactoryInterface
             unset($contentArray[$mimeType]);
         }
 
-        return count($contentArray) === 0
-            ? $this->removeRequestBody($operation)
-            : $operation;
+        $requestBody = $requestBody->withDescription('');
+
+        return $this->replaceRequestBody(
+            $operation,
+            count($contentArray) === 0 ? null : $requestBody
+        );
     }
 
-    private function removeRequestBody(Operation $operation): Operation
+    private function replaceRequestBody(Operation $operation, ?RequestBody $requestBody): Operation
     {
         return new Operation(
             $operation->getOperationId(),
@@ -267,7 +272,7 @@ final class OpenApiFactory implements OpenApiFactoryInterface
             $operation->getDescription(),
             $operation->getExternalDocs(),
             $operation->getParameters(),
-            null,
+            $requestBody,
             $operation->getCallbacks(),
             $operation->getDeprecated(),
             $operation->getSecurity(),
