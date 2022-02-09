@@ -223,6 +223,10 @@ final class OpenApiFactory implements OpenApiFactoryInterface
             unset($responses['default']);
         }
 
+        foreach ($responses as &$response) {
+            $response = $response->withLinks(new ArrayObject([]));
+        }
+
         return $operation->withResponses($responses);
     }
 
