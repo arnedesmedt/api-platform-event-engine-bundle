@@ -482,7 +482,7 @@ final class OpenApiFactory implements OpenApiFactoryInterface
                         false,
                         true
                     ),
-                $operation['openapi_context']['security'] ?? null,
+                $operation['openapi_context']['security'] ?? [],
                 $operation['openapi_context']['servers'] ?? null,
                 $this->extensionProperties($operation['openapi_context'] ?? [])
             ));
