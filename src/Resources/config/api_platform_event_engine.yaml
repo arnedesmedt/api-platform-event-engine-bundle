@@ -158,12 +158,18 @@ services:
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\PropertyExtractor\IdentifierExtractor.inner'
 
-    ADS\Bundle\ApiPlatformEventEngineBundle\Documentation\OpenApiFactory:
-        decorates: 'api_platform.openapi.factory'
+    api_platform.openapi.factory:
+        class: ADS\Bundle\ApiPlatformEventEngineBundle\Documentation\OpenApiFactory
         arguments:
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Documentation\OpenApiFactory.inner'
+            - '@api_platform.metadata.resource.name_collection_factory'
             - '@api_platform.metadata.resource.metadata_factory'
             - '@api_platform.json_schema.schema_factory'
+            - '@api_platform.json_schema.type_factory'
+            - '@api_platform.operation_path_resolver'
+            - '@api_platform.filter_locator'
+            - '@api_platform.subresource_operation_factory'
+            - '@api_platform.openapi.options'
+            - '@api_platform.pagination_options'
             - '%api_platform.formats%'
             - '%api_platform_event_engine.open_api.servers%'
             - '%api_platform_event_engine.open_api.tags%'
