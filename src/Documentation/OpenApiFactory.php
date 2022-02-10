@@ -195,7 +195,7 @@ final class OpenApiFactory implements OpenApiFactoryInterface
         $securityRequirements = [];
 
         foreach (array_keys($securitySchemes) as $key) {
-            $securityRequirements[$key] = [];
+            $securityRequirements[] = [$key => []];
         }
 
         return new OpenApi(
