@@ -280,14 +280,29 @@ final class OpenApiFactory implements OpenApiFactoryInterface
                 'DELETE' => '204',
             ];
 
-            $messageClassResponses = [$defaultStatuses[$method] ?? '200' => null];
+            $successStatus = (string) $resourceMetadata
+                ->getTypedOperationAttribute(
+                    $operationType,
+                    $operationName,
+                    'status',
+                    $defaultStatuses[$method] ?? '200'
+                );
+
+            $messageClassResponses = [$successStatus => null];
             if ($reflectionClass && $messageClass && $reflectionClass->implementsInterface(HasResponses::class)) {
                 $messageClassResponses = $messageClass::__responseSchemasPerStatusCode();
             }
 
             $operationOutputSchemas = [];
             foreach ($messageClassResponses as $statusCode => $messageClassResponse) {
-                $context['response'] = $messageClassResponse ? $messageClassResponse->toArray() : null;
+                $operationOutputSchemas[$statusCode] = [];
+                $context['statusCode'] = $statusCode;
+                $context['isDefaultResponse'] = $statusCode === (int) $successStatus;
+                if (! $context['isDefaultResponse']) {
+                    $context['response'] = $messageClassResponse ? $messageClassResponse->toArray() : null;
+                }
+
+//                $context['response'] = $messageClassResponse ? $messageClassResponse->toArray() : null;
                 foreach ($responseMimeTypes as $operationFormat) {
                     $operationOutputSchema = $this->jsonSchemaFactory->buildSchema(
                         $resourceClass,
@@ -299,11 +314,11 @@ final class OpenApiFactory implements OpenApiFactoryInterface
                         $context
                     );
                     $schemas += $operationOutputSchema->getDefinitions()->getArrayCopy();
-                    $operationOutputSchemas[$operationFormat] = $operationOutputSchema;
+                    $operationOutputSchemas[$statusCode][$operationFormat] = $operationOutputSchema;
                 }
-
-                unset($context['response']);
             }
+
+            unset($context['response']);
 
             $parameters = [];
             $responses = [];
@@ -383,19 +398,11 @@ final class OpenApiFactory implements OpenApiFactoryInterface
                     $messageResponseArray = $messageClassResponse->toArray();
                     $responses[$statusCode] = new Response(
                         $messageResponseArray['description'] ?? '',
-                        $this->buildContent($responseMimeTypes, $operationOutputSchemas)
+                        $this->buildContent($responseMimeTypes, $operationOutputSchemas[$statusCode])
                     );
                 }
             } else {
-                $successStatus = (string) $resourceMetadata
-                    ->getTypedOperationAttribute(
-                        $operationType,
-                        $operationName,
-                        'status',
-                        $defaultStatuses[$method] ?? '200'
-                    );
-
-                $responseContent = $this->buildContent($responseMimeTypes, $operationOutputSchemas);
+                $responseContent = $this->buildContent($responseMimeTypes, $operationOutputSchemas[$successStatus]);
                 $description = '';
 
                 switch ($method) {
