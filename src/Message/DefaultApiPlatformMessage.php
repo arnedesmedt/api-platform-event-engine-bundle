@@ -114,10 +114,15 @@ trait DefaultApiPlatformMessage
     {
         return match (self::__operationName()) {
             Name::POST => Request::METHOD_POST,
+            Name::POST . 'Deprecated' => Request::METHOD_POST,
             Name::DELETE => Request::METHOD_DELETE,
+            Name::DELETE . 'Deprecated' => Request::METHOD_DELETE,
             Name::PUT => Request::METHOD_PUT,
+            Name::PUT . 'Deprecated' => Request::METHOD_PUT,
             Name::PATCH => Request::METHOD_PATCH,
+            Name::PATCH . 'Deprecated' => Request::METHOD_PATCH,
             Name::GET => Request::METHOD_GET,
+            Name::GET . 'Deprecated' => Request::METHOD_GET,
             default => null,
         };
     }
