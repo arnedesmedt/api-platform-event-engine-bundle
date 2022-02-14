@@ -104,7 +104,7 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
         && isset($propertyType)
         && $propertyType->allowsNull()
             ? sprintf(
-                '<br/> If \'%s\' is not added in the payload, then it will not be used.',
+                "\n If '%s' is not added in the payload, then it will not be used.",
                 StringUtil::decamelize($property)
             )
             : '';
@@ -125,16 +125,25 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
 
             try {
                 $docBlock = $this->docBlockFactory->create($propertyReflectionClass);
+                $description = $docBlock->getDescription()->render();
                 $propertyMetadata = $propertyMetadata->withDescription(
                     sprintf(
-                        '%s<br/>%s%s',
+                        '%s%s%s',
                         $docBlock->getSummary(),
-                        $docBlock->getDescription()->render(),
+                        ! empty($description) ? "\n" . $description : $description,
                         $patchPropertyDescription
                     )
                 );
             } catch (InvalidArgumentException) {
             }
+
+            return $this;
+        }
+
+        if ($patchPropertyDescription) {
+            $propertyMetadata = $propertyMetadata->withDescription(
+                $propertyMetadata->getDescription() ?? '' . $patchPropertyDescription
+            );
         }
 
         return $this;
