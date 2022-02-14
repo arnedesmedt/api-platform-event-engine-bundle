@@ -448,15 +448,22 @@ final class OpenApiFactory implements OpenApiFactoryInterface
                         new Schema('openapi'),
                         $context
                     );
+
+                    if (empty($operationInputSchema->getArrayCopy(false))) {
+                        continue;
+                    }
+
                     $schemas += $operationInputSchema->getDefinitions()->getArrayCopy();
                     $operationInputSchemas[$operationFormat] = $operationInputSchema;
                 }
 
-                $requestBody = new Model\RequestBody(
-                    '',
-                    $this->buildContent($requestMimeTypes, $operationInputSchemas),
-                    true
-                );
+                if (! empty($operationInputSchemas)) {
+                    $requestBody = new Model\RequestBody(
+                        '',
+                        $this->buildContent($requestMimeTypes, $operationInputSchemas),
+                        true
+                    );
+                }
             }
 
             $pathItem = $pathItem->{'with' . ucfirst($method)}(new Model\Operation(
