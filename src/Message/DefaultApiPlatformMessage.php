@@ -87,7 +87,7 @@ trait DefaultApiPlatformMessage
 
         $shortName = self::shortName();
 
-        return match (true) {
+        $operationName = match (true) {
             (bool) preg_match('/(Create|Add|Enable|Import)/', $shortName) => Name::POST,
             (bool) preg_match('/(Get|GetAll|All|ById|ByUuid)/', $shortName) => Name::GET,
             (bool) preg_match('/(Update)/', $shortName) => Name::PUT,
@@ -95,6 +95,12 @@ trait DefaultApiPlatformMessage
             (bool) preg_match('/(Delete|Remove|Disable)/', $shortName) => Name::DELETE,
             default => throw ApiPlatformMappingException::noOperationNameFound(static::class),
         };
+
+        if (preg_match('/Deprecated/', $shortName)) {
+            $operationName .= 'Deprecated';
+        }
+
+        return $operationName;
     }
 
     public static function __operationId(): string
