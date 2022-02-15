@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Documentation;
 
+use ADS\Bundle\ApiPlatformEventEngineBundle\Operation\QueryOperationRoutePathResolver;
 use ADS\Bundle\EventEngineBundle\Response\HasResponses;
 use ApiPlatform\Core\Api\FilterLocatorTrait;
 use ApiPlatform\Core\Api\OperationType;
@@ -590,7 +591,9 @@ final class OpenApiFactory implements OpenApiFactoryInterface
         string $operationType
     ): string {
         if ($operation['path'] ?? null) {
-            return strpos($operation['path'], '/') === 0 ? $operation['path'] : '/' . $operation['path'];
+            $path = strpos($operation['path'], '/') === 0 ? $operation['path'] : '/' . $operation['path'];
+
+            return QueryOperationRoutePathResolver::removeQueryPart($path);
         }
 
         /** @phpstan-ignore-next-line */
