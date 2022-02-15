@@ -30,7 +30,12 @@ final class QueryOperationRoutePathResolver implements OperationPathResolverInte
         // @phpstan-ignore-next-line
         $path = $this->deferred->resolveOperationPath($resourceShortName, $operation, $operationType, $operationName);
 
-        $parts = explode('?', $path, 2);
+        return self::removeQueryPart($path);
+    }
+
+    public static function removeQueryPart(string $url): string
+    {
+        $parts = explode('?', $url, 2);
 
         /** @var string $url */
         $url = reset($parts);
