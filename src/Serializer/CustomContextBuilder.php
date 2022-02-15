@@ -40,7 +40,7 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
         $this->extractQueryParameters($request, $context);
         $this->addIdentifier($request, $context);
         $this->addMessage($request, $context);
-        $context[AbstractObjectNormalizer::PRESERVE_EMPTY_OBJECTS] = true;
+        $context[AbstractObjectNormalizer::PRESERVE_EMPTY_OBJECTS] = false;
 
         return $context;
     }
