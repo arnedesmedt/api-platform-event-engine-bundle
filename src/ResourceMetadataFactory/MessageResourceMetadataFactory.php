@@ -197,6 +197,7 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
 
                         $this
                             ->addMessageClass($operation, $messageClass)
+                            ->addOperationId($openApiContext, $messageClass)
                             ->addHttpMethod($operation, $messageClass)
                             ->addPath($operation, $operationType, $resourceMetadata, $messageClass)
                             ->addController($operation, $messageClass)
@@ -235,6 +236,17 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
     private function addMessageClass(array &$operation, string $messageClass): self
     {
         $operation['message_class'] ??= $messageClass;
+
+        return $this;
+    }
+
+    /**
+     * @param array<mixed> $openApiContext
+     * @param class-string<ApiPlatformMessage> $messageClass
+     */
+    private function addOperationId(array &$openApiContext, string $messageClass): self
+    {
+        $openApiContext['operationId'] ??= $messageClass::__operationId();
 
         return $this;
     }

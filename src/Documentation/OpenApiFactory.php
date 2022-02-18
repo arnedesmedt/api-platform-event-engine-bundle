@@ -520,7 +520,8 @@ final class OpenApiFactory implements OpenApiFactoryInterface
 
         foreach ($responseMimeTypes as $mimeType => $format) {
             $content[$mimeType] = new Model\MediaType(
-                new ArrayObject($operationSchemas[$format]->getArrayCopy())
+                // @phpstan-ignore-next-line
+                new ArrayObject($operationSchemas[$format]->getArrayCopy(false))
             );
         }
 
