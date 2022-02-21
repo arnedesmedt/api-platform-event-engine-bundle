@@ -148,11 +148,30 @@ final class OpenApiFactory implements OpenApiFactoryInterface
      */
     public function __invoke(array $context = []): OpenApi
     {
+        $contact = $this->openApiOptions->getContactUrl() === null || $this->openApiOptions->getContactEmail() === null
+            ? null
+            : new Model\Contact(
+                $this->openApiOptions->getContactName(),
+                $this->openApiOptions->getContactUrl(),
+                $this->openApiOptions->getContactEmail()
+            );
+
+        $license = $this->openApiOptions->getLicenseName() === null
+            ? null
+            : new Model\License(
+                $this->openApiOptions->getLicenseName(),
+                $this->openApiOptions->getLicenseUrl()
+            );
+
         $info = new Model\Info(
             $this->openApiOptions->getTitle(),
             $this->openApiOptions->getVersion(),
-            trim($this->openApiOptions->getDescription())
+            trim($this->openApiOptions->getDescription()),
+            $this->openApiOptions->getTermsOfService(),
+            $contact,
+            $license
         );
+
         $paths = new Model\Paths();
         $schemas = [];
 
@@ -677,7 +696,7 @@ final class OpenApiFactory implements OpenApiFactoryInterface
                     $data['required'] ?? false,
                     $data['openapi']['deprecated'] ?? false,
                     $data['openapi']['allowEmptyValue'] ?? true,
-                    $schema,
+                    $data['schema'] ?? $schema,
                     $schema['type'] === 'array' && in_array(
                         $data['type'],
                         [Type::BUILTIN_TYPE_ARRAY, Type::BUILTIN_TYPE_OBJECT],
