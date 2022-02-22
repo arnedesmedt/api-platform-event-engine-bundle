@@ -185,7 +185,7 @@ trait DefaultApiPlatformMessage
 
         $value = match (self::__httpMethod()) {
             Request::METHOD_POST => DefaultType::created(),
-            Request::METHOD_DELETE => DefaultType::emptyResponse(),
+            Request::METHOD_DELETE => DefaultType::deleted(),
             Request::METHOD_PUT, Request::METHOD_PATCH,
             Request::METHOD_GET, Request::METHOD_OPTIONS => DefaultType::ok(),
             default => null,

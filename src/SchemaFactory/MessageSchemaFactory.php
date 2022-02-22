@@ -65,9 +65,6 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
     ): Schema {
         /** @var array<string, mixed>|null $response */
         $response = $serializerContext['response'] ?? null;
-        if (isset($response)) {
-            return OpenApiSchemaFactory::toApiPlatformSchema($response);
-        }
 
         // Set the defaults
         $schema = $schema ? clone $schema : new Schema();
@@ -80,8 +77,14 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
             : null;
         $httpMethod = $this->httpMethod($type, $operationType, $operationName, $resourceMetadata);
 
-        if ($this->isCommandAndOutput($type, $httpMethod)) {
+        if ($this->isCommandAndOutput($type, $httpMethod, $serializerContext)) {
             $this->addEmptyDefinition($schema, $format);
+
+            return $schema;
+        }
+
+        if (isset($response) && (! $serializerContext['isDefaultResponse'] || ! isset($response['$ref']))) {
+            $schema = OpenApiSchemaFactory::toApiPlatformSchema($response);
 
             return $schema;
         }
@@ -152,9 +155,18 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
         return $this->removePathParameterFromSchema($schema, $path);
     }
 
-    private function isCommandAndOutput(string $type, string $httpMethod): bool
+    /**
+     * @param array<string, mixed> $context
+     */
+    private function isCommandAndOutput(string $type, string $httpMethod, array $context): bool
     {
-        return $type === Schema::TYPE_OUTPUT && in_array($httpMethod, self::COMMAND_METHODS);
+        /** @var array<string, mixed> $response */
+        $response = $context['response'] ?? [];
+
+        return $type === Schema::TYPE_OUTPUT
+            && in_array($httpMethod, self::COMMAND_METHODS)
+            && empty($response['properties'] ?? [])
+            && $context['isDefaultResponse'];
     }
 
     private function refName(string $version, string $definitionName): string

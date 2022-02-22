@@ -318,11 +318,8 @@ final class OpenApiFactory implements OpenApiFactoryInterface
                 $operationOutputSchemas[$statusCode] = [];
                 $context['statusCode'] = $statusCode;
                 $context['isDefaultResponse'] = $statusCode === (int) $successStatus;
-                if (! $context['isDefaultResponse']) {
-                    $context['response'] = $messageClassResponse ? $messageClassResponse->toArray() : null;
-                }
+                $context['response'] = $messageClassResponse ? $messageClassResponse->toArray() : null;
 
-//                $context['response'] = $messageClassResponse ? $messageClassResponse->toArray() : null;
                 foreach ($responseMimeTypes as $operationFormat) {
                     $operationOutputSchema = $this->jsonSchemaFactory->buildSchema(
                         $resourceClass,
