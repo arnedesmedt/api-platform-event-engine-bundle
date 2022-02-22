@@ -450,7 +450,9 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
                                 'required' => true,
                                 'content' => [
                                     'application/json' => [
-                                        'schema' => $schemaClass::__schema()->toArray(),
+                                        'schema' => OpenApiSchemaFactory::toOpenApiSchema(
+                                            $schemaClass::__schema()->toArray()
+                                        ),
                                     ],
                                 ],
                             ],
