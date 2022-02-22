@@ -7,9 +7,6 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Message;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\Callback\ImmutableObject\CallbackRequestBody;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\Callback\ValueObject\CallbackUrl;
 
-/**
- * @method static __defaultCallbackEvent()
- */
 trait CallbackMessageLogic
 {
     /**
@@ -23,10 +20,15 @@ trait CallbackMessageLogic
         return $this->callbackUrl;
     }
 
+    public static function __defaultCallbackEvent(): string
+    {
+        return 'success';
+    }
+
     /**
      * @inheritDoc
      */
-    public function __callbackEvents(): array
+    public static function __callbackEvents(): array
     {
         return [
             self::__defaultCallbackEvent() => CallbackRequestBody::class,
@@ -36,7 +38,7 @@ trait CallbackMessageLogic
     /**
      * @inheritDoc
      */
-    public function __callbackEvent(array $callbackResponses): string
+    public static function __callbackEvent(array $callbackResponses): string
     {
         return self::__defaultCallbackEvent();
     }
@@ -44,7 +46,7 @@ trait CallbackMessageLogic
     /**
      * @inheritDoc
      */
-    public function __callbackRequestBody(string $callbackEvent, array $callbackResponses): array
+    public static function __callbackRequestBody(string $callbackEvent, array $callbackResponses): array
     {
         return ['event' => $callbackEvent];
     }

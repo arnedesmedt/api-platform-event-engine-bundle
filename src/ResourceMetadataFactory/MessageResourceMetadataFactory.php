@@ -6,6 +6,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataFactory;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Config;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
+use ADS\Bundle\ApiPlatformEventEngineBundle\Message\CallbackMessage;
 use ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageSchemaFactory;
 use ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\OpenApiSchemaFactory;
 use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
@@ -16,6 +17,7 @@ use ApiPlatform\Core\Metadata\Resource\Factory\ResourceMetadataFactoryInterface;
 use ApiPlatform\Core\Metadata\Resource\ResourceMetadata;
 use ApiPlatform\Core\PathResolver\OperationPathResolverInterface;
 use EventEngine\Data\ImmutableRecord;
+use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use InvalidArgumentException;
 use phpDocumentor\Reflection\DocBlock;
 use phpDocumentor\Reflection\DocBlockFactory;
@@ -208,6 +210,7 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
                             ->addOutputClass($operation, $messageClass)
                             ->addTags($openApiContext, $messageClass)
                             ->addDocumentation($openApiContext, $docBlock)
+                            ->addCallbacks($openApiContext, $messageClass, $reflectionClass)
                             ->addDeprecated($operation, $docBlock)
                             ->addParameters($operation, $messageClass)
                             ->addExtensionProperties(
@@ -410,6 +413,56 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
         $openApiContext['description'] ??= $docBlock->getDescription()->render();
 
         return $this;
+    }
+
+    /**
+     * @param array<mixed> $openApiContext
+     * @param ReflectionClass<ApiPlatformMessage> $reflectionClass
+     */
+    private function addCallbacks(
+        array &$openApiContext,
+        string $messageClass,
+        ReflectionClass $reflectionClass
+    ): self {
+        if (! $reflectionClass->implementsInterface(CallbackMessage::class)) {
+            return $this;
+        }
+
+        $openApiContext['callbacks'] ??= $this->buildCallbacks($messageClass);
+
+        return $this;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildCallbacks(string $messageClass): array
+    {
+        /** @var array<string, class-string<JsonSchemaAwareRecord>> $events */
+        $events = $messageClass::__callbackEvents();
+
+        return array_map(
+            static function (string $schemaClass) {
+                return [
+                    '{$request.body#/callbackUrl}' => [
+                        'post' => [
+                            'requestBody' => [
+                                'required' => true,
+                                'content' => [
+                                    'application/json' => [
+                                        'schema' => $schemaClass::__schema()->toArray(),
+                                    ],
+                                ],
+                            ],
+                            'responses' => [
+                                '200' => ['description' => 'Your server return a 200 OK, if it accpets the callback.'],
+                            ],
+                        ],
+                    ],
+                ];
+            },
+            $events
+        );
     }
 
     /**
