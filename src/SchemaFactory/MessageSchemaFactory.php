@@ -123,10 +123,8 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
             && $message::__schemaStateClass()
         ) {
             $className = $message::__schemaStateClass();
-            if ($operationType === OperationType::COLLECTION) {
-                $forceCollection = true;
-            }
-
+            $forceCollection = $operationType === OperationType::COLLECTION
+                && ! in_array($httpMethod, self::COMMAND_METHODS);
             $operationType = $operationName = null;
         }
 
