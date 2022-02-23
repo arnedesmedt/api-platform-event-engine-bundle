@@ -172,6 +172,7 @@ services:
             - '@api_platform.operation_path_resolver'
             - '@api_platform.filter_locator'
             - '@api_platform.subresource_operation_factory'
+            - '@api_platform.identifiers_extractor'
             - '@api_platform.openapi.options'
             - '@api_platform.pagination_options'
             - '%api_platform.formats%'

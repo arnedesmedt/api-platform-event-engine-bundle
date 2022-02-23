@@ -63,7 +63,7 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
         ?array $serializerContext = null,
         bool $forceCollection = false
     ): Schema {
-        /** @var array<string, mixed>|null $response */
+        /** @var array<string, array<string, mixed>>|null $response */
         $response = $serializerContext['response'] ?? null;
 
         // Set the defaults
@@ -83,7 +83,13 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
             return $schema;
         }
 
-        if (isset($response) && (! $serializerContext['isDefaultResponse'] || ! isset($response['$ref']))) {
+        if (
+            isset($response)
+            && (
+                ! $serializerContext['isDefaultResponse']
+                || ! (isset($response['$ref']) || isset($response['items']['$ref']))
+            )
+        ) {
             $schema = OpenApiSchemaFactory::toApiPlatformSchema($response);
 
             return $schema;
