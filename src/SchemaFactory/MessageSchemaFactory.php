@@ -83,13 +83,7 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
             return $schema;
         }
 
-        if (
-            isset($response)
-            && (
-                ! ($serializerContext['isDefaultResponse'] ?? true)
-                || ! (isset($response['$ref']) || isset($response['items']['$ref']))
-            )
-        ) {
+        if (isset($response) && ! ($serializerContext['isDefaultResponse'] ?? true)) {
             $schema = OpenApiSchemaFactory::toApiPlatformSchema($response);
 
             return $schema;
