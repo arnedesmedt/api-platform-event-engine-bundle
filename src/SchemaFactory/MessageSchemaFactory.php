@@ -172,7 +172,7 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
         return $type === Schema::TYPE_OUTPUT
             && in_array($httpMethod, self::COMMAND_METHODS)
             && empty($response['properties'] ?? [])
-            && $context['isDefaultResponse'];
+            && ($context['isDefaultResponse'] ?? true);
     }
 
     private function refName(string $version, string $definitionName): string
