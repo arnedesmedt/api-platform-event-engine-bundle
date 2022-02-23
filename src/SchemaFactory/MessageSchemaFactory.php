@@ -86,7 +86,7 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
         if (
             isset($response)
             && (
-                ! $serializerContext['isDefaultResponse']
+                ! ($serializerContext['isDefaultResponse'] ?? true)
                 || ! (isset($response['$ref']) || isset($response['items']['$ref']))
             )
         ) {
