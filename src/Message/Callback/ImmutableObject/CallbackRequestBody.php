@@ -6,12 +6,12 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Message\Callback\ImmutableObje
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\Callback\ValueObject\CallbackEvent;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\Callback\ValueObject\CallbackMessage;
-use ADS\JsonImmutableObjects\DefaultsAreNotRequired;
+use ADS\JsonImmutableObjects\JsonSchemaAwareRecordLogic;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 
 class CallbackRequestBody implements JsonSchemaAwareRecord
 {
-    use DefaultsAreNotRequired;
+    use JsonSchemaAwareRecordLogic;
 
     private CallbackEvent $event;
     private ?CallbackMessage $message = null;
