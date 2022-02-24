@@ -444,7 +444,7 @@ final class MessageResourceMetadataFactory implements ResourceMetadataFactoryInt
         return array_map(
             static function (string $schemaClass) {
                 return [
-                    '{$request.body#/callbackUrl}' => [
+                    '{$request.body#/callback_url}' => [
                         'post' => [
                             'requestBody' => [
                                 'required' => true,
