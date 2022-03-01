@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Serializer;
 
+use ADS\Bundle\EventEngineBundle\Type\Type as EventEngineType;
 use ADS\Util\StringUtil;
 use ApiPlatform\Core\Api\IdentifiersExtractorInterface;
 use ApiPlatform\Core\Serializer\SerializerContextBuilder;
 use ApiPlatform\Core\Serializer\SerializerContextBuilderInterface;
+use ReflectionClass;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 
@@ -15,6 +17,7 @@ use function array_filter;
 use function array_map;
 use function is_string;
 use function reset;
+use function settype;
 use function str_starts_with;
 
 use const ARRAY_FILTER_USE_KEY;
@@ -58,10 +61,47 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
             ARRAY_FILTER_USE_KEY
         );
 
-        $context['path_parameters'] = array_map(
-            static fn (string $pathParameter) => StringUtil::castFromString($pathParameter),
-            $pathParameters
-        );
+        /**
+         * @var string $pathParameterName
+         * @var string $pathParameterValue
+         */
+        foreach ($pathParameters as $pathParameterName => $pathParameterValue) {
+            /** @var class-string $resourceClass */
+            $resourceClass = $context['resource_class'];
+
+            $propertyType = $this->extactPropertyTypeFromResourceClass($resourceClass, $pathParameterName);
+
+            if ($propertyType !== null) {
+                settype($pathParameterValue, $propertyType);
+            } else {
+                $pathParameterValue = StringUtil::castFromString($pathParameterValue);
+            }
+
+            $pathParameters[$pathParameterName] = $pathParameterValue;
+        }
+
+        $context['path_parameters'] = $pathParameters;
+    }
+
+    /**
+     * @param class-string $resourceClass
+     */
+    private function extactPropertyTypeFromResourceClass(string $resourceClass, string $propertyName): ?string
+    {
+        $resourceClassInstance = (new ReflectionClass($resourceClass))->newInstanceWithoutConstructor();
+        if (! $resourceClassInstance instanceof EventEngineType) {
+            return null;
+        }
+
+        $properties = $resourceClassInstance
+            ->__schema()
+            ->toArray()['properties'];
+
+        if (! isset($properties[StringUtil::camelize($propertyName)])) {
+            return null;
+        }
+
+        return $properties[StringUtil::camelize($propertyName)]['type'];
     }
 
     /**
