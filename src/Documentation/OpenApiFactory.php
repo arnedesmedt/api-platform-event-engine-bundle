@@ -506,12 +506,16 @@ final class OpenApiFactory implements OpenApiFactoryInterface
                         $operationType,
                         $operationName,
                         $schema,
-                        //                        new Schema('openapi'),
                         $context
                     );
 
                     if (empty($operationInputSchema->getArrayCopy(false))) {
-                        continue;
+                        if ($method === 'DELETE') {
+                            continue;
+                        }
+
+                        $operationInputSchema = new Schema(Schema::VERSION_OPENAPI);
+                        $operationInputSchema['type'] = 'object';
                     }
 
                     $operationInputSchemas[$operationFormat] = $operationInputSchema;
