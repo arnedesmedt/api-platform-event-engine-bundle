@@ -61,15 +61,16 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
             ARRAY_FILTER_USE_KEY
         );
 
+        /** @var class-string $resourceClass */
+        $resourceClass = $context['resource_class'];
+        $resourceClassInstance = (new ReflectionClass($resourceClass))->newInstanceWithoutConstructor();
+
         /**
          * @var string $pathParameterName
          * @var string $pathParameterValue
          */
         foreach ($pathParameters as $pathParameterName => $pathParameterValue) {
-            /** @var class-string $resourceClass */
-            $resourceClass = $context['resource_class'];
-
-            $propertyType = $this->extactPropertyTypeFromResourceClass($resourceClass, $pathParameterName);
+            $propertyType = $this->extactPropertyTypeFromResourceClass($resourceClassInstance, $pathParameterName);
 
             if ($propertyType !== null) {
                 settype($pathParameterValue, $propertyType);
@@ -83,12 +84,8 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
         $context['path_parameters'] = $pathParameters;
     }
 
-    /**
-     * @param class-string $resourceClass
-     */
-    private function extactPropertyTypeFromResourceClass(string $resourceClass, string $propertyName): ?string
+    private function extactPropertyTypeFromResourceClass(mixed $resourceClassInstance, string $propertyName): ?string
     {
-        $resourceClassInstance = (new ReflectionClass($resourceClass))->newInstanceWithoutConstructor();
         if (! $resourceClassInstance instanceof EventEngineType) {
             return null;
         }
@@ -101,7 +98,9 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
             return null;
         }
 
-        return $properties[StringUtil::camelize($propertyName)]['type'];
+        $type = $properties[StringUtil::camelize($propertyName)]['type'];
+
+        return $type === 'number' ? 'float' : $type;
     }
 
     /**
