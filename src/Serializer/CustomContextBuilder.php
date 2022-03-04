@@ -90,9 +90,7 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
             return null;
         }
 
-        $properties = $resourceClassInstance
-            ->__schema()
-            ->toArray()['properties'];
+        $properties = $resourceClassInstance::__schema()->toArray()['properties'];
 
         if (! isset($properties[StringUtil::camelize($propertyName)])) {
             return null;
