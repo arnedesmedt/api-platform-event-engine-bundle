@@ -28,4 +28,11 @@ interface CallbackMessage
      * @return array<string, mixed>
      */
     public static function __callbackRequestBody(string $callbackEvent, array $callbackResponses): array;
+
+    /**
+     * @param array<string, mixed> $callbackResponses
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public static function __callbackMessagesPayloadGenerator(array $callbackResponses): array;
 }

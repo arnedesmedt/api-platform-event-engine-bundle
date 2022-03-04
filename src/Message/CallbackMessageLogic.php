@@ -50,4 +50,12 @@ trait CallbackMessageLogic
     {
         return ['event' => $callbackEvent];
     }
+
+    /**
+     * @inheritDoc
+     */
+    public static function __callbackMessagesPayloadGenerator(array $callbackResponses): array
+    {
+        return [];
+    }
 }
