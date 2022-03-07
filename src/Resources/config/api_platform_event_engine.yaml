@@ -148,6 +148,13 @@ services:
         tags:
             - { name: kernel.event_subscriber, event: kernel.request }
 
+    ADS\Bundle\ApiPlatformEventEngineBundle\Validation\RequestValidationListener:
+        arguments:
+            - '@api_platform.validator'
+            - '@api_platform.metadata.resource.metadata_factory'
+        tags:
+            - { name: kernel.event_subscriber, event: kernel.request }
+
     ADS\Bundle\ApiPlatformEventEngineBundle\EventSubscriber\EmptyResponseSubscriber:
         tags:
             - { name: kernel.event_subscriber, event: kernel.view }
