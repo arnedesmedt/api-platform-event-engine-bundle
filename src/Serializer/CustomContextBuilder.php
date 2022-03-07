@@ -36,10 +36,12 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
     {
         $context = $this->decorated->createFromRequest($request, $normalization, $extractedAttributes);
 
-        $this->extractPathParameters($request, $context);
-        $this->extractQueryParameters($request, $context);
-        $this->addIdentifier($request, $context);
-        $this->addMessage($request, $context);
+        $this
+            ->extractPathParameters($request, $context)
+            ->extractQueryParameters($request, $context)
+            ->addIdentifier($request, $context)
+            ->addMessage($request, $context);
+
         $context[AbstractObjectNormalizer::PRESERVE_EMPTY_OBJECTS] = false;
 
         return $context;
@@ -48,7 +50,7 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
     /**
      * @param array<mixed> $context
      */
-    private function extractPathParameters(Request $request, array &$context): void
+    private function extractPathParameters(Request $request, array &$context): self
     {
         /** @var array<string, string> $routeParameters */
         $routeParameters = $request->attributes->get('_route_params', []);
@@ -62,12 +64,14 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
             static fn (string $pathParameter) => StringUtil::castFromString($pathParameter),
             $pathParameters
         );
+
+        return $this;
     }
 
     /**
      * @param array<mixed> $context
      */
-    private function extractQueryParameters(Request $request, array &$context): void
+    private function extractQueryParameters(Request $request, array &$context): self
     {
         $context['query_parameters'] = array_map(
             static function ($queryParameter) {
@@ -82,15 +86,17 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
             },
             $request->query->all()
         );
+
+        return $this;
     }
 
     /**
      * @param array<mixed> $context
      */
-    private function addIdentifier(Request $request, array &$context): void
+    private function addIdentifier(Request $request, array &$context): self
     {
         if ($request->getMethod() === Request::METHOD_POST || $request->attributes->has('id')) {
-            return;
+            return $this;
         }
 
         /** @var class-string $resourceClass */
@@ -98,28 +104,32 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
         $identifiers = $this->identifiersExtractor->getIdentifiersFromResourceClass($resourceClass);
 
         if (empty($identifiers)) {
-            return;
+            return $this;
         }
 
         $identifier = reset($identifiers);
         $identifier = StringUtil::decamelize($identifier);
 
         if (! $request->attributes->has($identifier)) {
-            return;
+            return $this;
         }
 
         $request->attributes->set('id', $request->attributes->get($identifier));
+
+        return $this;
     }
 
     /**
      * @param array<mixed> $context
      */
-    private function addMessage(Request $request, array &$context): void
+    private function addMessage(Request $request, array &$context): self
     {
         if (! $request->attributes->get('message')) {
-            return;
+            return $this;
         }
 
         $context['message'] = $request->attributes->get('message');
+
+        return $this;
     }
 }

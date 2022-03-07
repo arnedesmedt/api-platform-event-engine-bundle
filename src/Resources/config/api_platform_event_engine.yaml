@@ -216,3 +216,9 @@ services:
         decorates: 'api_platform.json_schema.type_factory'
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\TypeFactory\MessageTypeFactory.inner'
+
+
+    ADS\Bundle\ApiPlatformEventEngineBundle\Validation\ControllerValidationListener:
+        decorates: 'api_platform.listener.view.validate'
+        arguments:
+            - '@.inner'
