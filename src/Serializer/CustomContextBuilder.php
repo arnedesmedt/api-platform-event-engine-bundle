@@ -8,13 +8,17 @@ use ADS\Util\StringUtil;
 use ApiPlatform\Core\Api\IdentifiersExtractorInterface;
 use ApiPlatform\Core\Serializer\SerializerContextBuilder;
 use ApiPlatform\Core\Serializer\SerializerContextBuilderInterface;
+use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 
 use function array_filter;
+use function array_keys;
 use function array_map;
+use function is_array;
 use function is_string;
 use function reset;
+use function settype;
 use function str_starts_with;
 
 use const ARRAY_FILTER_USE_KEY;
@@ -60,8 +64,8 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
             ARRAY_FILTER_USE_KEY
         );
 
-        $context['path_parameters'] = array_map(
-            static fn (string $pathParameter) => StringUtil::castFromString($pathParameter),
+        $context['path_parameters'] = $this->castParameters(
+            $this->propertiesFromContext($context),
             $pathParameters
         );
 
@@ -73,21 +77,79 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
      */
     private function extractQueryParameters(Request $request, array &$context): self
     {
-        $context['query_parameters'] = array_map(
-            static function ($queryParameter) {
-                if (is_string($queryParameter)) {
-                    return StringUtil::castFromString($queryParameter);
-                }
-
-                return array_map(
-                    static fn (string $queryParameterItem) => StringUtil::castFromString($queryParameterItem),
-                    $queryParameter
-                );
-            },
+        $context['query_parameters'] = $this->castParameters(
+            $this->propertiesFromContext($context),
             $request->query->all()
         );
 
         return $this;
+    }
+
+    /**
+     * @param array<string, mixed> $context
+     *
+     * @return array<string, mixed>
+     */
+    private function propertiesFromContext(array $context): array
+    {
+        /** @var class-string<JsonSchemaAwareRecord> $resourceClass */
+        $resourceClass = $context['resource_class'];
+
+        return $resourceClass::__schema()->toArray()['properties'] ?? [];
+    }
+
+    /**
+     * @param array<string, mixed> $propertySchemas
+     * @param array<string, mixed> $parameters
+     *
+     * @return array<mixed>
+     */
+    private function castParameters(array $propertySchemas, array $parameters): array
+    {
+        return array_map(
+            function ($parameterValue, $parameterName) use ($propertySchemas) {
+                /** @var array<string, mixed>|null $propertySchema */
+                $propertySchema = $propertySchemas[StringUtil::camelize($parameterName)] ?? null;
+
+                return $this->castParameter($propertySchema, $parameterValue);
+            },
+            $parameters,
+            array_keys($parameters)
+        );
+    }
+
+    /**
+     * @param array<string, mixed>|null $propertySchema
+     */
+    private function castParameter(?array $propertySchema, mixed $parameterValue): mixed
+    {
+        /** @var string|null $propertyType */
+        $propertyType = $propertySchema['type'] ?? null;
+        $propertyType = match ($propertyType) {
+            'number' => 'float',
+            default => $propertyType
+        };
+
+        if ($propertyType === 'array') {
+            /** @var array<string, mixed> $itemPropertySchema */
+            $itemPropertySchema = $propertySchema['items'] ?? [];
+
+            if (! is_array($parameterValue)) {
+                $parameterValue = [$parameterValue];
+            }
+
+            foreach ($parameterValue as $key => $parameterValueItem) {
+                $parameterValue[$key] = $this->castParameter($itemPropertySchema, $parameterValueItem);
+            }
+
+            return $parameterValue;
+        } elseif ($propertyType !== null) {
+            settype($parameterValue, $propertyType);
+        } elseif (is_string($parameterValue)) {
+            $parameterValue = StringUtil::castFromString($parameterValue);
+        }
+
+        return $parameterValue;
     }
 
     /**
