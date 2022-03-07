@@ -13,8 +13,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 
 use function array_filter;
-use function array_keys;
-use function array_map;
 use function is_array;
 use function is_string;
 use function reset;
@@ -106,16 +104,14 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
      */
     private function castParameters(array $propertySchemas, array $parameters): array
     {
-        return array_map(
-            function ($parameterValue, $parameterName) use ($propertySchemas) {
-                /** @var array<string, mixed>|null $propertySchema */
-                $propertySchema = $propertySchemas[StringUtil::camelize($parameterName)] ?? null;
+        foreach ($parameters as $parameterName => $parameterValue) {
+            /** @var array<string, mixed>|null $propertySchema */
+            $propertySchema = $propertySchemas[StringUtil::camelize($parameterName)] ?? null;
 
-                return $this->castParameter($propertySchema, $parameterValue);
-            },
-            $parameters,
-            array_keys($parameters)
-        );
+            $parameters[$parameterName] = $this->castParameter($propertySchema, $parameterValue);
+        }
+
+        return $parameters;
     }
 
     /**
