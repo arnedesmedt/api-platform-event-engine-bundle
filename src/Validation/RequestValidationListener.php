@@ -38,6 +38,10 @@ final class RequestValidationListener implements EventSubscriberInterface
 
     public function validateMessage(RequestEvent $event): void
     {
+        if (! $event->isMainRequest()) {
+            return;
+        }
+
         $request = $event->getRequest();
         $attributes = RequestAttributesExtractor::extractAttributes($request);
         $resourceMetadata = $this->resourceMetadataFactory->create($attributes['resource_class']);
