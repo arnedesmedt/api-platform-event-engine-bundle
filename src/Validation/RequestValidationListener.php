@@ -44,6 +44,11 @@ final class RequestValidationListener implements EventSubscriberInterface
 
         $request = $event->getRequest();
         $attributes = RequestAttributesExtractor::extractAttributes($request);
+
+        if (! isset($attributes['resource_class'])) {
+            return;
+        }
+
         $resourceMetadata = $this->resourceMetadataFactory->create($attributes['resource_class']);
         $validationGroups = $resourceMetadata->getOperationAttribute($attributes, 'validation_groups', null, true);
 
