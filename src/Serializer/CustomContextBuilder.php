@@ -9,6 +9,7 @@ use ApiPlatform\Core\Api\IdentifiersExtractorInterface;
 use ApiPlatform\Core\Serializer\SerializerContextBuilder;
 use ApiPlatform\Core\Serializer\SerializerContextBuilderInterface;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
+use ReflectionClass;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 
@@ -92,6 +93,10 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
     {
         /** @var class-string<JsonSchemaAwareRecord> $resourceClass */
         $resourceClass = $context['resource_class'];
+
+        if (! (new ReflectionClass($resourceClass))->implementsInterface(JsonSchemaAwareRecord::class)) {
+            return [];
+        }
 
         return $resourceClass::__schema()->toArray()['properties'] ?? [];
     }
@@ -182,7 +187,7 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
      */
     private function addMessage(Request $request, array &$context): self
     {
-        if (! $request->attributes->get('message')) {
+        if (! $request->attributes->has('message')) {
             return $this;
         }
 
