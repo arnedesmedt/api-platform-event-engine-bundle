@@ -10,8 +10,6 @@ use ADS\ValueObjects\Implementation\RulesLogic;
 use ADS\ValueObjects\Implementation\String\StringValue;
 use EventEngine\JsonSchema\ProvidesValidationRules;
 
-use function sprintf;
-
 final class CallbackUrl extends StringValue implements HasExamples, ProvidesValidationRules
 {
     use ExamplesLogic;
@@ -22,11 +20,6 @@ final class CallbackUrl extends StringValue implements HasExamples, ProvidesVali
      */
     public static function example()
     {
-        return new static(
-            sprintf(
-                'http://webhook.site/%s',
-                $_SERVER['WEBHOOK_UUID'] ?? 'get-your-uuid-from-webhook-site'
-            )
-        );
+        return new static($_SERVER['CALLBACK_URL'] ?? 'https://webhook.site');
     }
 }
