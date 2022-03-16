@@ -14,9 +14,9 @@
     "require": {
         "php": "^8",
         "ext-json": "*",
+        "api-platform/api-pack": "~1.0",
         "arnedesmedt/event-engine-symfony-bundle": "~0.1",
-        "arnedesmedt/json-immutable-objects": "~0.1",
-        "api-platform/api-pack": "~1.0"
+        "arnedesmedt/json-immutable-objects": "~0.1"
     },
     "require-dev": {
         "doctrine/coding-standard": "~9.0",

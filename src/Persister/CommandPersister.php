@@ -6,13 +6,13 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Persister;
 
 use ADS\Bundle\EventEngineBundle\Command\Command;
 use ApiPlatform\Core\DataPersister\ContextAwareDataPersisterInterface;
-use EventEngine\EventEngine;
 use EventEngine\Messaging\Message;
 use EventEngine\Messaging\MessageBag;
+use EventEngine\Messaging\MessageProducer;
 
 final class CommandPersister implements ContextAwareDataPersisterInterface
 {
-    public function __construct(private EventEngine $eventEngine)
+    public function __construct(private MessageProducer $eventEngine)
     {
     }
 
@@ -25,23 +25,23 @@ final class CommandPersister implements ContextAwareDataPersisterInterface
     }
 
     /**
-     * @param Message|class-string $data
+     * @param Message $data
      * @param array<mixed> $context
      */
     public function persist(mixed $data, array $context = []): object
     {
         /** @var object $result */
-        $result = $this->eventEngine->dispatch($data);
+        $result = $this->eventEngine->produce($data);
 
         return $result;
     }
 
     /**
-     * @param Message|class-string $data
+     * @param Message $data
      * @param array<mixed> $context
      */
     public function remove(mixed $data, array $context = []): mixed
     {
-        return $this->eventEngine->dispatch($data);
+        return $this->eventEngine->produce($data);
     }
 }

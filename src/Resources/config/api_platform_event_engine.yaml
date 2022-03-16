@@ -11,7 +11,7 @@ services:
 
     ADS\Bundle\ApiPlatformEventEngineBundle\Persister\CommandPersister:
         arguments:
-            - '@EventEngine\EventEngine'
+            - '@ADS\Bundle\EventEngineBundle\Message\ExtendedEventEngine'
         tags:
             - 'api_platform.data_persister'
 
@@ -24,19 +24,19 @@ services:
 
     ADS\Bundle\ApiPlatformEventEngineBundle\Provider\DocumentStoreCollectionDataProvider:
         arguments:
-            - '@EventEngine\EventEngine'
+            - '@ADS\Bundle\EventEngineBundle\Message\ExtendedEventEngine'
         tags:
             - 'api_platform.collection_data_provider'
 
     ADS\Bundle\ApiPlatformEventEngineBundle\Provider\DocumentStoreItemDataProvider:
         arguments:
-            - '@EventEngine\EventEngine'
+            - '@ADS\Bundle\EventEngineBundle\Message\ExtendedEventEngine'
         tags:
             - 'api_platform.item_data_provider'
 
     ADS\Bundle\ApiPlatformEventEngineBundle\Provider\DocumentStoreSubresourceDataProvider:
         arguments:
-            - '@EventEngine\EventEngine'
+            - '@ADS\Bundle\EventEngineBundle\Message\ExtendedEventEngine'
         tags:
             - { name: 'api_platform.subresource_data_provider', priority: 20 }
 

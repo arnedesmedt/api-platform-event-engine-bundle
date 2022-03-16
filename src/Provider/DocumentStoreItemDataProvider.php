@@ -23,6 +23,6 @@ final class DocumentStoreItemDataProvider extends DataProvider implements
     ): mixed {
         $message = $this->message($context, $resourceClass, $operationName);
 
-        return $this->eventEngine->dispatch($message);
+        return $this->eventEngine->produce($message);
     }
 }

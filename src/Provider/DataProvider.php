@@ -7,12 +7,12 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Provider;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\FinderException;
 use ApiPlatform\Core\Api\OperationType;
 use ApiPlatform\Core\DataProvider\PartialPaginatorInterface;
-use EventEngine\EventEngine;
 use EventEngine\Messaging\Message;
+use EventEngine\Messaging\MessageProducer;
 
 abstract class DataProvider
 {
-    public function __construct(protected EventEngine $eventEngine)
+    public function __construct(protected MessageProducer $eventEngine)
     {
     }
 
@@ -62,7 +62,7 @@ abstract class DataProvider
         }
 
         /** @var array<mixed>|PartialPaginatorInterface<mixed> $result */
-        $result = $this->eventEngine->dispatch($message);
+        $result = $this->eventEngine->produce($message);
 
         return $result;
     }
