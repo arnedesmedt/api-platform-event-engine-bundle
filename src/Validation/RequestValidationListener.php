@@ -32,7 +32,7 @@ final class RequestValidationListener implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            KernelEvents::REQUEST => ['validateMessage', EventPriorities::POST_DESERIALIZE],
+            KernelEvents::REQUEST => ['validateMessage', EventPriorities::PRE_READ],
         ];
     }
 
