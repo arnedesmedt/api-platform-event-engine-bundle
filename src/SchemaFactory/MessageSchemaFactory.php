@@ -151,7 +151,7 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
         }
 
         if (
-            $type === Schema::TYPE_OUTPUT
+            $type === Schema::TYPE_INPUT
             && $message !== null
             && method_exists($message, '__requestBodyArrayProperty')
             && $message::__requestBodyArrayProperty()
@@ -445,17 +445,21 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
 
     /**
      * @param Schema<string, mixed> $schema
-     * @param array<string, mixed> $definition
+     * @param array<string, mixed>|ArrayObject<string, mixed>|null $definition
      *
      * @return Schema<string, mixed>
      */
-    private static function updateSchemaWithDefinition(Schema $schema, ?array $definition = null): Schema
-    {
+    private static function updateSchemaWithDefinition(
+        Schema $schema,
+        array|ArrayObject|null $definition = null
+    ): Schema {
         if ($definition === null) {
             return new Schema(Schema::VERSION_OPENAPI);
         }
 
-        $definition = new ArrayObject($definition);
+        if (! $definition instanceof ArrayObject) {
+            $definition = new ArrayObject($definition);
+        }
 
         $schema
             ->getDefinitions()
