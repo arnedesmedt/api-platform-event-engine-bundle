@@ -146,11 +146,21 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
             $forceCollection
         );
 
-        if (! isset($path)) {
-            return $schema;
+        if (isset($path)) {
+            $schema = $this->removePathParameterFromSchema($schema, $path);
         }
 
-        return $this->removePathParameterFromSchema($schema, $path);
+        if (
+            $type === Schema::TYPE_OUTPUT
+            && $message !== null
+            && method_exists($message, '__requestBodyArrayProperty')
+            && $message::__requestBodyArrayProperty()
+        ) {
+            $property = $message::__requestBodyArrayProperty();
+            $schema = $this->replaceSchemaByPropertySchema($property, $schema);
+        }
+
+        return $schema;
     }
 
     /**
@@ -224,7 +234,7 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
     }
 
     /**
-     * @param array<mixed> $schema
+     * @param array<string, mixed> $schema
      * @param array<string> $parameterNames
      *
      * @return array<string, mixed>
@@ -380,22 +390,76 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
      */
     private function removePathParameterFromSchema(Schema $schema, Uri $path): Schema
     {
-        // remove the path parameters from the schema
         /** @var array<string> $pathParameters */
         $pathParameters = ArrayUtil::toSnakeCasedValues($path->toAllParameterNames());
+
+        $definition = self::removeParameters(
+            self::getRootDefinitionAsArray($schema),
+            $pathParameters
+        );
+
+        return self::updateSchemaWithDefinition($schema, $definition);
+    }
+
+    /**
+     * @param Schema<string, mixed> $schema
+     *
+     * @return Schema<string, mixed>
+     */
+    private function replaceSchemaByPropertySchema(string $property, Schema $schema): Schema
+    {
+        /** @var array{properties: array<string, mixed>} $definition */
+        $definition = self::getRootDefinitionAsArray($schema);
+        /** @var array<string, mixed>|null $definition */
+        $definition = $definition['properties'][$property] ?? null;
+
+        if ($definition === null) {
+            throw new RuntimeException(
+                sprintf(
+                    'Property \'%s\' not found for schema \'%s\'.',
+                    $property,
+                    $schema->getRootDefinitionKey()
+                )
+            );
+        }
+
+        return self::updateSchemaWithDefinition($schema, $definition);
+    }
+
+    /**
+     * @param Schema<string, mixed> $schema
+     *
+     * @return array<string, mixed>
+     */
+    private static function getRootDefinitionAsArray(Schema $schema): array
+    {
         $definitions = $schema->getDefinitions();
 
         /** @var string $rootDefinitionKey */
         $rootDefinitionKey = $schema->getRootDefinitionKey();
+        /** @var ArrayObject<string, mixed> $definition */
         $definition = $definitions->offsetGet($rootDefinitionKey);
-        $definition = self::removeParameters($definition->getArrayCopy(), $pathParameters);
 
+        return $definition->getArrayCopy();
+    }
+
+    /**
+     * @param Schema<string, mixed> $schema
+     * @param array<string, mixed> $definition
+     *
+     * @return Schema<string, mixed>
+     */
+    private static function updateSchemaWithDefinition(Schema $schema, ?array $definition = null): Schema
+    {
         if ($definition === null) {
             return new Schema(Schema::VERSION_OPENAPI);
         }
 
         $definition = new ArrayObject($definition);
-        $definitions->offsetSet($schema->getRootDefinitionKey(), $definition);
+
+        $schema
+            ->getDefinitions()
+            ->offsetSet($schema->getRootDefinitionKey(), $definition);
 
         return $schema;
     }
