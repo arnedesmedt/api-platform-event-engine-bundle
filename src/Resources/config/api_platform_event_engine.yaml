@@ -72,7 +72,6 @@ services:
 
     ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\MessageNormalizer:
         arguments:
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder'
             - '@EventEngine\EventEngine'
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Filter\FilterFinder'
             - '%api_platform.collection.pagination.page_parameter_name%'
@@ -129,6 +128,7 @@ services:
         arguments:
             - '@ApiPlatform\Core\Serializer\SerializerContextBuilder'
             - '@api_platform.identifiers_extractor.cached'
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder'
 
     ApiPlatform\Core\Serializer\SerializerContextBuilder:
         arguments:

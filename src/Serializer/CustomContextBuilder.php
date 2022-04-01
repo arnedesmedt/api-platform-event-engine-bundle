@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Serializer;
 
+use ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder;
 use ADS\Util\StringUtil;
 use ApiPlatform\Core\Api\IdentifiersExtractorInterface;
 use ApiPlatform\Core\Serializer\SerializerContextBuilder;
@@ -26,7 +27,8 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
 {
     public function __construct(
         private SerializerContextBuilder $decorated,
-        private IdentifiersExtractorInterface $identifiersExtractor
+        private IdentifiersExtractorInterface $identifiersExtractor,
+        private Finder $messageFinder,
     ) {
     }
 
@@ -40,6 +42,7 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
         $context = $this->decorated->createFromRequest($request, $normalization, $extractedAttributes);
 
         $this
+            ->addMessageClass($context)
             ->extractPathParameters($request, $context)
             ->extractQueryParameters($request, $context)
             ->addIdentifier($request, $context)
@@ -48,6 +51,18 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
         $context[AbstractObjectNormalizer::PRESERVE_EMPTY_OBJECTS] = false;
 
         return $context;
+    }
+
+    /**
+     * @param array<mixed> $context
+     */
+    private function addMessageClass(array &$context): self
+    {
+        if ($this->messageFinder->hasMessageByContext($context)) {
+            $context['message_class'] = $this->messageFinder->byContext($context);
+        }
+
+        return $this;
     }
 
     /**
@@ -91,14 +106,14 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
      */
     private function propertiesFromContext(array $context): array
     {
-        /** @var class-string<JsonSchemaAwareRecord> $resourceClass */
-        $resourceClass = $context['resource_class'];
+        /** @var class-string<JsonSchemaAwareRecord> $messageClass */
+        $messageClass = $context['message_class'] ?? $context['resource_class'];
 
-        if (! (new ReflectionClass($resourceClass))->implementsInterface(JsonSchemaAwareRecord::class)) {
+        if (! (new ReflectionClass($messageClass))->implementsInterface(JsonSchemaAwareRecord::class)) {
             return [];
         }
 
-        return $resourceClass::__schema()->toArray()['properties'] ?? [];
+        return $messageClass::__schema()->toArray()['properties'] ?? [];
     }
 
     /**

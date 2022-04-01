@@ -6,7 +6,6 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Serializer;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\FilterFinder;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\SearchFilter;
-use ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder;
 use ADS\Util\ArrayUtil;
 use EventEngine\EventEngine;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
@@ -21,7 +20,6 @@ use function method_exists;
 final class MessageNormalizer implements DenormalizerInterface
 {
     public function __construct(
-        private Finder $messageFinder,
         private EventEngine $eventEngine,
         private FilterFinder $filterFinder,
         private string $pageParameterName = 'page',
@@ -31,7 +29,7 @@ final class MessageNormalizer implements DenormalizerInterface
     }
 
     /**
-     * @param array<string, mixed> $context
+     * @param array<string, class-string> $context
      **/
     public function denormalize(mixed $data, string $type, ?string $format = null, array $context = []): mixed
     {
@@ -39,13 +37,10 @@ final class MessageNormalizer implements DenormalizerInterface
             return $context['message'];
         }
 
-        /** @var class-string $message */
-        $message = $this->messageFinder->byContext($context);
-
         return $this->eventEngine->messageFactory()->createMessageFromArray(
-            $message,
+            $context['message_class'],
             [
-                'payload' => $this->messageData($message, $data, $type, $context),
+                'payload' => $this->messageData($context['message_class'], $data, $type, $context),
             ]
         );
     }
@@ -59,7 +54,7 @@ final class MessageNormalizer implements DenormalizerInterface
         ?string $format = null,
         array $context = []
     ): bool {
-        return $this->messageFinder->hasMessageByContext($context);
+        return isset($context['message_class']);
     }
 
     /**
