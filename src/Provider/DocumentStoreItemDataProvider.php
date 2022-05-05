@@ -13,6 +13,7 @@ final class DocumentStoreItemDataProvider extends DataProvider implements
 {
     /**
      * @param class-string $resourceClass
+     * @param array<mixed>|int|object|string $id
      * @param array<mixed> $context
      */
     public function getItem(
@@ -20,9 +21,12 @@ final class DocumentStoreItemDataProvider extends DataProvider implements
         mixed $id,
         ?string $operationName = null,
         array $context = []
-    ): mixed {
+    ): ?object {
         $message = $this->message($context, $resourceClass, $operationName);
 
-        return $this->eventEngine->produce($message);
+        /** @var object|null $result */
+        $result = $this->eventEngine->produce($message);
+
+        return $result;
     }
 }

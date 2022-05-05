@@ -8,13 +8,15 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\FilterConverter;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
 use ADS\Bundle\EventEngineBundle\Resolver\MetaDataResolver;
 use Closure;
-use EventEngine\Data\ImmutableRecord;
 use EventEngine\DocumentStore\Filter\AndFilter;
 use EventEngine\DocumentStore\Filter\Filter;
 use EventEngine\DocumentStore\OrderBy\OrderBy;
 
 use function assert;
 
+/**
+ * @template T
+ */
 abstract class FilterResolver implements MetaDataResolver
 {
     protected FilterConverter $filterConverter;
@@ -99,7 +101,7 @@ abstract class FilterResolver implements MetaDataResolver
     }
 
     /**
-     * @return array<ImmutableRecord>
+     * @return array<T>
      */
     protected function states(): array
     {
@@ -107,12 +109,12 @@ abstract class FilterResolver implements MetaDataResolver
     }
 
     /**
-     * @param array<ImmutableRecord> $states
+     * @param array<T> $states
      */
     abstract protected function totalItems(array $states): int;
 
     /**
-     * @param array<ImmutableRecord> $states
+     * @param array<T> $states
      */
     abstract protected function result(
         array $states,

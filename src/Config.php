@@ -99,7 +99,6 @@ final class Config implements CacheClearerInterface
 
     /**
      * @param array<string, array<string, array<string, class-string>>> $messageConfig
-     * @param class-string|null $classKey
      *
      * @return array<string, array<string, array<string, class-string>>>
      */
@@ -108,6 +107,7 @@ final class Config implements CacheClearerInterface
         $apiPlatformMessageConfig = array_filter(
             $messageConfig,
             static function ($config) use ($classKey) {
+                /** @var class-string $message */
                 $message = $classKey === null ? $config : $config[$classKey];
                 $reflectionClass = new ReflectionClass($message);
 
@@ -187,15 +187,21 @@ final class Config implements CacheClearerInterface
         }
 
         $config = $this->config->config();
+        /** @var array<string, array<string, array<string, class-string>>> $compiledCommandRouting */
+        $compiledCommandRouting = $config['compiledCommandRouting'];
         $commandMapping = $this->specificMessageMapping(
-            $config['compiledCommandRouting'],
+            $compiledCommandRouting,
             'commandName'
         );
 
-        $controllerMapping = $this->specificMessageMapping(array_keys($config['commandControllers']));
+        /** @var array<string, array<string, array<string, class-string>>> $commandControllers */
+        $commandControllers = array_keys($config['commandControllers']);
+        $controllerMapping = $this->specificMessageMapping($commandControllers);
 
+        /** @var array<string, array<string, array<string, class-string>>> $compiledQueryDescriptions */
+        $compiledQueryDescriptions = $config['compiledQueryDescriptions'];
         $queryMapping = $this->specificMessageMapping(
-            $config['compiledQueryDescriptions'],
+            $compiledQueryDescriptions,
             'name'
         );
 

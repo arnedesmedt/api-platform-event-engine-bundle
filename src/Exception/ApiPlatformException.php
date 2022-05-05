@@ -18,13 +18,10 @@ final class ApiPlatformException implements JsonSchemaAwareRecord
 
     // phpcs:disable SlevomatCodingStandard.Classes.UnusedPrivateElements.UnusedProperty
     /** @readonly */
-    private string $title; /** @phpstan-ignore-line */
+    private string $title;
     /** @readonly */
-    private string $description; /** @phpstan-ignore-line */
-    /**
-     * @readonly
-     * @phpstan-ignore-next-line
-     */
+    private string $description;
+    /** @readonly */
     private string $message;
 
     public static function typeRef(): TypeSchema

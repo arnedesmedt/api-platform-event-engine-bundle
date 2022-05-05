@@ -11,6 +11,10 @@ use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 
 use function count;
 
+/**
+ * @template T
+ * @extends FilterResolver<T>
+ */
 final class InMemoryFilterResolver extends FilterResolver
 {
     /** @var array<JsonSchemaAwareRecord> */

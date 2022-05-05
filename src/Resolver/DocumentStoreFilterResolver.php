@@ -14,8 +14,14 @@ use EventEngine\DocumentStore\Filter\Filter;
 
 use function assert;
 
+/**
+ * @template T
+ * @template TAgg
+ * @extends FilterResolver<T>
+ */
 final class DocumentStoreFilterResolver extends FilterResolver
 {
+    /** @var Repository<T, TAgg> */
     protected Repository $repository;
 
     public function __construct(DocumentStoreFilterConverter $filterConverter)
@@ -23,6 +29,11 @@ final class DocumentStoreFilterResolver extends FilterResolver
         $this->filterConverter = $filterConverter;
     }
 
+    /**
+     * @param Repository<T, TAgg> $repository
+     *
+     * @return self<T, TAgg>
+     */
     public function setRepository(Repository $repository): self
     {
         $this->repository = $repository;
@@ -30,6 +41,9 @@ final class DocumentStoreFilterResolver extends FilterResolver
         return $this;
     }
 
+    /**
+     * @return self<T, TAgg>
+     */
     public function addFilter(Filter $filter): self
     {
         if ($this->filter instanceof Filter) {
@@ -53,12 +67,14 @@ final class DocumentStoreFilterResolver extends FilterResolver
         $orderBy = $this->orderBy();
         assert(! $orderBy instanceof Closure);
 
-        return $this->repository->findDocumentStates(
-            $filter,
-            $this->skip(),
-            $this->itemsPerPage(),
-            $orderBy
-        );
+        return $this->repository
+            ->findDocumentStates(
+                $filter,
+                $this->skip(),
+                $this->itemsPerPage(),
+                $orderBy
+            )
+            ->toItems();
     }
 
     /**

@@ -57,7 +57,10 @@ final class PropertyExtractorNormalizer extends ObjectNormalizer
         )
             ->getIterator();
 
-        return iterator_to_array($iterator);
+        /** @var array<string> $attributes */
+        $attributes = iterator_to_array($iterator);
+
+        return $attributes;
     }
 
     /**
