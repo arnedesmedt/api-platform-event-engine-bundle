@@ -13,18 +13,19 @@ use function ceil;
 use function count;
 
 /**
- * @implements IteratorAggregate<mixed>
+ * @template TState
+ * @implements IteratorAggregate<mixed, mixed>
  */
 class Paginator implements PartialPaginatorInterface, IteratorAggregate, PaginatorInterface
 {
     /**
-     * @var mixed[]
+     * @var array<TState>
      * @readonly
      */
     private array $results;
 
     /**
-     * @param array<mixed> $results
+     * @param array<TState> $results
      */
     public function __construct(
         array $results,
@@ -36,7 +37,7 @@ class Paginator implements PartialPaginatorInterface, IteratorAggregate, Paginat
     }
 
     /**
-     * @return array<mixed>
+     * @return array<TState>
      */
     public function results(): array
     {
@@ -69,7 +70,7 @@ class Paginator implements PartialPaginatorInterface, IteratorAggregate, Paginat
     }
 
     /**
-     * @return ArrayObject<int|string, mixed>
+     * @return ArrayObject<(int|string), TState>
      */
     public function getIterator(): ArrayObject
     {

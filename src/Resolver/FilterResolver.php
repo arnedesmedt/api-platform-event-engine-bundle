@@ -15,7 +15,7 @@ use EventEngine\DocumentStore\OrderBy\OrderBy;
 use function assert;
 
 /**
- * @template T
+ * @template TState
  */
 abstract class FilterResolver implements MetaDataResolver
 {
@@ -101,20 +101,17 @@ abstract class FilterResolver implements MetaDataResolver
     }
 
     /**
-     * @return array<T>
+     * @return array<TState>
      */
-    protected function states(): array
-    {
-        return [];
-    }
+    abstract protected function states(): array;
 
     /**
-     * @param array<T> $states
+     * @param array<TState> $states
      */
     abstract protected function totalItems(array $states): int;
 
     /**
-     * @param array<T> $states
+     * @param array<TState> $states
      */
     abstract protected function result(
         array $states,

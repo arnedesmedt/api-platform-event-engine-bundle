@@ -15,13 +15,14 @@ use EventEngine\DocumentStore\Filter\Filter;
 use function assert;
 
 /**
- * @template T
  * @template TAgg
- * @extends FilterResolver<T>
+ * @template TStates
+ * @template TState
+ * @extends FilterResolver<TState>
  */
 final class DocumentStoreFilterResolver extends FilterResolver
 {
-    /** @var Repository<T, TAgg> */
+    /** @var Repository<TAgg, TStates, TState> */
     protected Repository $repository;
 
     public function __construct(DocumentStoreFilterConverter $filterConverter)
@@ -30,9 +31,9 @@ final class DocumentStoreFilterResolver extends FilterResolver
     }
 
     /**
-     * @param Repository<T, TAgg> $repository
+     * @param Repository<TAgg, TStates, TState> $repository
      *
-     * @return self<T, TAgg>
+     * @return self<TAgg, TStates, TState>
      */
     public function setRepository(Repository $repository): self
     {
@@ -42,7 +43,7 @@ final class DocumentStoreFilterResolver extends FilterResolver
     }
 
     /**
-     * @return self<T, TAgg>
+     * @return self<TAgg, TStates, TState>
      */
     public function addFilter(Filter $filter): self
     {

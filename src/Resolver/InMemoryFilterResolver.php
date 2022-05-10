@@ -7,17 +7,16 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Resolver;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\InMemoryFilterConverter;
 use ApiPlatform\Core\DataProvider\ArrayPaginator;
 use Closure;
-use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 
 use function count;
 
 /**
- * @template T
- * @extends FilterResolver<T>
+ * @template TState
+ * @extends FilterResolver<TState>
  */
 final class InMemoryFilterResolver extends FilterResolver
 {
-    /** @var array<JsonSchemaAwareRecord> */
+    /** @var array<TState> */
     private array $states;
 
     public function __construct(InMemoryFilterConverter $filterConverter)
@@ -26,7 +25,7 @@ final class InMemoryFilterResolver extends FilterResolver
     }
 
     /**
-     * @param array<JsonSchemaAwareRecord> $states
+     * @param array<TState> $states
      */
     public function setStates(array $states): static
     {
