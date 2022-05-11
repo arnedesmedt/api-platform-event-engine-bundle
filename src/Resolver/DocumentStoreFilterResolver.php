@@ -6,18 +6,21 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Resolver;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\DocumentStoreFilterConverter;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\Paginator;
+use ADS\Bundle\EventEngineBundle\Aggregate\AggregateRoot;
 use ADS\Bundle\EventEngineBundle\Repository\Repository;
+use ADS\ValueObjects\Implementation\ListValue\IterableListValue;
 use Closure;
 use EventEngine\DocumentStore\Filter\AndFilter;
 use EventEngine\DocumentStore\Filter\AnyFilter;
 use EventEngine\DocumentStore\Filter\Filter;
+use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 
 use function assert;
 
 /**
- * @template TAgg
- * @template TStates
- * @template TState
+ * @template TAgg of AggregateRoot
+ * @template TStates of IterableListValue
+ * @template TState of JsonSchemaAwareRecord
  * @extends FilterResolver<TState>
  */
 final class DocumentStoreFilterResolver extends FilterResolver
@@ -68,7 +71,8 @@ final class DocumentStoreFilterResolver extends FilterResolver
         $orderBy = $this->orderBy();
         assert(! $orderBy instanceof Closure);
 
-        return $this->repository
+        /** @var array<TState> $items */
+        $items = $this->repository
             ->findDocumentStates(
                 $filter,
                 $this->skip(),
@@ -76,6 +80,8 @@ final class DocumentStoreFilterResolver extends FilterResolver
                 $orderBy
             )
             ->toItems();
+
+        return $items;
     }
 
     /**

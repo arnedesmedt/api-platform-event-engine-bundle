@@ -7,13 +7,14 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Filter;
 use ApiPlatform\Core\DataProvider\PaginatorInterface;
 use ApiPlatform\Core\DataProvider\PartialPaginatorInterface;
 use ArrayObject;
+use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use IteratorAggregate;
 
 use function ceil;
 use function count;
 
 /**
- * @template TState
+ * @template TState of JsonSchemaAwareRecord
  * @implements IteratorAggregate<mixed, mixed>
  */
 class Paginator implements PartialPaginatorInterface, IteratorAggregate, PaginatorInterface

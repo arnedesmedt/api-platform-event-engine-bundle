@@ -11,11 +11,12 @@ use Closure;
 use EventEngine\DocumentStore\Filter\AndFilter;
 use EventEngine\DocumentStore\Filter\Filter;
 use EventEngine\DocumentStore\OrderBy\OrderBy;
+use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 
 use function assert;
 
 /**
- * @template TState
+ * @template TState of JsonSchemaAwareRecord
  */
 abstract class FilterResolver implements MetaDataResolver
 {

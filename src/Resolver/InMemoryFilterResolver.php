@@ -7,11 +7,12 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Resolver;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\InMemoryFilterConverter;
 use ApiPlatform\Core\DataProvider\ArrayPaginator;
 use Closure;
+use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 
 use function count;
 
 /**
- * @template TState
+ * @template TState of JsonSchemaAwareRecord
  * @extends FilterResolver<TState>
  */
 final class InMemoryFilterResolver extends FilterResolver
