@@ -81,7 +81,7 @@ services:
 
     ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\ImmutableRecordNormalizer:
         tags:
-            - { name: serializer.normalizer, priority: -900 }
+            - { name: serializer.normalizer, priority: -930 }
 
     ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\CommandDispatchResultNormalizer:
         tags:
@@ -100,7 +100,7 @@ services:
             - '@?property_info'
             - '@?serializer.mapping.class_discriminator_resolver'
         tags:
-            - { name: serializer.normalizer, priority: -899 }
+            - { name: serializer.normalizer, priority: -929 }
 
     ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageSchemaFactory:
         decorates: 'api_platform.json_schema.schema_factory'
