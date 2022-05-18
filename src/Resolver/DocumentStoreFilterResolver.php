@@ -9,6 +9,7 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\Paginator;
 use ADS\Bundle\EventEngineBundle\Aggregate\AggregateRoot;
 use ADS\Bundle\EventEngineBundle\Repository\Repository;
 use ADS\ValueObjects\Implementation\ListValue\IterableListValue;
+use ADS\ValueObjects\ValueObject;
 use Closure;
 use EventEngine\DocumentStore\Filter\AndFilter;
 use EventEngine\DocumentStore\Filter\AnyFilter;
@@ -21,11 +22,12 @@ use function assert;
  * @template TAgg of AggregateRoot
  * @template TStates of IterableListValue
  * @template TState of JsonSchemaAwareRecord
+ * @template TId of ValueObject
  * @template-extends FilterResolver<TState>
  */
 final class DocumentStoreFilterResolver extends FilterResolver
 {
-    /** @var Repository<TAgg, TStates, TState> */
+    /** @var Repository<TAgg, TStates, TState, TId> */
     protected Repository $repository;
 
     public function __construct(DocumentStoreFilterConverter $filterConverter)
@@ -34,9 +36,9 @@ final class DocumentStoreFilterResolver extends FilterResolver
     }
 
     /**
-     * @param Repository<TAgg, TStates, TState> $repository
+     * @param Repository<TAgg, TStates, TState, TId> $repository
      *
-     * @return self<TAgg, TStates, TState>
+     * @return self<TAgg, TStates, TState, TId>
      */
     public function setRepository(Repository $repository): self
     {
@@ -46,7 +48,7 @@ final class DocumentStoreFilterResolver extends FilterResolver
     }
 
     /**
-     * @return self<TAgg, TStates, TState>
+     * @return self<TAgg, TStates, TState, TId>
      */
     public function addFilter(Filter $filter): self
     {
