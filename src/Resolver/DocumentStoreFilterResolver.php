@@ -21,7 +21,7 @@ use function assert;
  * @template TAgg of AggregateRoot
  * @template TStates of IterableListValue
  * @template TState of JsonSchemaAwareRecord
- * @extends FilterResolver<TState>
+ * @template-extends FilterResolver<TState>
  */
 final class DocumentStoreFilterResolver extends FilterResolver
 {

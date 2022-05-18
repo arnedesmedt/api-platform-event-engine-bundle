@@ -13,7 +13,7 @@ use function count;
 
 /**
  * @template TState of JsonSchemaAwareRecord
- * @extends FilterResolver<TState>
+ * @template-extends FilterResolver<TState>
  */
 final class InMemoryFilterResolver extends FilterResolver
 {
