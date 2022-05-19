@@ -14,7 +14,9 @@ use ReflectionClass;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 
+use function array_diff;
 use function array_filter;
+use function array_unique;
 use function is_array;
 use function is_string;
 use function reset;
@@ -139,12 +141,22 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
      */
     private function castParameter(?array $propertySchema, mixed $parameterValue): mixed
     {
-        /** @var string|null $propertyType */
+        /** @var string|array<string>|null $propertyType */
         $propertyType = $propertySchema['type'] ?? null;
         $propertyType = match ($propertyType) {
             'number' => 'float',
             default => $propertyType
         };
+
+        if (is_array($propertyType)) {
+            // multiple types are set or the value is nullable
+            $propertyTypes = array_unique(array_diff($propertyType, ['null']));
+            $propertyType = reset($propertyTypes);
+
+            if ($propertyType === false) {
+                $propertyType = null;
+            }
+        }
 
         if ($propertyType === 'array') {
             /** @var array<string, mixed> $itemPropertySchema */
