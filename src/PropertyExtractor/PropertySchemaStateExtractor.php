@@ -52,6 +52,11 @@ final class PropertySchemaStateExtractor implements PropertyListExtractorInterfa
     }
 
     /**
+     * Split serializer groups into the one that starts with a ! (blacklisted)
+     * and the ones without a starting ! (whitelisted)
+     *
+     * Also remove the ! for blacklisted serializer groups
+     *
      * @param array<string>|null $serializerGroups
      *
      * @return array<array<string>|null>
@@ -97,13 +102,17 @@ final class PropertySchemaStateExtractor implements PropertyListExtractorInterfa
      */
     public function getProperties(string $class, array $context = []): ?array
     {
+        $schema = $this->schemaFrom($class);
+
+        if ($schema === null) {
+            return null;
+        }
+
         $properties = [];
         /** @var array<string>|null $serializerGroups */
         $serializerGroups = $context['serializer_groups'] ??= null;
-
         [$serializerGroups, $blackListedSerializerGroups] = self::splitSerializerGroups($serializerGroups);
 
-        $schema = $this->schemaFrom($class);
         /** @var array<string, mixed> $schemaProperties */
         $schemaProperties = $schema['properties'] ?? [];
         // Only allow the properties that are listed in the json schema aware record, if it's such an object.

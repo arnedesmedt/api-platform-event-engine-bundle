@@ -63,12 +63,25 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
         ?array $serializerContext = null,
         bool $forceCollection = false
     ): Schema {
+        if ($serializerContext === null) {
+            // Context is null for normal API Platform use.
+            return $this->schemaFactory->buildSchema(
+                $className,
+                $format,
+                $type,
+                $operationType,
+                $operationName,
+                $schema,
+                $serializerContext,
+                $forceCollection
+            );
+        }
+
         /** @var array<string, array<string, mixed>>|null $response */
         $response = $serializerContext['response'] ?? null;
 
         // Set the defaults
         $schema = $schema ? clone $schema : new Schema();
-        $serializerContext ??= [];
         $serializerContext['type'] ??= $type; // fix to pass type to the sub schema factory
 
         /** @var ResourceMetadata|null $resourceMetadata */

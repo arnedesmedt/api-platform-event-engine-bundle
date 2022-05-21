@@ -347,7 +347,7 @@ final class OpenApiFactory implements OpenApiFactoryInterface
                         $operationType,
                         $operationName,
                         $schema,
-                        $context
+                        $messageClass ? $context : null
                     );
                     $operationOutputSchemas[$statusCode][$operationFormat] = $operationOutputSchema;
                     $this->appendSchemaDefinitions($schemas, $operationOutputSchema->getDefinitions());
@@ -506,7 +506,7 @@ final class OpenApiFactory implements OpenApiFactoryInterface
                         $operationType,
                         $operationName,
                         $schema,
-                        $context
+                        $messageClass ? $context : null
                     );
 
                     if (empty($operationInputSchema->getArrayCopy(false))) {
