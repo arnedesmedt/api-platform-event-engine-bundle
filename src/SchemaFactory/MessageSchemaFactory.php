@@ -12,11 +12,13 @@ use ADS\Util\StringUtil;
 use ApiPlatform\Core\Api\OperationType;
 use ApiPlatform\Core\Api\ResourceClassResolverInterface;
 use ApiPlatform\Core\JsonSchema\Schema;
+use ApiPlatform\Core\JsonSchema\SchemaFactory;
 use ApiPlatform\Core\JsonSchema\SchemaFactoryInterface;
 use ApiPlatform\Core\Metadata\Resource\Factory\ResourceMetadataFactoryInterface;
 use ApiPlatform\Core\Metadata\Resource\ResourceMetadata;
 use ApiPlatform\Core\OpenApi\Factory\OpenApiFactory;
 use ArrayObject;
+use EventEngine\Data\ImmutableRecord;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use ReflectionClass;
 use RuntimeException;
@@ -45,11 +47,18 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
         private ResourceMetadataFactoryInterface $resourceMetadataFactory,
         private ResourceClassResolverInterface $resourceClassResolver
     ) {
+        if (! ($this->schemaFactory instanceof SchemaFactory)) {
+            return;
+        }
+
+        $this->schemaFactory->addDistinctFormat('jsonld');
+        $this->schemaFactory->addDistinctFormat('jsonhal');
     }
 
     /**
+     * @param class-string $className
      * @param array<string, mixed>|null $serializerContext
-     * @param Schema<mixed> $schema
+     * @param Schema<mixed>|null $schema
      *
      * @return Schema<mixed>
      */
@@ -63,8 +72,10 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
         ?array $serializerContext = null,
         bool $forceCollection = false
     ): Schema {
-        if ($serializerContext === null) {
-            // Context is null for normal API Platform use.
+        $reflectionClass = new ReflectionClass($className);
+
+        if (! $reflectionClass->implementsInterface(ImmutableRecord::class)) {
+            // Class doesn't implement immutable record for normal API Platform use.
             return $this->schemaFactory->buildSchema(
                 $className,
                 $format,
