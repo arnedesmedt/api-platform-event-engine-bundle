@@ -12,7 +12,6 @@ use ADS\Util\StringUtil;
 use ApiPlatform\Core\Api\OperationType;
 use ApiPlatform\Core\Api\ResourceClassResolverInterface;
 use ApiPlatform\Core\JsonSchema\Schema;
-use ApiPlatform\Core\JsonSchema\SchemaFactory;
 use ApiPlatform\Core\JsonSchema\SchemaFactoryInterface;
 use ApiPlatform\Core\Metadata\Resource\Factory\ResourceMetadataFactoryInterface;
 use ApiPlatform\Core\Metadata\Resource\ResourceMetadata;
@@ -23,10 +22,12 @@ use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use ReflectionClass;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
 use function array_flip;
 use function array_merge;
 use function array_values;
+use function implode;
 use function in_array;
 use function is_callable;
 use function method_exists;
@@ -47,12 +48,6 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
         private ResourceMetadataFactoryInterface $resourceMetadataFactory,
         private ResourceClassResolverInterface $resourceClassResolver
     ) {
-        if (! ($this->schemaFactory instanceof SchemaFactory)) {
-            return;
-        }
-
-        $this->schemaFactory->addDistinctFormat('jsonld');
-        $this->schemaFactory->addDistinctFormat('jsonhal');
     }
 
     /**
@@ -74,7 +69,30 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
     ): Schema {
         $reflectionClass = new ReflectionClass($className);
 
+        /** @var ResourceMetadata|null $resourceMetadata */
+        $resourceMetadata = $this->resourceClassResolver->isResourceClass($className)
+            ? $this->resourceMetadataFactory->create($className)
+            : null;
+
         if (! $reflectionClass->implementsInterface(ImmutableRecord::class)) {
+            if ($format !== 'json') {
+                if ($resourceMetadata !== null) {
+                    $serializerContext ??= $this->getSerializerContext(
+                        $resourceMetadata,
+                        $type,
+                        $operationType,
+                        $operationName
+                    );
+                }
+
+                $groups = implode('_', (array) ($serializerContext[AbstractNormalizer::GROUPS] ?? []));
+                if ($groups !== '') {
+                    $groups .= '.';
+                }
+
+                $serializerContext[OpenApiFactory::OPENAPI_DEFINITION_NAME] = $groups . $format;
+            }
+
             // Class doesn't implement immutable record for normal API Platform use.
             return $this->schemaFactory->buildSchema(
                 $className,
@@ -94,11 +112,6 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
         // Set the defaults
         $schema = $schema ? clone $schema : new Schema();
         $serializerContext['type'] ??= $type; // fix to pass type to the sub schema factory
-
-        /** @var ResourceMetadata|null $resourceMetadata */
-        $resourceMetadata = $this->resourceClassResolver->isResourceClass($className)
-            ? $this->resourceMetadataFactory->create($className)
-            : null;
         $httpMethod = $this->httpMethod($type, $operationType, $operationName, $resourceMetadata);
 
         if ($this->isCommandAndOutput($type, $httpMethod, $serializerContext)) {
@@ -490,5 +503,23 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
             ->offsetSet($schema->getRootDefinitionKey(), $definition);
 
         return $schema;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function getSerializerContext(
+        ResourceMetadata $resourceMetadata,
+        string $type = Schema::TYPE_OUTPUT,
+        ?string $operationType = null,
+        ?string $operationName = null
+    ): array {
+        $attribute = $type === Schema::TYPE_OUTPUT ? 'normalization_context' : 'denormalization_context';
+
+        if ($operationType === null || $operationName === null) {
+            return $resourceMetadata->getAttribute($attribute, []);
+        }
+
+        return $resourceMetadata->getTypedOperationAttribute($operationType, $operationName, $attribute, [], true);
     }
 }
