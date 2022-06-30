@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Filter;
 
+use ADS\Util\ArrayUtil;
 use ApiPlatform\Core\Bridge\Doctrine\Common\Filter\OrderFilterInterface;
 use Closure;
 
@@ -88,7 +89,8 @@ final class InMemoryFilterConverter extends FilterConverter
         }
 
         $descriptions = $searchFilter->getDescription($resourceClass);
-        $filters = array_intersect_key($filters, $descriptions);
+        /** @var array<string, string> $filters */
+        $filters = ArrayUtil::toCamelCasedKeys(array_intersect_key($filters, $descriptions));
 
         return static function (array $items) use ($filters) {
             $itemArrays = array_map(static fn ($item) => $item->toArray(), $items);
