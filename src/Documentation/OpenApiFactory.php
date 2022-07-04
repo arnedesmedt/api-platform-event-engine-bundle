@@ -493,6 +493,24 @@ final class OpenApiFactory implements OpenApiFactoryInterface
                 if ($operationType === OperationType::ITEM) {
                     $responses['404'] = new Model\Response('Resource not found');
                 }
+
+                $contextResponses = $operation['openapi_context']['responses'] ?? false;
+                if ($contextResponses) {
+                    foreach ($contextResponses as $statusCode => $contextResponse) {
+                        $responses[$statusCode] = new Model\Response(
+                            $contextResponse['description'] ?? '',
+                            isset($contextResponse['content'])
+                                ? new ArrayObject($contextResponse['content'])
+                                : null,
+                            isset($contextResponse['headers'])
+                                ? new ArrayObject($contextResponse['headers'])
+                                : null,
+                            isset($contextResponse['links'])
+                                ? new ArrayObject($contextResponse['links'])
+                                : null
+                        );
+                    }
+                }
             }
 
             $requestBody = null;
