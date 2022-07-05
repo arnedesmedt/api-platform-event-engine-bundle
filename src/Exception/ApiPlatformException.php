@@ -54,7 +54,12 @@ final class ApiPlatformException implements JsonSchemaAwareRecord
         return self::schemaWithDescription('Forbidden');
     }
 
-    private static function schemaWithDescription(string $description): TypeSchema
+    public static function unprocessableEntity(): TypeSchema
+    {
+        return self::schemaWithDescription('Unprocessable entity');
+    }
+
+    public static function schemaWithDescription(string $description): TypeSchema
     {
         $type = self::__schema();
 

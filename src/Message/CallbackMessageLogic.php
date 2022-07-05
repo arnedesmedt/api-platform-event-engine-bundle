@@ -6,6 +6,9 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Message;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\Callback\ImmutableObject\CallbackRequestBody;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\Callback\ValueObject\CallbackUrl;
+use ADS\Bundle\EventEngineBundle\Type\DefaultType;
+use EventEngine\Schema\TypeSchema;
+use Symfony\Component\HttpFoundation\Response;
 
 trait CallbackMessageLogic
 {
@@ -57,5 +60,15 @@ trait CallbackMessageLogic
     public static function __callbackMessagesPayloadGenerator(array $callbackResponses): array
     {
         return [];
+    }
+
+    /**
+     * @return array<int, TypeSchema>
+     */
+    public static function __extraResponseCallback(): array
+    {
+        return [
+            Response::HTTP_ACCEPTED => DefaultType::accepted(),
+        ];
     }
 }
