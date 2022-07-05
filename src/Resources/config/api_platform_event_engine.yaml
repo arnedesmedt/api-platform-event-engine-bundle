@@ -229,3 +229,6 @@ services:
         decorates: 'api_platform.listener.view.validate'
         arguments:
             - '@.inner'
+
+    ADS\Bundle\ApiPlatformEventEngineBundle\Exception\ApiPlatformException:
+        autoconfigure: true
