@@ -182,6 +182,7 @@ services:
             - '@api_platform.identifiers_extractor'
             - '@api_platform.openapi.options'
             - '@api_platform.pagination_options'
+            - '@ADS\Bundle\EventEngineBundle\Config'
             - '%api_platform.formats%'
             - '%api_platform_event_engine.open_api.servers%'
             - '%api_platform_event_engine.open_api.tags%'

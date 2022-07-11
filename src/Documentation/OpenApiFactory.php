@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Documentation;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Operation\QueryOperationRoutePathResolver;
+use ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\OpenApiSchemaFactory;
+use ADS\Bundle\EventEngineBundle\Config;
 use ADS\Bundle\EventEngineBundle\Response\HasResponses;
 use ApiPlatform\Core\Api\FilterLocatorTrait;
 use ApiPlatform\Core\Api\IdentifiersExtractorInterface;
@@ -76,6 +78,7 @@ final class OpenApiFactory implements OpenApiFactoryInterface
     private TypeFactoryInterface $jsonSchemaTypeFactory;
     private Options $openApiOptions;
     private PaginationOptions $paginationOptions;
+    private Config $config;
     /**
      * @var mixed[]
      * @readonly
@@ -110,6 +113,7 @@ final class OpenApiFactory implements OpenApiFactoryInterface
         IdentifiersExtractorInterface $identifiersExtractor,
         Options $openApiOptions,
         PaginationOptions $paginationOptions,
+        Config $config,
         array $formats = [],
         array $servers = [],
         array $tags = []
@@ -125,6 +129,7 @@ final class OpenApiFactory implements OpenApiFactoryInterface
         $this->paginationOptions = $paginationOptions;
         $this->subresourceOperationFactory = $subresourceOperationFactory;
         $this->identifiersExtractor = $identifiersExtractor;
+        $this->config = $config;
 
         if (isset($_SERVER['HTTP_HOST'])) {
             usort(
@@ -223,6 +228,20 @@ final class OpenApiFactory implements OpenApiFactoryInterface
 
         foreach (array_keys($securitySchemes) as $key) {
             $securityRequirements[] = [$key => []];
+        }
+
+        /** @var array<string, array<string, mixed>> $responseTypes */
+        $responseTypes = $this->config->config()['responseTypes'];
+
+        foreach ($responseTypes as $name => $responseType) {
+            if (isset($schemas[$name])) {
+                continue;
+            }
+
+            $schemas[$name] = OpenApiSchemaFactory::toApiPlatformSchema(
+                $responseType,
+                $this->openApiOptions->getVersion()
+            );
         }
 
         return new OpenApi(
