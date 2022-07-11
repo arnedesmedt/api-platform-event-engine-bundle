@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Exception;
 
+use ADS\Bundle\EventEngineBundle\Type\AnnotatedTypeRef;
 use ADS\Bundle\EventEngineBundle\Type\Type;
 use ADS\JsonImmutableObjects\JsonSchemaAwareRecordLogic;
 use EventEngine\JsonSchema\AnnotatedType;
@@ -14,7 +15,7 @@ final class ApiPlatformException implements Type
 {
     use JsonSchemaAwareRecordLogic;
 
-    public const REF = 'Exception';
+    public const REF = 'ApiPlatformException';
 
     // phpcs:disable SlevomatCodingStandard.Classes.UnusedPrivateElements.UnusedProperty
     /** @readonly */
@@ -26,7 +27,7 @@ final class ApiPlatformException implements Type
 
     public static function typeRef(): TypeSchema
     {
-        return JsonSchema::typeRef(self::REF);
+        return AnnotatedTypeRef::fromTypeRef(JsonSchema::typeRef(self::REF));
     }
 
     public static function conflict(): TypeSchema
@@ -61,7 +62,7 @@ final class ApiPlatformException implements Type
 
     public static function schemaWithDescription(string $description): TypeSchema
     {
-        $type = self::__schema();
+        $type = self::typeRef();
 
         if (! $type instanceof AnnotatedType) {
             return $type;
