@@ -12,9 +12,10 @@
         }
     ],
     "require": {
-        "php": "^8",
+        "php": "^8.1",
         "ext-json": "*",
         "api-platform/api-pack": "~1.0",
+        "api-platform/core": "~3.0",
         "arnedesmedt/event-engine-symfony-bundle": "~0.1",
         "arnedesmedt/json-immutable-objects": "~0.1"
     },
