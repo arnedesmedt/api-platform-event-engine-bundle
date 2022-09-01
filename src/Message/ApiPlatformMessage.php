@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Message;
 
-use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
+use EventEngine\JsonSchema\JsonSchemaAwareCollection;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 
 interface ApiPlatformMessage extends JsonSchemaAwareRecord
@@ -12,28 +12,33 @@ interface ApiPlatformMessage extends JsonSchemaAwareRecord
     /**
      * @return class-string
      */
-    public static function __entity(): string;
+    public static function __resource(): string;
 
-    public static function __operationType(): string;
+    public static function __isCollection(): bool;
 
     public static function __operationName(): string;
 
     public static function __operationId(): string;
 
-    public static function __httpMethod(): ?string;
+    public static function __httpMethod(): string;
 
-    public static function __path(): ?string;
-
-    public static function __pathUri(): ?Uri;
+    public static function __uriTemplate(): string;
 
     public static function __apiPlatformController(): string;
+
+    public static function __processor(): ?string;
 
     public static function __stateless(): ?bool;
 
     /**
-     * @return class-string
+     * @return class-string<JsonSchemaAwareRecord>
      */
     public static function __schemaStateClass(): string;
+
+    /**
+     * @return class-string<JsonSchemaAwareCollection>
+     */
+    public static function __schemaStatesClass(): ?string;
 
     /**
      * @return array<string>

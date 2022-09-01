@@ -77,7 +77,7 @@ abstract class FilterResolver implements MetaDataResolver
         $filters = $this->filters;
         $this->orderBy = $this->filterConverter->order($filters);
 
-        $filter = $this->filterConverter->filter($this->filters, $message::__entity());
+        $filter = $this->filterConverter->filter($this->filters, $message::__resource());
         $this->filter = $this->filter instanceof Filter && $filter instanceof Filter
             ? new AndFilter($this->filter, $filter)
             : ($this->filter ?? $filter);

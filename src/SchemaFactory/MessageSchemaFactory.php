@@ -4,30 +4,29 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory;
 
-use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\FinderException;
-use ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder;
 use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
+use ADS\Bundle\EventEngineBundle\Response\HasResponses;
 use ADS\Util\ArrayUtil;
-use ADS\Util\StringUtil;
-use ApiPlatform\Core\Api\OperationType;
-use ApiPlatform\Core\Api\ResourceClassResolverInterface;
-use ApiPlatform\Core\JsonSchema\Schema;
-use ApiPlatform\Core\JsonSchema\SchemaFactoryInterface;
-use ApiPlatform\Core\Metadata\Resource\Factory\ResourceMetadataFactoryInterface;
-use ApiPlatform\Core\Metadata\Resource\ResourceMetadata;
-use ApiPlatform\Core\OpenApi\Factory\OpenApiFactory;
+use ADS\ValueObjects\Implementation\ListValue\ListValue;
+use ApiPlatform\JsonSchema\Schema;
+use ApiPlatform\JsonSchema\SchemaFactoryInterface;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\HttpOperation;
+use ApiPlatform\Metadata\Operation;
+use ApiPlatform\Metadata\Resource\Factory\ResourceMetadataCollectionFactoryInterface;
+use ApiPlatform\Util\ResourceClassInfoTrait;
 use ArrayObject;
-use EventEngine\Data\ImmutableRecord;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use ReflectionClass;
+use ReflectionNamedType;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
 use function array_flip;
 use function array_merge;
 use function array_values;
-use function implode;
+use function assert;
+use function class_parents;
 use function in_array;
 use function is_callable;
 use function method_exists;
@@ -35,19 +34,14 @@ use function sprintf;
 
 final class MessageSchemaFactory implements SchemaFactoryInterface
 {
-    public const COMMAND_METHODS = [
-        Request::METHOD_POST,
-        Request::METHOD_DELETE,
-        Request::METHOD_PATCH,
-        Request::METHOD_PUT,
-    ];
+    use ResourceClassInfoTrait;
 
     public function __construct(
         private SchemaFactoryInterface $schemaFactory,
-        private Finder $messageFinder,
-        private ResourceMetadataFactoryInterface $resourceMetadataFactory,
-        private ResourceClassResolverInterface $resourceClassResolver
+        private ResourceMetadataCollectionFactoryInterface $resourceMetadataCollectionFactory,
     ) {
+        $this->addDistinctFormat('jsonhal');
+        $this->addDistinctFormat('jsonld');
     }
 
     /**
@@ -61,191 +55,135 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
         string $className,
         string $format = 'json',
         string $type = Schema::TYPE_OUTPUT,
-        ?string $operationType = null,
-        ?string $operationName = null,
+        ?Operation $operation = null,
         ?Schema $schema = null,
         ?array $serializerContext = null,
         bool $forceCollection = false
     ): Schema {
-        $reflectionClass = new ReflectionClass($className);
+        $schema ??= new Schema();
+        $input = $operation?->getInput();
+        $messageClass = $input['class'] ?? null;
 
-        /** @var ResourceMetadata|null $resourceMetadata */
-        $resourceMetadata = $this->resourceClassResolver->isResourceClass($className)
-            ? $this->resourceMetadataFactory->create($className)
-            : null;
+        if (! $messageClass || $operation === null) {
+            if ($operation === null && $this->isResourceClass($className)) {
+                $resourceMetadataCollection = $this->resourceMetadataCollectionFactory->create($className);
 
-        if (! $reflectionClass->implementsInterface(ImmutableRecord::class)) {
-            if ($format !== 'json') {
-                if ($resourceMetadata !== null) {
-                    $serializerContext ??= $this->getSerializerContext(
-                        $resourceMetadata,
-                        $type,
-                        $operationType,
-                        $operationName
-                    );
+                /** @var ApiResource $resource */
+                foreach ($resourceMetadataCollection as $resource) {
+                    /** @var HttpOperation $possibleOperation */
+                    foreach ($resource->getOperations() ?? [] as $possibleOperation) {
+                        if ($possibleOperation->getMethod() === Request::METHOD_GET) {
+                            $operation = $possibleOperation;
+                            break 2;
+                        }
+                    }
                 }
-
-                $groups = implode('_', (array) ($serializerContext[AbstractNormalizer::GROUPS] ?? []));
-                if ($groups !== '') {
-                    $groups .= '.';
-                }
-
-                $serializerContext[OpenApiFactory::OPENAPI_DEFINITION_NAME] = $groups . $format;
             }
 
-            // Class doesn't implement immutable record for normal API Platform use.
             return $this->schemaFactory->buildSchema(
                 $className,
                 $format,
                 $type,
-                $operationType,
-                $operationName,
+                $operation,
                 $schema,
                 $serializerContext,
                 $forceCollection
             );
         }
 
-        /** @var array<string, array<string, mixed>>|null $response */
-        $response = $serializerContext['response'] ?? null;
+        $reflectionClass = new ReflectionClass($messageClass);
 
-        // Set the defaults
-        $schema = $schema ? clone $schema : new Schema();
-        $serializerContext['type'] ??= $type; // fix to pass type to the sub schema factory
-        $httpMethod = $this->httpMethod($type, $operationType, $operationName, $resourceMetadata);
-
-        if ($this->isCommandAndOutput($type, $httpMethod, $serializerContext)) {
-            $this->addEmptyDefinition($schema, $format);
-
-            return $schema;
-        }
-
-        if (isset($response) && ! ($serializerContext['isDefaultResponse'] ?? true)) {
-            $schema = OpenApiSchemaFactory::toApiPlatformSchema($response);
-
-            return $schema;
-        }
-
-        $this->appendNormalizationContext(
-            $serializerContext,
-            $resourceMetadata,
-            $type,
-            $operationType,
-            $operationName
-        );
-
-        $message = $this->message($className, $operationType, $operationName);
-
-        // Move from resource to a command message for input schema's
-        if (
-            $type === Schema::TYPE_INPUT
-            && $resourceMetadata !== null
-            && $operationType !== null
-            && $operationName !== null
-        ) {
-            $className = $message ?? $className;
-
-            $path = Uri::fromString(
-                $resourceMetadata->getTypedOperationAttribute($operationType, $operationName, 'path')
+        if (! $reflectionClass->implementsInterface(JsonSchemaAwareRecord::class)) {
+            return $this->schemaFactory->buildSchema(
+                $className,
+                $format,
+                $type,
+                $operation,
+                $schema,
+                $serializerContext,
+                $forceCollection
             );
-
-            $operationType = $operationName = null;
         }
 
-        // If another output state is used then the default state.
+        // OUTPUT
+        if ($reflectionClass->implementsInterface(HasResponses::class)) {
+            $responses = $messageClass::__responseClassesPerStatusCode();
+            $defaultStatusCode = $messageClass::__defaultStatusCode();
+
+            foreach ($responses as $statusCode => $responseClass) {
+                $forceCollectionResponse = false;
+                if (in_array(ListValue::class, class_parents($responseClass) ?: [])) {
+                    $responseClass = $responseClass::itemType();
+                    $forceCollectionResponse = true;
+                }
+
+                $responseSchema = $this->schemaFactory->buildSchema(
+                    $responseClass,
+                    $format,
+                    Schema::TYPE_OUTPUT,
+                    $operation,
+                    $schema,
+                    null,
+                    $forceCollectionResponse
+                );
+
+                if ($statusCode === $defaultStatusCode) {
+                    $schema = $responseSchema;
+                    continue;
+                }
+
+                $schema->setDefinitions($responseSchema->getDefinitions());
+            }
+        }
+
+        assert($operation instanceof HttpOperation);
+
         if (
-            $type === Schema::TYPE_OUTPUT
-            && $message !== null
-            && method_exists($message, '__schemaStateClass')
-            && $message::__schemaStateClass()
+            in_array($operation->getMethod(), [Request::METHOD_GET, Request::METHOD_OPTIONS])
+            || $schema->getVersion() === Schema::VERSION_JSON_SCHEMA
+            // used for testing the response where we don't need the input
         ) {
-            $className = $message::__schemaStateClass();
-            $forceCollection = $operationType === OperationType::COLLECTION
-                && ! in_array($httpMethod, self::COMMAND_METHODS);
-            $operationType = $operationName = null;
+            return $schema;
         }
 
-        $this->setDefinitionName(
-            $serializerContext,
-            $resourceMetadata,
-            $className,
-            $format
+        // INPUT
+        self::updateOperationForLists(
+            $messageClass,
+            $reflectionClass,
+            $input,
+            $operation,
+            $forceCollection
         );
 
-        $schema = $this->schemaFactory->buildSchema(
+        $inputSchema = $this->schemaFactory->buildSchema(
             $className,
             $format,
-            $type,
-            $operationType,
-            $operationName,
-            $schema,
+            Schema::TYPE_INPUT,
+            $operation->withMethod(Request::METHOD_PUT),
+            new Schema(Schema::VERSION_OPENAPI),
             $serializerContext,
             $forceCollection
         );
 
-        if (isset($path)) {
-            $schema = $this->removePathParameterFromSchema($schema, $path);
-        }
+        $definitions = $inputSchema->getDefinitions();
+        /** @var string $rootDefinitionKey */
+        $rootDefinitionKey = $inputSchema->getRootDefinitionKey() ?? $inputSchema->getItemsDefinitionKey();
+        /** @var ArrayObject<string, mixed> $definition */
+        $definition = $definitions->offsetGet($rootDefinitionKey);
+        $definition = $definition->getArrayCopy();
+        /** @var string $uriTemplate */
+        $uriTemplate = $operation->getUriTemplate();
+        /** @var array<string> $parameterNames */
+        $parameterNames = ArrayUtil::toSnakeCasedValues(Uri::fromString($uriTemplate)->toAllParameterNames());
+        $definition = self::removeParameters(
+            $definition,
+            $parameterNames
+        ) ?? [];
+        $definitions[$rootDefinitionKey] = new ArrayObject($definition);
 
-        if (
-            $type === Schema::TYPE_INPUT
-            && $message !== null
-            && method_exists($message, '__requestBodyArrayProperty')
-            && $message::__requestBodyArrayProperty()
-        ) {
-            $property = $message::__requestBodyArrayProperty();
-            $schema = $this->replaceSchemaByPropertySchema($property, $schema);
-        }
+        $schema->setDefinitions($definitions);
 
         return $schema;
-    }
-
-    /**
-     * @param array<string, mixed> $context
-     */
-    private function isCommandAndOutput(string $type, string $httpMethod, array $context): bool
-    {
-        /** @var array<string, mixed> $response */
-        $response = $context['response'] ?? [];
-
-        return $type === Schema::TYPE_OUTPUT
-            && in_array($httpMethod, self::COMMAND_METHODS)
-            && empty($response['properties'] ?? [])
-            && ($context['isDefaultResponse'] ?? true);
-    }
-
-    private function refName(string $version, string $definitionName): string
-    {
-        return $version === Schema::VERSION_OPENAPI
-            ? '#/components/schemas/' . $definitionName
-            : '#/definitions/' . $definitionName;
-    }
-
-    /**
-     * @return class-string|null
-     */
-    private function message(?string $resourceClass, ?string $operationType, ?string $operationName): ?string
-    {
-        if ($resourceClass === null || $operationType === null || $operationName === null) {
-            return null;
-        }
-
-        try {
-            /** @var class-string $message */
-            $message = $this->messageFinder->byContext(
-                [
-                    'resource_class' => $resourceClass,
-                    'operation_type' => $operationType,
-                    sprintf('%s_operation_name', $operationType) => $operationName,
-                ]
-            );
-        } catch (FinderException) {
-            return null;
-        }
-
-        $reflectionClass = new ReflectionClass($message);
-
-        return $reflectionClass->implementsInterface(JsonSchemaAwareRecord::class) ? $message : null;
     }
 
     /**
@@ -312,214 +250,50 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
         return $filteredSchema;
     }
 
-    /**
-     * @param array<string, string> $serializerContext
-     * @param class-string $className
-     */
-    private function setDefinitionName(
-        array &$serializerContext,
-        ?ResourceMetadata $resourceMetadata,
-        string $className,
-        string $format
-    ): void {
-        $previousDefinitionName = $serializerContext['previous_definition_name'] ?? '';
-        $serializerContext['previous_definition_name'] = sprintf(
-            '%s%s',
-            isset($resourceMetadata)
-                ? $resourceMetadata->getShortName()
-                : (new ReflectionClass($className))->getShortName(),
-            $previousDefinitionName ? sprintf('-%s', $previousDefinitionName) : ''
-        );
-
-        $serializerContext[OpenApiFactory::OPENAPI_DEFINITION_NAME] = sprintf(
-            '%s%s%s%s',
-            $previousDefinitionName,
-            $previousDefinitionName ? '-' : '',
-            $serializerContext['type'] === Schema::TYPE_INPUT
-                ? (
-            $previousDefinitionName
-                ? 'Input'
-                : sprintf('%s-Input', StringUtil::entityNameFromClassName($className))
-            )
-                : 'Output',
-            $this->formatExtension($format)
-        );
-    }
-
-    private function httpMethod(
-        string $type,
-        ?string $operationType = null,
-        ?string $operationName = null,
-        ?ResourceMetadata $resourceMetadata = null
-    ): string {
-        if ($operationType === null || $operationName === null) {
-            return $type === Schema::TYPE_INPUT ? Request::METHOD_POST : Request::METHOD_GET;
-        }
-
-        if ($resourceMetadata === null) {
-            throw new RuntimeException(
-                'We cannot get the http method if the resource meta data ' .
-                'and the opration type and name are empty.'
-            );
-        }
-
-        return $resourceMetadata->getTypedOperationAttribute($operationType, $operationName, 'method');
-    }
-
-    /**
-     * @param array<mixed> $serializerContext
-     */
-    private function appendNormalizationContext(
-        array &$serializerContext,
-        ?ResourceMetadata $resourceMetadata,
-        string $type,
-        ?string $operationType,
-        ?string $operationName
-    ): void {
-        if ($resourceMetadata === null || $operationType === null || $operationName === null) {
+    public function addDistinctFormat(string $format): void
+    {
+        if (! method_exists($this->schemaFactory, 'addDistinctFormat')) {
             return;
         }
 
-        $key = sprintf('%snormalization_context', $type === Schema::TYPE_INPUT ? 'de' : '');
-        $extraContext = $resourceMetadata->getTypedOperationAttribute(
-            $operationType,
-            $operationName,
-            $key,
-            [],
-            true
-        );
-
-        $serializerContext = array_merge(
-            $serializerContext,
-            $extraContext
-        );
+        $this->schemaFactory->addDistinctFormat($format);
     }
 
     /**
-     * @param Schema<string, mixed> $schema
+     * @param ReflectionClass<object> $reflectionClass
+     * @param array<string, mixed> $input
      */
-    private function addEmptyDefinition(Schema $schema, string $format): void
-    {
-        // TODO not every output needs to be an empty object. Verify it against the command.
-        $formatExtension = $this->formatExtension($format);
-        $emptyDefinitionName = sprintf('EmptyObject%s', $formatExtension);
-        $definitions = $schema->getDefinitions();
-
-        // CQRS => Commands have no output
-        if (! isset($definitions[$emptyDefinitionName])) {
-            /** @var ArrayObject<string, mixed> $definition */
-            $definition = new ArrayObject(['type' => 'object']);
-            $definitions[$emptyDefinitionName] = $definition;
+    public static function updateOperationForLists(
+        string $messageClass,
+        ReflectionClass $reflectionClass,
+        array $input,
+        HttpOperation &$operation,
+        bool &$forceCollection
+    ): void {
+        if (! $messageClass::__requestBodyArrayProperty()) {
+            return;
         }
 
-        $schema['$ref'] = $this->refName($schema->getVersion(), $emptyDefinitionName);
-    }
+        $arrayProperty = $reflectionClass->getProperty($messageClass::__requestBodyArrayProperty());
+        /** @var ReflectionNamedType|null $reflectionNamedType */
+        $reflectionNamedType = $arrayProperty->getType();
+        $listClass = $reflectionNamedType?->getName();
 
-    private function formatExtension(string $format): string
-    {
-        return $format === 'json' ? '' : '.' . $format;
-    }
-
-    /**
-     * @param Schema<string, mixed> $schema
-     *
-     * @return Schema<string, mixed>
-     */
-    private function removePathParameterFromSchema(Schema $schema, Uri $path): Schema
-    {
-        /** @var array<string> $pathParameters */
-        $pathParameters = ArrayUtil::toSnakeCasedValues($path->toAllParameterNames());
-
-        $definition = self::removeParameters(
-            self::getRootDefinitionAsArray($schema),
-            $pathParameters
-        );
-
-        return self::updateSchemaWithDefinition($schema, $definition);
-    }
-
-    /**
-     * @param Schema<string, mixed> $schema
-     *
-     * @return Schema<string, mixed>
-     */
-    private function replaceSchemaByPropertySchema(string $property, Schema $schema): Schema
-    {
-        /** @var array{properties: array<string, mixed>} $definition */
-        $definition = self::getRootDefinitionAsArray($schema);
-        /** @var array<string, mixed>|null $definition */
-        $definition = $definition['properties'][$property] ?? null;
-
-        if ($definition === null) {
+        if ($listClass === null) {
             throw new RuntimeException(
                 sprintf(
-                    'Property \'%s\' not found for schema \'%s\'.',
-                    $property,
-                    $schema->getRootDefinitionKey()
+                    'No class type found for property \'%s\'.',
+                    $messageClass::__requestBodyArrayProperty()
                 )
             );
         }
 
-        return self::updateSchemaWithDefinition($schema, $definition);
-    }
-
-    /**
-     * @param Schema<string, mixed> $schema
-     *
-     * @return array<string, mixed>
-     */
-    private static function getRootDefinitionAsArray(Schema $schema): array
-    {
-        $definitions = $schema->getDefinitions();
-
-        /** @var string $rootDefinitionKey */
-        $rootDefinitionKey = $schema->getRootDefinitionKey();
-        /** @var ArrayObject<string, mixed> $definition */
-        $definition = $definitions->offsetGet($rootDefinitionKey);
-
-        return $definition->getArrayCopy();
-    }
-
-    /**
-     * @param Schema<string, mixed> $schema
-     * @param array<string, mixed>|ArrayObject<string, mixed>|null $definition
-     *
-     * @return Schema<string, mixed>
-     */
-    private static function updateSchemaWithDefinition(
-        Schema $schema,
-        array|ArrayObject|null $definition = null
-    ): Schema {
-        if ($definition === null) {
-            return new Schema(Schema::VERSION_OPENAPI);
+        if (in_array(ListValue::class, class_parents($listClass) ?: [])) {
+            $listClass = $listClass::itemType();
         }
 
-        if (! $definition instanceof ArrayObject) {
-            $definition = new ArrayObject($definition);
-        }
-
-        $schema
-            ->getDefinitions()
-            ->offsetSet($schema->getRootDefinitionKey(), $definition);
-
-        return $schema;
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function getSerializerContext(
-        ResourceMetadata $resourceMetadata,
-        string $type = Schema::TYPE_OUTPUT,
-        ?string $operationType = null,
-        ?string $operationName = null
-    ): array {
-        $attribute = $type === Schema::TYPE_OUTPUT ? 'normalization_context' : 'denormalization_context';
-
-        if ($operationType === null || $operationName === null) {
-            return $resourceMetadata->getAttribute($attribute, []);
-        }
-
-        return $resourceMetadata->getTypedOperationAttribute($operationType, $operationName, $attribute, [], true);
+        /** @var HttpOperation $operation */
+        $operation = $operation->withInput(array_merge($input, ['class' => $listClass]));
+        $forceCollection = true;
     }
 }

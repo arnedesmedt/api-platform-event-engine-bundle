@@ -52,49 +52,6 @@ final class PropertySchemaStateExtractor implements PropertyListExtractorInterfa
     }
 
     /**
-     * Split serializer groups into the one that starts with a ! (blacklisted)
-     * and the ones without a starting ! (whitelisted)
-     *
-     * Also remove the ! for blacklisted serializer groups
-     *
-     * @param array<string>|null $serializerGroups
-     *
-     * @return array<array<string>|null>
-     */
-    private static function splitSerializerGroups(?array $serializerGroups): array
-    {
-        if ($serializerGroups === null) {
-            return [null, null];
-        }
-
-        $whiteListedSerializerGroups = array_filter(
-            $serializerGroups,
-            static fn (string $serializerGroup) => ! str_starts_with($serializerGroup, '!')
-        );
-
-        if (empty($whiteListedSerializerGroups)) {
-            $whiteListedSerializerGroups = null;
-        }
-
-        $blacklistedSerializerGroups = array_map(
-            static fn (string $serializerGroup) => substr($serializerGroup, 1),
-            array_filter(
-                $serializerGroups,
-                static fn (string $serializerGroup) => str_starts_with($serializerGroup, '!')
-            )
-        );
-
-        if (empty($blacklistedSerializerGroups)) {
-            $blacklistedSerializerGroups = null;
-        }
-
-        return [
-            $whiteListedSerializerGroups,
-            $blacklistedSerializerGroups,
-        ];
-    }
-
-    /**
      * @param class-string $class
      * @param array<mixed> $context
      *
@@ -175,6 +132,49 @@ final class PropertySchemaStateExtractor implements PropertyListExtractorInterfa
         $reflectionNamedType = $reflectionProperty->getType();
 
         return self::types($propertySchema, $reflectionNamedType);
+    }
+
+    /**
+     * Split serializer groups into the one that starts with a ! (blacklisted)
+     * and the ones without a starting ! (whitelisted)
+     *
+     * Also remove the ! for blacklisted serializer groups
+     *
+     * @param array<string>|null $serializerGroups
+     *
+     * @return array<array<string>|null>
+     */
+    private static function splitSerializerGroups(?array $serializerGroups): array
+    {
+        if ($serializerGroups === null) {
+            return [null, null];
+        }
+
+        $whiteListedSerializerGroups = array_filter(
+            $serializerGroups,
+            static fn (string $serializerGroup) => ! str_starts_with($serializerGroup, '!')
+        );
+
+        if (empty($whiteListedSerializerGroups)) {
+            $whiteListedSerializerGroups = null;
+        }
+
+        $blacklistedSerializerGroups = array_map(
+            static fn (string $serializerGroup) => substr($serializerGroup, 1),
+            array_filter(
+                $serializerGroups,
+                static fn (string $serializerGroup) => str_starts_with($serializerGroup, '!')
+            )
+        );
+
+        if (empty($blacklistedSerializerGroups)) {
+            $blacklistedSerializerGroups = null;
+        }
+
+        return [
+            $whiteListedSerializerGroups,
+            $blacklistedSerializerGroups,
+        ];
     }
 
     /**
@@ -283,7 +283,7 @@ final class PropertySchemaStateExtractor implements PropertyListExtractorInterfa
             return $type;
         }
 
-        return TypeDetector::getTypeFromClass($type, true, false)->toArray()['type'];
+        return TypeDetector::getTypeFromClass($type)->toArray()['type'];
     }
 
     private static function mapToSymfonyType(string $jsonSchemaType): string

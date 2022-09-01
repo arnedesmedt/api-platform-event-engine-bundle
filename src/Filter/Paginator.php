@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Filter;
 
-use ApiPlatform\Core\DataProvider\PaginatorInterface;
-use ApiPlatform\Core\DataProvider\PartialPaginatorInterface;
+use ApiPlatform\State\Pagination\PaginatorInterface;
+use ApiPlatform\State\Pagination\PartialPaginatorInterface;
 use ArrayObject;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use IteratorAggregate;

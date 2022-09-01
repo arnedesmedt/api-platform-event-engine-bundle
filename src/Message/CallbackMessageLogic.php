@@ -6,8 +6,8 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Message;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\Callback\ImmutableObject\CallbackRequestBody;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\Callback\ValueObject\CallbackUrl;
-use ADS\Bundle\EventEngineBundle\Type\DefaultType;
-use EventEngine\Schema\TypeSchema;
+use ADS\Bundle\ApiPlatformEventEngineBundle\Responses\Accepted;
+use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use Symfony\Component\HttpFoundation\Response;
 
 trait CallbackMessageLogic
@@ -63,12 +63,12 @@ trait CallbackMessageLogic
     }
 
     /**
-     * @return array<int, TypeSchema>
+     * @return array<int, class-string<JsonSchemaAwareRecord>>
      */
-    public static function __extraResponseCallback(): array
+    public static function __extraResponseClassesCallback(): array
     {
         return [
-            Response::HTTP_ACCEPTED => DefaultType::accepted(),
+            Response::HTTP_ACCEPTED => Accepted::class,
         ];
     }
 }

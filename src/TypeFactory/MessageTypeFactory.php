@@ -6,8 +6,8 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\TypeFactory;
 
 use ADS\ValueObjects\HasExamples;
 use ADS\ValueObjects\ValueObject;
-use ApiPlatform\Core\JsonSchema\Schema;
-use ApiPlatform\Core\JsonSchema\TypeFactoryInterface;
+use ApiPlatform\JsonSchema\Schema;
+use ApiPlatform\JsonSchema\TypeFactoryInterface;
 use EventEngine\JsonSchema\ProvidesValidationRules;
 use ReflectionClass;
 use Symfony\Component\PropertyInfo\Type;

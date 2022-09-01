@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\EventSubscriber;
 
-use ApiPlatform\Core\EventListener\EventPriorities;
-use ApiPlatform\Core\Serializer\SerializerContextBuilderInterface;
-use ApiPlatform\Core\Util\RequestAttributesExtractor;
+use ApiPlatform\Serializer\SerializerContextBuilderInterface;
+use ApiPlatform\Symfony\EventListener\EventPriorities;
+use ApiPlatform\Util\RequestAttributesExtractor;
 use EventEngine\Messaging\MessageBag;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\RequestEvent;

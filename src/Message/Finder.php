@@ -6,8 +6,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Message;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Config;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\FinderException;
-
-use function sprintf;
+use ApiPlatform\Metadata\HttpOperation;
 
 final class Finder
 {
@@ -22,14 +21,10 @@ final class Finder
      */
     public function byContext(array $context): string
     {
-        /** @var string $entity */
-        $entity = $context['resource_class'];
-        /** @var string $operationType */
-        $operationType = $context['operation_type'];
-        /** @var string $operationName */
-        $operationName = $context[sprintf('%s_operation_name', $operationType)];
+        /** @var HttpOperation $operation */
+        $operation = $context['operation'];
 
-        return $this->byResourceAndOperation($entity, $operationType, $operationName);
+        return $this->byOperation($operation);
     }
 
     /**
@@ -49,23 +44,23 @@ final class Finder
     /**
      * @return string|class-string
      */
-    public function byResourceAndOperation(string $resourceClass, string $operationType, string $operationName): string
+    public function byOperation(HttpOperation $operation): string
     {
-        return self::byConfigResourceAndOperation($this->config, $resourceClass, $operationType, $operationName);
+        return self::byConfigAndOperation($this->config, $operation);
     }
 
-    public static function byConfigResourceAndOperation(
+    public static function byConfigAndOperation(
         Config $config,
-        string $resourceClass,
-        string $operationType,
-        string $operationName
+        HttpOperation $operation,
     ): string {
         $mapping = $config->messageMapping();
+        $resourceClass = $operation->getClass();
+        $operationName = $operation->getName();
 
-        if (! isset($mapping[$resourceClass][$operationType][$operationName])) {
-            throw FinderException::noMessageFound($resourceClass, $operationType, $operationName);
+        if (! isset($mapping[$resourceClass][$operationName])) {
+            throw FinderException::noMessageFound($operation->getName());
         }
 
-        return $mapping[$resourceClass][$operationType][$operationName];
+        return $mapping[$resourceClass][$operationName];
     }
 }

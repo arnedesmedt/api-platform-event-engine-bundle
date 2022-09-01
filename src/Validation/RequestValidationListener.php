@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Validation;
 
-use ApiPlatform\Core\EventListener\EventPriorities;
-use ApiPlatform\Core\Metadata\Resource\Factory\ResourceMetadataFactoryInterface;
-use ApiPlatform\Core\Util\RequestAttributesExtractor;
-use ApiPlatform\Core\Validator\ValidatorInterface;
+use ApiPlatform\Metadata\Resource\Factory\ResourceMetadataCollectionFactoryInterface;
+use ApiPlatform\Symfony\EventListener\EventPriorities;
+use ApiPlatform\Util\RequestAttributesExtractor;
+use ApiPlatform\Validator\ValidatorInterface;
 use EventEngine\Messaging\MessageBag;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
@@ -15,15 +15,10 @@ use Symfony\Component\HttpKernel\KernelEvents;
 
 final class RequestValidationListener implements EventSubscriberInterface
 {
-    private ValidatorInterface $validator;
-    private ResourceMetadataFactoryInterface $resourceMetadataFactory;
-
     public function __construct(
-        ValidatorInterface $validator,
-        ResourceMetadataFactoryInterface $resourceMetadataFactory
+        private ValidatorInterface $validator,
+        private ResourceMetadataCollectionFactoryInterface $resourceMetadataCollectionFactory
     ) {
-        $this->validator = $validator;
-        $this->resourceMetadataFactory = $resourceMetadataFactory;
     }
 
     /**
@@ -49,9 +44,6 @@ final class RequestValidationListener implements EventSubscriberInterface
             return;
         }
 
-        $resourceMetadata = $this->resourceMetadataFactory->create($attributes['resource_class']);
-        $validationGroups = $resourceMetadata->getOperationAttribute($attributes, 'validation_groups', null, true);
-
         /** @var MessageBag|null $message */
         $message = $request->attributes->get('message');
 
@@ -59,6 +51,10 @@ final class RequestValidationListener implements EventSubscriberInterface
             return;
         }
 
-        $this->validator->validate($message, ['groups' => $validationGroups]);
+        $resourceMetadataCollection = $this->resourceMetadataCollectionFactory->create($attributes['resource_class']);
+
+        foreach ($resourceMetadataCollection as $resourceMetadata) {
+            $this->validator->validate($message, ['groups' => $resourceMetadata->getValidationContext()]);
+        }
     }
 }
