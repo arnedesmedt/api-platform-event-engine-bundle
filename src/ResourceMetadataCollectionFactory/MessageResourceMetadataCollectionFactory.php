@@ -41,6 +41,7 @@ use function array_combine;
 use function array_filter;
 use function array_key_exists;
 use function array_map;
+use function array_merge;
 use function class_exists;
 use function in_array;
 use function ltrim;
@@ -105,6 +106,15 @@ final class MessageResourceMetadataCollectionFactory implements ResourceMetadata
                     $operationClass = HttpOperation::class;
                 }
 
+                $normalizationContext = array_merge(
+                    $resource->getNormalizationContext() ?? [],
+                    $messageClass::__normalizationContext()
+                );
+                $denormalizationContext = array_merge(
+                    $resource->getDenormalizationContext() ?? [],
+                    $messageClass::__denormalizationContext()
+                );
+
                 return (new $operationClass(
                     name: $messageClass::__operationId(),
                     shortName: $messageClass::__schemaStateClass()::__type(),
@@ -138,9 +148,9 @@ final class MessageResourceMetadataCollectionFactory implements ResourceMetadata
                         ],
                         static fn ($value) => $value !== null
                     ),
-                        normalizationContext: $resource->getNormalizationContext(),
-                        denormalizationContext: $resource->getDenormalizationContext(),
-                        processor: $messageClass::__processor() ?? (
+                    normalizationContext: empty($normalizationContext) ? null : $normalizationContext,
+                    denormalizationContext: empty($denormalizationContext) ? null : $denormalizationContext,
+                    processor: $messageClass::__processor() ?? (
                         $reflectionClass->implementsInterface(Command::class)
                             ? CommandProcessor::class
                             : null
