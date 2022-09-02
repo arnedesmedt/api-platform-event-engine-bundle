@@ -37,6 +37,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
 use Symfony\Component\PropertyInfo\Type;
 
+use function addslashes;
 use function array_combine;
 use function array_filter;
 use function array_key_exists;
@@ -281,7 +282,7 @@ final class MessageResourceMetadataCollectionFactory implements ResourceMetadata
                         $type->getClassName()
                     )
                 ) {
-                    $propertySchema['type'] = $type->getClassName();
+                    $propertySchema['type'] = '\\' . addslashes($type->getClassName());
                 }
 
                 $openApiSchema = OpenApiSchemaFactory::toOpenApiSchema($propertySchema);
