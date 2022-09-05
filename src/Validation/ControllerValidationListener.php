@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Validation;
 
-use ApiPlatform\Core\Validator\EventListener\ValidateListener;
+use ApiPlatform\Symfony\EventListener\ValidateListener;
 use EventEngine\Messaging\MessageBag;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 

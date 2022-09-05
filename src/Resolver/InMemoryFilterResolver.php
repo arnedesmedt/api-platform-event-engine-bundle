@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Resolver;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\InMemoryFilterConverter;
-use ApiPlatform\Core\DataProvider\ArrayPaginator;
+use ApiPlatform\State\Pagination\ArrayPaginator;
 use Closure;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 

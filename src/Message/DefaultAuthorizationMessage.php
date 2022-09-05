@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Message;
 
-use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\ApiPlatformException;
-use EventEngine\Schema\TypeSchema;
+use ADS\Bundle\ApiPlatformEventEngineBundle\Responses\Forbidden;
+use ADS\Bundle\ApiPlatformEventEngineBundle\Responses\Unauthorized;
 use ReflectionClass;
 use ReflectionMethod;
 use Symfony\Component\HttpFoundation\Response;
@@ -42,13 +42,13 @@ trait DefaultAuthorizationMessage
     }
 
     /**
-     * @return array<int, TypeSchema>
+     * @return array<int, class-string>
      */
-    public static function __extraResponseAuthorization(): array
+    public static function __extraResponseClassesAuthorization(): array
     {
         return [
-            Response::HTTP_UNAUTHORIZED => ApiPlatformException::unauthorized(),
-            Response::HTTP_FORBIDDEN => ApiPlatformException::forbidden(),
+            Response::HTTP_UNAUTHORIZED => Unauthorized::class,
+            Response::HTTP_FORBIDDEN => Forbidden::class,
         ];
     }
 }

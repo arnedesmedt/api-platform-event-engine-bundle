@@ -16,5 +16,5 @@ interface AuthorizationMessage
     /**
      * @return array<int, TypeSchema>
      */
-    public static function __extraResponseAuthorization(): array;
+    public static function __extraResponseClassesAuthorization(): array;
 }

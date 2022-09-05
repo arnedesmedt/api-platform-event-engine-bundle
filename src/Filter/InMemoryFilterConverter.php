@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Filter;
 
 use ADS\Util\ArrayUtil;
-use ApiPlatform\Core\Bridge\Doctrine\Common\Filter\OrderFilterInterface;
+use ApiPlatform\Doctrine\Common\Filter\OrderFilterInterface;
 use Closure;
 
 use function array_column;

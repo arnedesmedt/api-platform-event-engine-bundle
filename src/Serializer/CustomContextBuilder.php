@@ -6,9 +6,8 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Serializer;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder;
 use ADS\Util\StringUtil;
-use ApiPlatform\Core\Api\IdentifiersExtractorInterface;
-use ApiPlatform\Core\Serializer\SerializerContextBuilder;
-use ApiPlatform\Core\Serializer\SerializerContextBuilderInterface;
+use ApiPlatform\Serializer\SerializerContextBuilder;
+use ApiPlatform\Serializer\SerializerContextBuilderInterface;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use ReflectionClass;
 use Symfony\Component\HttpFoundation\Request;
@@ -29,7 +28,6 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
 {
     public function __construct(
         private SerializerContextBuilder $decorated,
-        private IdentifiersExtractorInterface $identifiersExtractor,
         private Finder $messageFinder,
     ) {
     }
@@ -47,7 +45,6 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
             ->addMessageClass($context)
             ->extractPathParameters($request, $context)
             ->extractQueryParameters($request, $context)
-            ->addIdentifier($request, $context)
             ->addMessage($request, $context);
 
         $context[AbstractObjectNormalizer::PRESERVE_EMPTY_OBJECTS] = false;
@@ -180,34 +177,34 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
         return $parameterValue;
     }
 
-    /**
-     * @param array<mixed> $context
-     */
-    private function addIdentifier(Request $request, array &$context): self
-    {
-        if ($request->getMethod() === Request::METHOD_POST || $request->attributes->has('id')) {
-            return $this;
-        }
-
-        /** @var class-string $resourceClass */
-        $resourceClass = $context['resource_class'];
-        $identifiers = $this->identifiersExtractor->getIdentifiersFromResourceClass($resourceClass);
-
-        if (empty($identifiers)) {
-            return $this;
-        }
-
-        $identifier = reset($identifiers);
-        $identifier = StringUtil::decamelize($identifier);
-
-        if (! $request->attributes->has($identifier)) {
-            return $this;
-        }
-
-        $request->attributes->set('id', $request->attributes->get($identifier));
-
-        return $this;
-    }
+//    /**
+//     * @param array<mixed> $context
+//     */
+//    private function addIdentifier(Request $request, array &$context): self
+//    {
+//        if ($request->getMethod() === Request::METHOD_POST || $request->attributes->has('id')) {
+//            return $this;
+//        }
+//
+//        /** @var class-string $resourceClass */
+//        $resourceClass = $context['resource_class'];
+//        $identifiers = $this->identifiersExtractor->getIdentifiersFromItem($resourceClass);
+//
+//        if (empty($identifiers)) {
+//            return $this;
+//        }
+//
+//        $identifier = reset($identifiers);
+//        $identifier = StringUtil::decamelize($identifier);
+//
+//        if (! $request->attributes->has($identifier)) {
+//            return $this;
+//        }
+//
+//        $request->attributes->set('id', $request->attributes->get($identifier));
+//
+//        return $this;
+//    }
 
     /**
      * @param array<mixed> $context

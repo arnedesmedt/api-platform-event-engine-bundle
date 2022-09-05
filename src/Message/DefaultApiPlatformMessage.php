@@ -6,13 +6,13 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Message;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\ApiPlatformMappingException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Operation\Name;
-use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
-use ADS\Bundle\EventEngineBundle\Type\DefaultType;
+use ADS\Bundle\ApiPlatformEventEngineBundle\Responses\Created;
+use ADS\Bundle\ApiPlatformEventEngineBundle\Responses\Deleted;
+use ADS\Bundle\ApiPlatformEventEngineBundle\Responses\Ok;
 use ADS\Util\StringUtil;
-use ApiPlatform\Core\Action\PlaceholderAction;
-use ApiPlatform\Core\Api\OperationType;
-use EventEngine\Schema\TypeSchema;
+use ApiPlatform\Action\PlaceholderAction;
 use ReflectionClass;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -23,56 +23,32 @@ use function preg_match;
 use function sprintf;
 use function ucfirst;
 
+/**
+ * @method static string __uriTemplate()
+ */
 trait DefaultApiPlatformMessage
 {
-    public static function __entity(): string
+    public static function __resource(): string
     {
-        if (method_exists(static::class, '__customEntity')) {
-            $customEntity = static::__customEntity();
+        $resourceNamespace = StringUtil::entityNamespaceFromClassName(static::class);
+        $resourceName = StringUtil::entityNameFromClassName(static::class);
+        $resourceStateClass = sprintf('%s\\%s\\%s', $resourceNamespace, $resourceName, 'State');
 
-            if ($customEntity !== null) {
-                if (! class_exists($customEntity)) {
-                    throw ApiPlatformMappingException::noEntityFound(static::class);
-                }
-
-                return $customEntity;
-            }
+        if (! class_exists($resourceStateClass)) {
+            throw ApiPlatformMappingException::noResourceFound(static::class);
         }
 
-        $entityNamespace = StringUtil::entityNamespaceFromClassName(static::class);
-        $entityName = StringUtil::entityNameFromClassName(static::class);
-        $entityStateClass = sprintf('%s\\%s\\%s', $entityNamespace, $entityName, 'State');
-
-        if (! class_exists($entityStateClass)) {
-            throw ApiPlatformMappingException::noEntityFound(static::class);
-        }
-
-        return $entityStateClass;
+        return $resourceStateClass;
     }
 
-    public static function __operationType(): string
+    public static function __isCollection(): bool
     {
-        if (method_exists(static::class, '__customOperationType')) {
-            $customOperationType = static::__customOperationType();
+        $shortName = static::shortName();
 
-            if ($customOperationType !== null) {
-                return $customOperationType;
-            }
-        }
-
-        $shortName = self::shortName();
-
-        return match (true) {
-            (bool) preg_match(
-                '/(Create|Add|GetAll|All|Enable|Import)/',
-                $shortName
-            ) => OperationType::COLLECTION,
-            (bool) preg_match(
-                '/(Update|Get|Change|Delete|Remove|ByUuid|ById|Disable)/',
-                $shortName
-            ) => OperationType::ITEM,
-            default => throw ApiPlatformMappingException::noOperationTypeFound(static::class),
-        };
+        return (bool) preg_match(
+            '/(Create|Add|GetAll|All|Enable|Import)/',
+            $shortName
+        );
     }
 
     public static function __operationName(): string
@@ -85,7 +61,7 @@ trait DefaultApiPlatformMessage
             }
         }
 
-        $shortName = self::shortName();
+        $shortName = static::shortName();
 
         return match (true) {
             (bool) preg_match('/(Create|Add|Enable|Import)/', $shortName) => Name::POST,
@@ -99,14 +75,14 @@ trait DefaultApiPlatformMessage
 
     public static function __operationId(): string
     {
-        return lcfirst(self::__operationName())
-            . ucfirst(StringUtil::entityNameFromClassName(static::class))
-            . ucfirst(self::__operationType());
+        return lcfirst(static::__operationName()) .
+            ucfirst(StringUtil::entityNameFromClassName(static::class)) .
+            (static::__isCollection() ? 'Collection' : 'Item');
     }
 
-    public static function __httpMethod(): ?string
+    public static function __httpMethod(): string
     {
-        return match (self::__operationName()) {
+        return match (static::__operationName()) {
             Name::POST => Request::METHOD_POST,
             Name::POST . 'Deprecated' => Request::METHOD_POST,
             Name::DELETE => Request::METHOD_DELETE,
@@ -117,28 +93,23 @@ trait DefaultApiPlatformMessage
             Name::PATCH . 'Deprecated' => Request::METHOD_PATCH,
             Name::GET => Request::METHOD_GET,
             Name::GET . 'Deprecated' => Request::METHOD_GET,
-            default => null,
+            default => throw new RuntimeException(
+                sprintf(
+                    'No __httpMethod method found in class \'%s\'.',
+                    static::class
+                )
+            ),
         };
-    }
-
-    public static function __path(): ?string
-    {
-        return null;
-    }
-
-    public static function __pathUri(): ?Uri
-    {
-        $path = static::__path();
-        if ($path === null) {
-            return null;
-        }
-
-        return Uri::fromString($path);
     }
 
     public static function __apiPlatformController(): string
     {
         return PlaceholderAction::class;
+    }
+
+    public static function __processor(): ?string
+    {
+        return null;
     }
 
     public static function __stateless(): ?bool
@@ -148,7 +119,12 @@ trait DefaultApiPlatformMessage
 
     public static function __schemaStateClass(): string
     {
-        return static::__entity();
+        return static::__resource();
+    }
+
+    public static function __schemaStatesClass(): string
+    {
+        return static::__schemaStateClass() . 's';
     }
 
     /**
@@ -156,13 +132,7 @@ trait DefaultApiPlatformMessage
      */
     public static function __tags(): array
     {
-        $tags = [StringUtil::entityNameFromClassName(static::class)];
-
-        if (method_exists(self::class, '__rootResourceClass')) {
-            $tags[] = StringUtil::entityNameFromClassName(self::__rootResourceClass());
-        }
-
-        return $tags;
+        return [StringUtil::entityNameFromClassName(static::class)];
     }
 
     public static function __requestBodyArrayProperty(): ?string
@@ -171,17 +141,19 @@ trait DefaultApiPlatformMessage
     }
 
     /**
-     * @return array<int, TypeSchema>
+     * @return array<int, class-string>
      */
-    public static function __extraResponseApiPlatform(): array
+    public static function __extraResponseClassesApiPlatform(): array
     {
         $responses = [];
 
         $value = match (self::__httpMethod()) {
-            Request::METHOD_POST => DefaultType::created(),
-            Request::METHOD_DELETE => DefaultType::deleted(),
-            Request::METHOD_PUT, Request::METHOD_PATCH,
-            Request::METHOD_GET, Request::METHOD_OPTIONS => DefaultType::ok(),
+            Request::METHOD_POST => Created::class,
+            Request::METHOD_DELETE => Deleted::class,
+            Request::METHOD_PUT, Request::METHOD_PATCH => Ok::class,
+            Request::METHOD_GET, Request::METHOD_OPTIONS => static::__isCollection()
+                ? static::__schemaStatesClass()
+                : static::__schemaStateClass(),
             default => null,
         };
 

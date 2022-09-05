@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Filter;
 
 use ADS\Util\StringUtil;
-use ApiPlatform\Core\Api\FilterInterface;
-use ApiPlatform\Core\Bridge\Doctrine\Common\Filter\OrderFilterInterface;
+use ApiPlatform\Api\FilterInterface;
+use ApiPlatform\Doctrine\Common\Filter\OrderFilterInterface;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use ReflectionClass;
 use RuntimeException;

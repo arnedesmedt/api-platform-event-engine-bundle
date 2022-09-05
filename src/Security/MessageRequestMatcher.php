@@ -7,8 +7,8 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Security;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\FinderException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\AuthorizationMessage;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder;
-use ApiPlatform\Core\Serializer\SerializerContextBuilderInterface;
-use ApiPlatform\Core\Util\RequestAttributesExtractor;
+use ApiPlatform\Serializer\SerializerContextBuilderInterface;
+use ApiPlatform\Util\RequestAttributesExtractor;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestMatcherInterface;
 
@@ -49,8 +49,6 @@ abstract class MessageRequestMatcher implements RequestMatcherInterface
             return false;
         }
 
-        $interfaces = class_implements($message);
-
-        return $interfaces !== false && in_array(AuthorizationMessage::class, $interfaces);
+        return in_array(AuthorizationMessage::class, class_implements($message) ?: []);
     }
 }

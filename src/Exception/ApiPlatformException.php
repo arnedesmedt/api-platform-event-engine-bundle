@@ -11,7 +11,7 @@ use EventEngine\JsonSchema\AnnotatedType;
 use EventEngine\JsonSchema\JsonSchema;
 use EventEngine\Schema\TypeSchema;
 
-final class ApiPlatformException implements Type
+class ApiPlatformException implements Type
 {
     use JsonSchemaAwareRecordLogic;
 
@@ -19,11 +19,11 @@ final class ApiPlatformException implements Type
 
     // phpcs:disable SlevomatCodingStandard.Classes.UnusedPrivateElements.UnusedProperty
     /** @readonly */
-    private string $type;
+    protected string $type;
     /** @readonly */
-    private string $title;
+    protected string $title;
     /** @readonly */
-    private string $detail;
+    protected string $detail;
 
     public static function typeRef(): TypeSchema
     {

@@ -6,7 +6,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\DocumentationException;
 use ADS\Util\StringUtil;
-use ApiPlatform\Core\JsonSchema\Schema;
+use ApiPlatform\JsonSchema\Schema;
 
 use function array_filter;
 use function array_map;

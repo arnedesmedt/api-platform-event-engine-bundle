@@ -13,15 +13,12 @@ final class FinderException extends Exception
     /**
      * @return static
      */
-    public static function noMessageFound(string $resource, ?string $operationType, ?string $operationName): static
+    public static function noMessageFound(?string $operationName): static
     {
         return new static(
             sprintf(
-                'Could not find an event engine message that is mapped with the API platform call ' .
-                '(resource: \'%s\', operation type: \'%s\', operation name: \'%s\').',
-                $resource,
-                $operationType,
-                $operationName
+                'Could not find an event engine message that is mapped with the API platform operation \'%s\'.',
+                $operationName ?? 'No operation name found',
             )
         );
     }

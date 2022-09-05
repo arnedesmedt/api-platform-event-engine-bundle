@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Serializer;
 
-use ApiPlatform\Core\Metadata\Property\Factory\PropertyNameCollectionFactoryInterface;
+use ApiPlatform\Metadata\Property\Factory\PropertyNameCollectionFactoryInterface;
+use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use Symfony\Component\PropertyInfo\PropertyTypeExtractorInterface;
 use Symfony\Component\Serializer\Mapping\ClassDiscriminatorResolverInterface;
@@ -12,6 +13,8 @@ use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactoryInterface;
 use Symfony\Component\Serializer\NameConverter\NameConverterInterface;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 
+use function class_implements;
+use function in_array;
 use function is_string;
 use function iterator_to_array;
 
@@ -39,6 +42,17 @@ final class PropertyExtractorNormalizer extends ObjectNormalizer
             $objectClassResolver,
             $defaultContext
         );
+    }
+
+    public function supportsDenormalization(mixed $data, string $type, ?string $format = null): bool
+    {
+        return parent::supportsDenormalization($data, $type, $format)
+            && in_array(JsonSchemaAwareRecord::class, class_implements($type) ?: []);
+    }
+
+    public function supportsNormalization(mixed $data, ?string $format = null): bool
+    {
+        return parent::supportsNormalization($data, $format) && $data instanceof JsonSchemaAwareRecord;
     }
 
     /**
