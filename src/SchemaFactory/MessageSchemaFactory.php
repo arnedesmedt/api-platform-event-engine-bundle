@@ -178,7 +178,7 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
         $definition = self::removeParameters(
             $definition,
             $parameterNames
-        ) ?? [];
+        ) ?? ['type' => 'object'];
         $definitions[$rootDefinitionKey] = new ArrayObject($definition);
 
         $schema->setDefinitions($definitions);
