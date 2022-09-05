@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataCollectionFactory;
 
+use ADS\Bundle\ApiPlatformEventEngineBundle\Message\CallbackMessage;
 use ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageSchemaFactory;
 use ADS\Bundle\EventEngineBundle\Command\Command;
 use ApiPlatform\JsonSchema\Schema;
@@ -40,7 +41,7 @@ final class RequestBodyRefResourceMetadataCollectionFactory implements ResourceM
 
             /** @var string $operationId */
             foreach ($operations ?? [] as $operationId => $operation) {
-                if (! $operation instanceof HttpOperation || $operation->getMethod() === Request::METHOD_DELETE) {
+                if (! $operation instanceof HttpOperation) {
                     continue;
                 }
 
@@ -52,7 +53,12 @@ final class RequestBodyRefResourceMetadataCollectionFactory implements ResourceM
                 }
 
                 $reflectionClass = new ReflectionClass($messageClass);
-                if (! $reflectionClass->implementsInterface(Command::class)) {
+                if (
+                    ! $reflectionClass->implementsInterface(Command::class)
+                    || ($operation->getMethod() === Request::METHOD_DELETE
+                        && ! $reflectionClass->implementsInterface(CallbackMessage::class)
+                    )
+                ) {
                     continue;
                 }
 
