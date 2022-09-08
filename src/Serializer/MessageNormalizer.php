@@ -6,8 +6,10 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Serializer;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\FilterFinder;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\SearchFilter;
+use ADS\Bundle\EventEngineBundle\Messenger\Queueable;
 use ADS\Util\ArrayUtil;
 use EventEngine\EventEngine;
+use ReflectionClass;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 use function array_diff_key;
@@ -41,6 +43,7 @@ final class MessageNormalizer implements DenormalizerInterface
             $context['message_class'],
             [
                 'payload' => $this->messageData($context['message_class'], $data, $type, $context),
+                'metadata' => $this->messageMetadata($context['message_class'], $data),
             ]
         );
     }
@@ -105,5 +108,22 @@ final class MessageNormalizer implements DenormalizerInterface
         );
 
         return ArrayUtil::toCamelCasedKeys($data, true);
+    }
+
+    /**
+     * @param class-string $messageClass
+     *
+     * @return array<string, mixed>
+     */
+    private function messageMetadata(string $messageClass, mixed $data): array
+    {
+        $reflectionClass = new ReflectionClass($messageClass);
+        if (! $reflectionClass->implementsInterface(Queueable::class)) {
+            return [];
+        }
+
+        return [
+            'async' => $messageClass::__dispatchAsync($data),
+        ];
     }
 }
