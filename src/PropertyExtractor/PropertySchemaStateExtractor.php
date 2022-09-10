@@ -119,7 +119,7 @@ final class PropertySchemaStateExtractor implements PropertyListExtractorInterfa
         }
 
         /** @var array<string, array<string, mixed>> $schemaProperties */
-        $schemaProperties = $schema['properties'];
+        $schemaProperties = $schema['properties'] ?? [];
         $propertySchema = $schemaProperties[$property] ?? null;
 
         if ($propertySchema === null) {
