@@ -92,6 +92,10 @@ services:
         tags:
             - { name: serializer.normalizer, priority: -890 }
 
+    ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\EnvelopeNormalizer:
+        tags:
+            - { name: serializer.normalizer, priority: -890 }
+
     ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\CommandDispatchResultNormalizer:
         tags:
             - { name: serializer.normalizer, priority: -800 }
