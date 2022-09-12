@@ -28,6 +28,7 @@ use function class_exists;
 use function in_array;
 use function is_array;
 use function is_string;
+use function method_exists;
 use function reset;
 use function sprintf;
 use function str_starts_with;
@@ -131,7 +132,7 @@ final class PropertySchemaStateExtractor implements PropertyListExtractorInterfa
         /** @var ReflectionNamedType $reflectionNamedType */
         $reflectionNamedType = $reflectionProperty->getType();
 
-        return self::types($propertySchema, $reflectionNamedType);
+        return self::types($propertySchema, $reflectionNamedType, $class, $property);
     }
 
     /**
@@ -199,11 +200,16 @@ final class PropertySchemaStateExtractor implements PropertyListExtractorInterfa
     /**
      * @param array<string, mixed>|null $propertySchema
      * @param ReflectionNamedType|class-string|null $reflectionNamedType
+     * @param class-string|null $class
      *
      * @return array<Type>|null
      */
-    private static function types(?array $propertySchema, ReflectionNamedType|string|null $reflectionNamedType): ?array
-    {
+    private static function types(
+        ?array $propertySchema,
+        ReflectionNamedType|string|null $reflectionNamedType,
+        ?string $class = null,
+        ?string $property = null,
+    ): ?array {
         if ($propertySchema === null) {
             return null;
         }
@@ -216,24 +222,19 @@ final class PropertySchemaStateExtractor implements PropertyListExtractorInterfa
             $propertySchema['type'] = [$propertySchema['type']];
         }
 
-        /** @var class-string|null $class */
-        $class = null;
+        /** @var class-string|null $typeClass */
+        $typeClass = null;
         $nullable = false;
-        $itemClass = null;
 
         if (is_string($reflectionNamedType)) {
-            /** @var class-string $class */
-            $class = $reflectionNamedType;
+            $typeClass = $reflectionNamedType;
         } elseif ($reflectionNamedType instanceof ReflectionType) {
-            /** @var class-string|null $class */
-            $class = $reflectionNamedType->isBuiltin() ? null : $reflectionNamedType->getName();
+            /** @var class-string|null $typeClass */
+            $typeClass = $reflectionNamedType->isBuiltin() ? null : $reflectionNamedType->getName();
             $nullable = $reflectionNamedType->allowsNull();
         }
 
-        if ($class) {
-            $classReflection = new ReflectionClass($class);
-            $itemClass = $classReflection->implementsInterface(ListValue::class) ? $class::itemType() : null;
-        }
+        $itemClass = self::itemClass($typeClass, $reflectionNamedType, $class, $property);
 
         if (in_array('null', $propertySchema['type'])) {
             $nullable = true;
@@ -241,7 +242,7 @@ final class PropertySchemaStateExtractor implements PropertyListExtractorInterfa
         }
 
         return array_map(
-            static function (string $type) use ($propertySchema, $nullable, $class, $itemClass) {
+            static function (string $type) use ($propertySchema, $nullable, $typeClass, $itemClass) {
                 $symfonyType = self::mapToSymfonyType($type);
                 $collection = $symfonyType === Type::BUILTIN_TYPE_ARRAY;
                 $collectionKeyType = null;
@@ -260,7 +261,7 @@ final class PropertySchemaStateExtractor implements PropertyListExtractorInterfa
                 return new Type(
                     $symfonyType,
                     $nullable,
-                    $class,
+                    $typeClass,
                     $collection,
                     $collectionKeyType,
                     $collectionValueType
@@ -301,5 +302,43 @@ final class PropertySchemaStateExtractor implements PropertyListExtractorInterfa
         }
 
         return $symfonyType;
+    }
+
+    /**
+     * @param class-string|null $typeClass
+     * @param class-string|null $class
+     *
+     * @return class-string|null
+     */
+    private static function itemClass(
+        ?string $typeClass,
+        ReflectionNamedType|string|null $reflectionNamedType,
+        ?string $class,
+        ?string $property
+    ): ?string {
+        if ($typeClass) {
+            $classReflection = new ReflectionClass($typeClass);
+
+            return $classReflection->implementsInterface(ListValue::class)
+                ? $typeClass::itemType()
+                : null;
+        }
+
+        if (
+            $reflectionNamedType instanceof ReflectionNamedType
+            && $reflectionNamedType->isBuiltin()
+            && $reflectionNamedType->getName() === 'array'
+            && $class !== null
+            && $property !== null
+            && method_exists($class, '__itemTypeMapping')
+        ) {
+            $result = $class::__itemTypeMapping()[$property] ?? null;
+
+            if (class_exists($result)) {
+                return $result;
+            }
+        }
+
+        return null;
     }
 }

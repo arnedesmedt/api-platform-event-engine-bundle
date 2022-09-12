@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\TypeFactory;
 
 use ADS\ValueObjects\HasExamples;
-use ADS\ValueObjects\ValueObject;
 use ApiPlatform\JsonSchema\Schema;
 use ApiPlatform\JsonSchema\TypeFactoryInterface;
 use EventEngine\JsonSchema\ProvidesValidationRules;
@@ -70,11 +69,11 @@ final class MessageTypeFactory implements TypeFactoryInterface
 
         $reflectionClass = new ReflectionClass($className);
 
-        if (
-            isset($_GET['complex'])
-            && preg_match(sprintf('#%s#', preg_quote($_GET['complex'], '#')), $className)
-            && $reflectionClass->implementsInterface(ValueObject::class)
-        ) {
+        if (self::complexType($className)) {
+            if (isset($existingType['$ref'])) {
+                unset($existingType['$ref']);
+            }
+
             $existingType['type'] = '\\' . addslashes($className);
         }
 
@@ -88,5 +87,11 @@ final class MessageTypeFactory implements TypeFactoryInterface
         }
 
         return $existingType;
+    }
+
+    public static function complexType(string $className): bool
+    {
+        return isset($_GET['complex'])
+            && preg_match(sprintf('#%s#', preg_quote($_GET['complex'], '#')), $className);
     }
 }
