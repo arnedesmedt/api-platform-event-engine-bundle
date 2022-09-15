@@ -9,6 +9,7 @@ use ApiPlatform\JsonSchema\Schema;
 use ApiPlatform\JsonSchema\TypeFactoryInterface;
 use EventEngine\JsonSchema\ProvidesValidationRules;
 use ReflectionClass;
+use RuntimeException;
 use Symfony\Component\PropertyInfo\Type;
 
 use function addslashes;
@@ -40,13 +41,19 @@ final class MessageTypeFactory implements TypeFactoryInterface
 
         if ($type->isCollection()) {
             $keyType = $type->getCollectionKeyTypes();
+            $valueType = $type->getCollectionValueTypes();
             $firstKeyType = reset($keyType);
+            $firstValueType = reset($valueType);
+
+            if (! $firstValueType) {
+                throw new RuntimeException('No value type found for collection');
+            }
 
             $key = $firstKeyType !== false && $firstKeyType->getBuiltinType() === Type::BUILTIN_TYPE_STRING
                 ? 'additionalProperties'
                 : 'items';
 
-            $newType[$key] = $this->extraMessageTypeConversion($newType[$key], $type);
+            $newType[$key] = $this->extraMessageTypeConversion($newType[$key], $firstValueType);
         } else {
             $newType = $this->extraMessageTypeConversion($newType, $type);
         }
@@ -89,9 +96,10 @@ final class MessageTypeFactory implements TypeFactoryInterface
         return $existingType;
     }
 
-    public static function complexType(string $className): bool
+    public static function complexType(?string $className): bool
     {
         return isset($_GET['complex'])
+            && $className
             && preg_match(sprintf('#%s#', preg_quote($_GET['complex'], '#')), $className);
     }
 }

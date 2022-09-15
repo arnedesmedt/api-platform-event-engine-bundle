@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
+use ADS\Bundle\ApiPlatformEventEngineBundle\TypeFactory\MessageTypeFactory;
 use ADS\JsonImmutableObjects\HasPropertyExamples;
 use ADS\Util\StringUtil;
 use ADS\ValueObjects\ValueObject;
@@ -20,6 +21,7 @@ use ReflectionNamedType;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Request;
 
+use function array_filter;
 use function in_array;
 use function method_exists;
 use function sprintf;
@@ -63,20 +65,17 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
         $className = $apiProperty->getBuiltinTypes()[0]?->getClassName();
 
         return $apiProperty
-            ->withBuiltinTypes()
             ->withRequired(in_array($property, $schema['required'] ?? []))
             ->withReadable(true)
             ->withWritable(true)
-            ->withReadableLink(true);
-
-//            ->withOpenapiContext(array_filter(
-//                [
-//                    // TODO check match classname
-//                    'type' => MessageTypeFactory::complexType($className)
-//                        ? $className
-//                        : null,
-//                ]
-//            ));
+            ->withReadableLink(true)
+            ->withOpenapiContext(array_filter(
+                [
+                    'type' => MessageTypeFactory::complexType($className)
+                        ? $className
+                        : null,
+                ]
+            ));
     }
 
     private function addDefault(ApiProperty &$apiProperty, string $resourceClass, string $property): self

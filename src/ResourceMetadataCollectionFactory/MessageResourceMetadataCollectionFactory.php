@@ -13,6 +13,7 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\Provider\DocumentStoreCollectionProv
 use ADS\Bundle\ApiPlatformEventEngineBundle\Provider\DocumentStoreItemProvider;
 use ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageSchemaFactory;
 use ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\OpenApiSchemaFactory;
+use ADS\Bundle\ApiPlatformEventEngineBundle\TypeFactory\MessageTypeFactory;
 use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
 use ADS\Bundle\EventEngineBundle\Command\Command;
 use ADS\Bundle\EventEngineBundle\Query\Query;
@@ -46,8 +47,6 @@ use function array_merge;
 use function class_exists;
 use function in_array;
 use function ltrim;
-use function preg_match;
-use function preg_quote;
 use function reset;
 use function sprintf;
 use function strtolower;
@@ -149,9 +148,9 @@ final class MessageResourceMetadataCollectionFactory implements ResourceMetadata
                         ],
                         static fn ($value) => $value !== null
                     ),
-                    normalizationContext: empty($normalizationContext) ? null : $normalizationContext,
-                    denormalizationContext: empty($denormalizationContext) ? null : $denormalizationContext,
-                    processor: $messageClass::__processor() ?? (
+                        normalizationContext: empty($normalizationContext) ? null : $normalizationContext,
+                        denormalizationContext: empty($denormalizationContext) ? null : $denormalizationContext,
+                        processor: $messageClass::__processor() ?? (
                         $reflectionClass->implementsInterface(Command::class)
                             ? CommandProcessor::class
                             : null
@@ -276,13 +275,9 @@ final class MessageResourceMetadataCollectionFactory implements ResourceMetadata
 
                 if (
                     $type
-                    && $type->getClassName()
-                    && preg_match(
-                        sprintf('#%s#', preg_quote($_GET['complex'], '#')),
-                        $type->getClassName()
-                    )
+                    && MessageTypeFactory::complexType($type->getClassName())
                 ) {
-                    $propertySchema['type'] = '\\' . addslashes($type->getClassName());
+                    $propertySchema['type'] = '\\' . addslashes($type->getClassName() ?? '');
                 }
 
                 $openApiSchema = OpenApiSchemaFactory::toOpenApiSchema($propertySchema);
