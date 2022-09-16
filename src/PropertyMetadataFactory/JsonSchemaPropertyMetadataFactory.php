@@ -63,7 +63,9 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
             ->addExample($apiProperty, $resourceClass, $property, $reflectionClass)
             ->addDeprecated($apiProperty, $property, $reflectionClass);
 
-        $className = $apiProperty->getBuiltinTypes()[0]?->getClassName();
+        $builtinTypes = $apiProperty->getBuiltinTypes();
+        $firstBuiltInType = $builtinTypes[0] ?? null;
+        $className = $firstBuiltInType?->getClassName();
 
         return $apiProperty
             ->withRequired(in_array($property, $schema['required'] ?? []))
