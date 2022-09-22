@@ -20,7 +20,7 @@ class IdentifierExtractor implements IdentifiersExtractorInterface
      *
      * @inheritDoc
      */
-    public function getIdentifiersFromItem($item, ?Operation $operation = null, array $context = []): array
+    public function getIdentifiersFromItem(object $item, ?Operation $operation = null, array $context = []): array
     {
         return $this->identifiersExtractor->getIdentifiersFromItem($item, $operation, $context);
     }

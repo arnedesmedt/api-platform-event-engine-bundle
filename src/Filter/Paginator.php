@@ -15,7 +15,9 @@ use function count;
 
 /**
  * @template TState of JsonSchemaAwareRecord
- * @implements IteratorAggregate<mixed, mixed>
+ * @implements IteratorAggregate<mixed, TState>
+ * @implements PaginatorInterface<TState>
+ * @implements PartialPaginatorInterface<TState>
  */
 class Paginator implements PartialPaginatorInterface, IteratorAggregate, PaginatorInterface
 {
