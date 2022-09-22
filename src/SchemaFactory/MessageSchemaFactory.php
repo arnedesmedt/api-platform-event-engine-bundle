@@ -6,6 +6,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
 use ADS\Bundle\EventEngineBundle\Response\HasResponses;
+use ADS\JsonImmutableObjects\Polymorphism\Discriminator;
 use ADS\Util\ArrayUtil;
 use ADS\ValueObjects\Implementation\ListValue\ListValue;
 use ApiPlatform\JsonSchema\Schema;
@@ -22,7 +23,10 @@ use ReflectionNamedType;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Request;
 
+use function array_combine;
+use function array_filter;
 use function array_flip;
+use function array_map;
 use function array_merge;
 use function array_values;
 use function assert;
@@ -63,6 +67,51 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
         $schema ??= new Schema();
         $input = $operation?->getInput();
         $messageClass = $input['class'] ?? null;
+
+        $classReflectionClass = new ReflectionClass($className);
+        if ($classReflectionClass->implementsInterface(Discriminator::class)) {
+            $definitionName = $className::__type() . ($format === 'json' ? '' : '.' . $format);
+            $ref = sprintf(
+                $schema->getVersion() === Schema::VERSION_OPENAPI
+                    ? '#/components/schemas/%s'
+                    : '#/definitions/%s',
+                $definitionName
+            );
+            $definitionNames = array_combine(
+                $className::jsonSchemaAwareRecords(),
+                array_map(
+                    function (string $modelClass) use ($format, $type, &$schema) {
+                        unset($schema['$ref']);
+                        $schema = $this->schemaFactory->buildSchema(
+                            $modelClass,
+                            $format,
+                            $type,
+                            null,
+                            $schema
+                        );
+
+                        return $schema->getArrayCopy(false);
+                    },
+                    $className::jsonSchemaAwareRecords()
+                )
+            );
+            $schema['$ref'] = $ref;
+            $definitions = $schema->getDefinitions();
+            $definitions[$definitionName] = [
+                'oneOf' => array_values($definitionNames),
+                'discriminator' => [
+                    'propertyName' => $className::propertyName(),
+                    'mapping' => array_filter(
+                        array_map(
+                            static fn (string $oneOfClass) => $definitionNames[$oneOfClass] ?? null,
+                            $className::mapping()
+                        )
+                    ),
+                ],
+            ];
+
+            return $schema;
+        }
 
         if (! $messageClass || $operation === null) {
             if ($operation === null && $this->isResourceClass($className)) {
