@@ -25,6 +25,7 @@ use function ucfirst;
 
 /**
  * @method static string __uriTemplate()
+ * @method static string|null __customProcessor()
  */
 trait DefaultApiPlatformMessage
 {
@@ -109,7 +110,9 @@ trait DefaultApiPlatformMessage
 
     public static function __processor(): ?string
     {
-        return null;
+        return method_exists(static::class, '__customProcessor')
+            ? static::__customProcessor()
+            : null;
     }
 
     public static function __stateless(): ?bool
