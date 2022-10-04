@@ -33,13 +33,13 @@ trait DefaultApiPlatformMessage
     {
         $resourceNamespace = StringUtil::entityNamespaceFromClassName(static::class);
         $resourceName = StringUtil::entityNameFromClassName(static::class);
-        $resourceStateClass = sprintf('%s\\%s\\%s', $resourceNamespace, $resourceName, 'State');
+        $aggregateClass = sprintf('%s\\%s\\%s', $resourceNamespace, $resourceName, $resourceName);
 
-        if (! class_exists($resourceStateClass)) {
+        if (! class_exists($aggregateClass)) {
             throw ApiPlatformMappingException::noResourceFound(static::class);
         }
 
-        return $resourceStateClass;
+        return $aggregateClass::stateClass();
     }
 
     public static function __isCollection(): bool
