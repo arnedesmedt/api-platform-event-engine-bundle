@@ -44,8 +44,15 @@ final class PropertyExtractorNormalizer extends ObjectNormalizer
         );
     }
 
-    public function supportsDenormalization(mixed $data, string $type, ?string $format = null): bool
-    {
+    /**
+     * @param array<string, mixed> $context
+     */
+    public function supportsDenormalization(
+        mixed $data,
+        string $type,
+        ?string $format = null,
+        array $context = [],
+    ): bool {
         return parent::supportsDenormalization($data, $type, $format)
             && in_array(JsonSchemaAwareRecord::class, class_implements($type) ?: []);
     }
