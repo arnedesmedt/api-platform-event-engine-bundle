@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\SymfonyCommand;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Config;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -18,6 +19,7 @@ use function preg_grep;
 use function reset;
 use function sprintf;
 
+#[AsCommand('api:mapping:message', 'List the mapping of the api platform calls with the event engine messages.')]
 class ApiMappingMessageCommand extends Command
 {
     public function __construct(private Config $config)
@@ -28,8 +30,6 @@ class ApiMappingMessageCommand extends Command
     protected function configure(): void
     {
         $this
-            ->setName('api:mapping:message')
-            ->setDescription('List the mapping of the api platform calls with the event engine messages.')
             ->addArgument('filter', InputArgument::OPTIONAL, 'Filter the output table.');
     }
 
