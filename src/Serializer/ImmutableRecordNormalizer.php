@@ -28,7 +28,10 @@ final class ImmutableRecordNormalizer implements NormalizerInterface
         return ArrayUtil::toSnakeCasedKeys($object->toArray(), true);
     }
 
-    public function supportsNormalization(mixed $data, ?string $format = null): bool
+    /**
+     * @param array<string, mixed> $context
+     */
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         return $data instanceof ImmutableRecord && ! $data instanceof NoImmutableRecordSerializer;
     }

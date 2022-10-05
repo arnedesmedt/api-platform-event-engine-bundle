@@ -24,7 +24,10 @@ final class CommandDispatchResultNormalizer implements NormalizerInterface
         return null;
     }
 
-    public function supportsNormalization(mixed $data, ?string $format = null): bool
+    /**
+     * @param array<string, mixed> $context
+     */
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         return $data instanceof CommandDispatchResult || $data instanceof CommandDispatchResultCollection;
     }

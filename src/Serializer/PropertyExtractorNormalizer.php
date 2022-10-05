@@ -50,7 +50,10 @@ final class PropertyExtractorNormalizer extends ObjectNormalizer
             && in_array(JsonSchemaAwareRecord::class, class_implements($type) ?: []);
     }
 
-    public function supportsNormalization(mixed $data, ?string $format = null): bool
+    /**
+     * @param array<string, mixed> $context
+     */
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         return parent::supportsNormalization($data, $format) && $data instanceof JsonSchemaAwareRecord;
     }
