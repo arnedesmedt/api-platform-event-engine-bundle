@@ -39,11 +39,14 @@ final class MessageNormalizer implements DenormalizerInterface
             return $context['message'];
         }
 
+        $payload = $this->messageData($context['message_class'], $data, $type, $context);
+        $metadata = $this->messageMetadata($context['message_class'], $payload);
+
         return $this->eventEngine->messageFactory()->createMessageFromArray(
             $context['message_class'],
             [
-                'payload' => $this->messageData($context['message_class'], $data, $type, $context),
-                'metadata' => $this->messageMetadata($context['message_class'], $data),
+                'payload' => $payload,
+                'metadata' => $metadata,
             ]
         );
     }
