@@ -20,14 +20,15 @@ use EventEngine\JsonSchema\JsonSchemaAwareRecord;
  */
 abstract class CollectionResolver implements MetaDataResolver
 {
-    /**
-     * @var DocumentStoreFilterResolver<TAgg, TStates, TState, TId>
-     * @required
-     */
-    public DocumentStoreFilterResolver $documentStoreFilterResolver;
-
     /** @var TRepository<TAgg, TStates, TState, TId> */
     protected Repository $repository;
+
+    /**
+     * @param DocumentStoreFilterResolver<TAgg, TStates, TState, TId> $documentStoreFilterResolver
+     */
+    public function __construct(private readonly DocumentStoreFilterResolver $documentStoreFilterResolver)
+    {
+    }
 
     /**
      * @param array<string, array<string, array<string, string>>> $metaData
