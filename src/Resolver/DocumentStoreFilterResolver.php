@@ -10,9 +10,7 @@ use ADS\Bundle\EventEngineBundle\Repository\DefaultStateRepository;
 use ADS\ValueObjects\Implementation\ListValue\IterableListValue;
 use ADS\ValueObjects\ValueObject;
 use Closure;
-use EventEngine\DocumentStore\Filter\AndFilter;
 use EventEngine\DocumentStore\Filter\AnyFilter;
-use EventEngine\DocumentStore\Filter\Filter;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 
 use function assert;
@@ -41,22 +39,6 @@ final class DocumentStoreFilterResolver extends FilterResolver
     public function setRepository(DefaultStateRepository $repository): self
     {
         $this->repository = $repository;
-
-        return $this;
-    }
-
-    /**
-     * @return self<TStates, TState, TId>
-     */
-    public function addFilter(Filter $filter): self
-    {
-        if ($this->filter instanceof Filter) {
-            $this->filter = new AndFilter($this->filter, $filter);
-
-            return $this;
-        }
-
-        $this->filter = $filter;
 
         return $this;
     }

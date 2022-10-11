@@ -78,9 +78,7 @@ abstract class FilterResolver implements MetaDataResolver
         $this->orderBy = $this->filterConverter->order($filters);
 
         $filter = $this->filterConverter->filter($this->filters, $message::__resource());
-        $this->filter = $this->filter instanceof Filter && $filter instanceof Filter
-            ? new AndFilter($this->filter, $filter)
-            : ($this->filter ?? $filter);
+        $this->addFilter($filter);
 
         /** @var array<string, int> $filters */
         $filters = $this->filters;
@@ -99,6 +97,19 @@ abstract class FilterResolver implements MetaDataResolver
         }
 
         return $this->result($states, $page, $itemsPerPage, $totalItems);
+    }
+
+    public function addFilter(Filter|Closure|null $filter = null): void
+    {
+        if ($filter === null || $filter instanceof Closure) {
+            return;
+        }
+
+        if ($this->filter instanceof Filter) {
+            $this->filter = new AndFilter($this->filter, $filter);
+        }
+
+        $this->filter = $filter;
     }
 
     /**
