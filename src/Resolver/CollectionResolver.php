@@ -4,27 +4,25 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Resolver;
 
-use ADS\Bundle\EventEngineBundle\Aggregate\AggregateRoot;
-use ADS\Bundle\EventEngineBundle\Repository\Repository;
+use ADS\Bundle\EventEngineBundle\Repository\DefaultStateRepository;
 use ADS\Bundle\EventEngineBundle\Resolver\MetaDataResolver;
 use ADS\ValueObjects\Implementation\ListValue\IterableListValue;
 use ADS\ValueObjects\ValueObject;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 
 /**
- * @template TRepository of Repository
- * @template TAgg of AggregateRoot
+ * @template TRepository of DefaultStateRepository
  * @template TStates of IterableListValue
  * @template TState of JsonSchemaAwareRecord
  * @template TId of ValueObject
  */
 abstract class CollectionResolver implements MetaDataResolver
 {
-    /** @var TRepository<TAgg, TStates, TState, TId> */
-    protected Repository $repository;
+    /** @var TRepository<TStates, TState, TId> */
+    protected DefaultStateRepository $repository;
 
     /**
-     * @param DocumentStoreFilterResolver<TAgg, TStates, TState, TId> $documentStoreFilterResolver
+     * @param DocumentStoreFilterResolver<TStates, TState, TId> $documentStoreFilterResolver
      */
     public function __construct(private readonly DocumentStoreFilterResolver $documentStoreFilterResolver)
     {
