@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Resolver;
 
 use ADS\Bundle\EventEngineBundle\Resolver\MetaDataResolver;
+use Traversable;
+
+use function iterator_to_array;
 
 abstract class ListResolver implements MetaDataResolver
 {
@@ -26,13 +29,13 @@ abstract class ListResolver implements MetaDataResolver
 
     public function __invoke(mixed $message): mixed
     {
-        $this->inMemoryFilterResolver->setCollection($this->collection($message));
+        $this->inMemoryFilterResolver->setCollection(iterator_to_array($this->collection($message)));
 
         return ($this->inMemoryFilterResolver)($message);
     }
 
     /**
-     * @return array<mixed>
+     * @return Traversable<mixed>
      */
-    abstract protected function collection(mixed $message): array;
+    abstract protected function collection(mixed $message): Traversable;
 }
