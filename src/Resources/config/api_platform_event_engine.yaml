@@ -106,7 +106,7 @@ services:
 
     ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\ArrayPaginatorNormalizer:
         arguments:
-            - '@serializer'
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\ImmutableRecordNormalizer'
         tags:
             - { name: serializer.normalizer, priority: -900 }
 
