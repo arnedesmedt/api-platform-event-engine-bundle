@@ -15,6 +15,8 @@ use EventEngine\DocumentStore\Filter\Filter;
 use EventEngine\DocumentStore\OrderBy\OrderBy;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 
+use function array_values;
+
 /**
  * @template TStates of IterableListValue
  * @template TState of JsonSchemaAwareRecord
@@ -73,7 +75,7 @@ final class StatesFilterResolver extends FilterResolver
             )
             ->toItems();
 
-        return $items;
+        return array_values($items);
     }
 
     /**
