@@ -7,49 +7,40 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Filter;
 use ApiPlatform\State\Pagination\PaginatorInterface;
 use ApiPlatform\State\Pagination\PartialPaginatorInterface;
 use ArrayObject;
-use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use IteratorAggregate;
 
 use function ceil;
 use function count;
 
 /**
- * @template TState of JsonSchemaAwareRecord
- * @implements IteratorAggregate<mixed, TState>
- * @implements PaginatorInterface<TState>
- * @implements PartialPaginatorInterface<TState>
+ * @implements IteratorAggregate<mixed, object>
+ * @implements PaginatorInterface<object>
+ * @implements PartialPaginatorInterface<object>
  */
 class Paginator implements PartialPaginatorInterface, IteratorAggregate, PaginatorInterface
 {
     /**
-     * @var array<TState>
-     * @readonly
-     */
-    private array $results;
-
-    /**
-     * @param array<TState> $results
+     * @param array<mixed> $collection
      */
     public function __construct(
-        array $results,
+        private readonly array $collection,
         private int $page,
         private int $itemsPerPage,
         private int $totalItems
     ) {
-        $this->results = $results;
     }
 
     /**
-     * @return array<TState>
+     * @return array<mixed>
      */
-    public function results(): array
+    public function collection(): array
     {
-        return $this->results;
+        return $this->collection;
     }
 
     public function count(): int
     {
-        return count($this->results);
+        return count($this->collection);
     }
 
     public function getCurrentPage(): float
@@ -73,10 +64,10 @@ class Paginator implements PartialPaginatorInterface, IteratorAggregate, Paginat
     }
 
     /**
-     * @return ArrayObject<(int|string), TState>
+     * @return ArrayObject<(int|string), mixed>
      */
     public function getIterator(): ArrayObject
     {
-        return new ArrayObject($this->results);
+        return new ArrayObject($this->collection);
     }
 }

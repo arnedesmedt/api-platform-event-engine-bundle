@@ -9,19 +9,18 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\Paginator;
 use ADS\Bundle\EventEngineBundle\Repository\DefaultStateRepository;
 use ADS\ValueObjects\Implementation\ListValue\IterableListValue;
 use ADS\ValueObjects\ValueObject;
-use Closure;
+use EventEngine\DocumentStore\Filter\AndFilter;
 use EventEngine\DocumentStore\Filter\AnyFilter;
+use EventEngine\DocumentStore\Filter\Filter;
+use EventEngine\DocumentStore\OrderBy\OrderBy;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
-
-use function assert;
 
 /**
  * @template TStates of IterableListValue
  * @template TState of JsonSchemaAwareRecord
  * @template TId of ValueObject
- * @template-extends FilterResolver<TState>
  */
-final class DocumentStoreFilterResolver extends FilterResolver
+final class StatesFilterResolver extends FilterResolver
 {
     /** @var DefaultStateRepository<TStates, TState, TId> */
     protected DefaultStateRepository $repository;
@@ -43,19 +42,30 @@ final class DocumentStoreFilterResolver extends FilterResolver
         return $this;
     }
 
+    public function setFilter(mixed $filter): FilterResolver
+    {
+        if ($this->filter instanceof Filter) {
+            $filter = $filter instanceof Filter
+                ? new AndFilter($this->filter, $filter)
+                : $this->filter;
+        }
+
+        return parent::setFilter($filter);
+    }
+
     /**
      * @inheritDoc
      */
-    protected function states(): array
+    protected function collection(): array
     {
+        /** @var Filter|null $filter */
         $filter = $this->filter();
-        assert(! $filter instanceof Closure);
+        /** @var OrderBy|null $orderBy */
         $orderBy = $this->orderBy();
-        assert(! $orderBy instanceof Closure);
 
         /** @var array<TState> $items */
         $items = $this->repository
-            ->findDocumentStates(
+            ->findStates(
                 $filter,
                 $this->skip(),
                 $this->itemsPerPage(),
@@ -69,7 +79,7 @@ final class DocumentStoreFilterResolver extends FilterResolver
     /**
      * @inheritDoc
      */
-    protected function totalItems(array $states): int
+    protected function totalItems(array $collection): int
     {
         return $this->repository->countDocuments(new AnyFilter());
     }
@@ -77,10 +87,10 @@ final class DocumentStoreFilterResolver extends FilterResolver
     /**
      * @inheritDoc
      */
-    protected function result(array $states, int $page, int $itemsPerPage, int $totalItems): mixed
+    protected function result(array $collection, int $page, int $itemsPerPage, int $totalItems): mixed
     {
         return new Paginator(
-            $states,
+            $collection,
             $page,
             $itemsPerPage,
             $totalItems

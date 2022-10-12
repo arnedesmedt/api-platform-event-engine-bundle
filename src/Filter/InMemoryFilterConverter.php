@@ -41,6 +41,7 @@ final class InMemoryFilterConverter extends FilterConverter
             return null;
         }
 
+        /** @var array<string, string> $orderParameters */
         $orderParameters = $filters[$this->orderParameterName];
 
         return static function (array $items) use ($orderParameters) {

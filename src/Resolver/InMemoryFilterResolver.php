@@ -7,18 +7,13 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Resolver;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\InMemoryFilterConverter;
 use ApiPlatform\State\Pagination\ArrayPaginator;
 use Closure;
-use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 
 use function count;
 
-/**
- * @template TState of JsonSchemaAwareRecord
- * @template-extends FilterResolver<TState>
- */
 final class InMemoryFilterResolver extends FilterResolver
 {
-    /** @var array<TState> */
-    private array $states;
+    /** @var array<mixed> */
+    private array $collection;
 
     public function __construct(InMemoryFilterConverter $filterConverter)
     {
@@ -26,11 +21,11 @@ final class InMemoryFilterResolver extends FilterResolver
     }
 
     /**
-     * @param array<TState> $states
+     * @param array<mixed> $collection
      */
-    public function setStates(array $states): static
+    public function setCollection(array $collection): static
     {
-        $this->states = $states;
+        $this->collection = $collection;
 
         return $this;
     }
@@ -38,19 +33,19 @@ final class InMemoryFilterResolver extends FilterResolver
     /**
      * @inheritDoc
      */
-    protected function states(): array
+    protected function collection(): array
     {
-        $states = $this->states;
+        $states = $this->collection;
         /** @var Closure|null $filter */
         $filter = $this->filter();
         /** @var Closure|null $order */
         $order = $this->orderBy();
 
-        if ($filter) {
+        if ($filter instanceof Closure) {
             $states = ($filter)($states);
         }
 
-        if ($order) {
+        if ($order instanceof Closure) {
             $states = ($order)($states);
         }
 
@@ -60,18 +55,18 @@ final class InMemoryFilterResolver extends FilterResolver
     /**
      * @inheritDoc
      */
-    protected function totalItems(array $states): int
+    protected function totalItems(array $collection): int
     {
-        return count($states);
+        return count($collection);
     }
 
     /**
      * @inheritDoc
      */
-    protected function result(array $states, int $page, int $itemsPerPage, int $totalItems): mixed
+    protected function result(array $collection, int $page, int $itemsPerPage, int $totalItems): mixed
     {
         return new ArrayPaginator(
-            $states,
+            $collection,
             ($page - 1) * $itemsPerPage,
             $itemsPerPage,
         );

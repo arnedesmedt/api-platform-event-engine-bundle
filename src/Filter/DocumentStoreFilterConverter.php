@@ -38,6 +38,7 @@ final class DocumentStoreFilterConverter extends FilterConverter
             return null;
         }
 
+        /** @var array<string, string> $orderProperties */
         $orderProperties = $filters[$this->orderParameterName];
 
         $orders = array_map(
@@ -71,6 +72,7 @@ final class DocumentStoreFilterConverter extends FilterConverter
         }
 
         $descriptions = $searchFilter->getDescription($resourceClass);
+        /** @var array<string, string> $filters */
         $filters = array_intersect_key($filters, $descriptions);
 
         $filters = array_map(

@@ -8,26 +8,20 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\FilterConverter;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
 use ADS\Bundle\EventEngineBundle\Resolver\MetaDataResolver;
 use Closure;
-use EventEngine\DocumentStore\Filter\AndFilter;
 use EventEngine\DocumentStore\Filter\Filter;
-use EventEngine\DocumentStore\OrderBy\OrderBy;
-use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 
 use function assert;
 
-/**
- * @template TState of JsonSchemaAwareRecord
- */
 abstract class FilterResolver implements MetaDataResolver
 {
     protected FilterConverter $filterConverter;
-    protected OrderBy|Closure|null $orderBy = null;
-    protected Filter|Closure|null $filter = null;
+    protected mixed $orderBy = null;
+    protected mixed $filter = null;
     private ?int $skip = null;
     private ?int $itemsPerPage = null;
     private ?int $page = null;
-    /** @var array<string> */
-    private array $filters = [];
+    /** @var array<string, mixed> */
+    private array $requestFilters = [];
     /** @var array<string, array<string, string>> */
     private array $context = [];
 
@@ -39,19 +33,33 @@ abstract class FilterResolver implements MetaDataResolver
     public function setMetaData(array $metaData): static
     {
         $this->context = $metaData['context'] ?? [];
-        $this->filters = $this->context['filters'] ?? [];
+        $this->requestFilters = $this->context['filters'] ?? [];
 
         return $this;
     }
 
-    public function orderBy(): Closure|OrderBy|null
+    public function orderBy(): mixed
     {
         return $this->orderBy;
     }
 
-    public function filter(): Closure|Filter|null
+    public function setOrderBy(mixed $orderBy): self
+    {
+        $this->orderBy = $orderBy;
+
+        return $this;
+    }
+
+    public function filter(): mixed
     {
         return $this->filter;
+    }
+
+    public function setFilter(mixed $filter): self
+    {
+        $this->filter = $filter;
+
+        return $this;
     }
 
     public function skip(): ?int
@@ -59,9 +67,23 @@ abstract class FilterResolver implements MetaDataResolver
         return $this->skip;
     }
 
+    public function setSkip(?int $skip): self
+    {
+        $this->skip = $skip;
+
+        return $this;
+    }
+
     public function itemsPerPage(): ?int
     {
         return $this->itemsPerPage;
+    }
+
+    public function setItemsPerPage(?int $itemsPerPage): self
+    {
+        $this->itemsPerPage = $itemsPerPage;
+
+        return $this;
     }
 
     public function page(): ?int
@@ -69,64 +91,56 @@ abstract class FilterResolver implements MetaDataResolver
         return $this->page;
     }
 
+    public function setPage(?int $page): self
+    {
+        $this->page = $page;
+
+        return $this;
+    }
+
     public function __invoke(mixed $message): mixed
     {
         assert($message instanceof ApiPlatformMessage);
 
-        /** @var array<array<string>> $filters */
-        $filters = $this->filters;
-        $this->orderBy = $this->filterConverter->order($filters);
+        $this
+            ->setOrderBy($this->filterConverter->order($this->requestFilters))
+            ->setFilter($this->filterConverter->filter($this->requestFilters, $message::__resource()))
+            ->setSkip($this->filterConverter->skip($this->requestFilters))
+            ->setItemsPerPage($this->filterConverter->itemsPerPage($this->requestFilters))
+            ->setPage($this->filterConverter->page($this->requestFilters));
 
-        $filter = $this->filterConverter->filter($this->filters, $message::__resource());
-        $this->addFilter($filter);
-
-        /** @var array<string, int> $filters */
-        $filters = $this->filters;
-        $this->skip = $this->filterConverter->skip($filters);
-        $this->itemsPerPage = $this->filterConverter->itemsPerPage($filters);
-        $this->page = $this->filterConverter->page($filters);
-
-        $states = $this->states();
-        $totalItems = $this->totalItems($states);
+        $collection = $this->collection();
+        $totalItems = $this->totalItems($collection);
         $skip = $this->skip();
         $itemsPerPage = $this->itemsPerPage();
         $page = $this->page();
 
         if ($skip === null || $itemsPerPage === null || $page === null) {
-            return $states;
+            return $collection;
         }
 
-        return $this->result($states, $page, $itemsPerPage, $totalItems);
+        return $this->result($collection, $page, $itemsPerPage, $totalItems);
     }
 
     public function addFilter(Filter|Closure|null $filter = null): void
     {
-        if ($filter === null || $filter instanceof Closure) {
-            return;
-        }
-
-        if ($this->filter instanceof Filter) {
-            $this->filter = new AndFilter($this->filter, $filter);
-        }
-
-        $this->filter = $filter;
     }
 
     /**
-     * @return array<TState>
+     * @return array<mixed>
      */
-    abstract protected function states(): array;
+    abstract protected function collection(): array;
 
     /**
-     * @param array<TState> $states
+     * @param array<mixed> $collection
      */
-    abstract protected function totalItems(array $states): int;
+    abstract protected function totalItems(array $collection): int;
 
     /**
-     * @param array<TState> $states
+     * @param array<mixed> $collection
      */
     abstract protected function result(
-        array $states,
+        array $collection,
         int $page,
         int $itemsPerPage,
         int $totalItems

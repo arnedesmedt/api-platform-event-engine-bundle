@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Filter;
 
-use Closure;
-use EventEngine\DocumentStore\Filter\Filter;
-use EventEngine\DocumentStore\OrderBy\OrderBy;
-
 use function intval;
 
 abstract class FilterConverter
@@ -21,18 +17,18 @@ abstract class FilterConverter
     }
 
     /**
-     * @param array<array<string>> $filters
+     * @param array<string, mixed> $filters
      */
-    abstract public function order(array $filters): OrderBy|Closure|null;
+    abstract public function order(array $filters): mixed;
 
     /**
-     * @param array<string> $filters
+     * @param array<string, mixed> $filters
      * @param class-string $resourceClass
      */
-    abstract public function filter(array $filters, string $resourceClass): Filter|Closure|null;
+    abstract public function filter(array $filters, string $resourceClass): mixed;
 
     /**
-     * @param array<string, int> $filters
+     * @param array<string, mixed> $filters
      */
     public function skip(array $filters): ?int
     {
@@ -47,7 +43,7 @@ abstract class FilterConverter
     }
 
     /**
-     * @param array<string, int> $filters
+     * @param array<string, mixed> $filters
      */
     public function itemsPerPage(array $filters): ?int
     {
@@ -59,7 +55,7 @@ abstract class FilterConverter
     }
 
     /**
-     * @param array<string, int> $filters
+     * @param array<string, mixed> $filters
      */
     public function page(array $filters): ?int
     {
