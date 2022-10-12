@@ -104,6 +104,12 @@ services:
         tags:
             - { name: serializer.normalizer, priority: -700 }
 
+    ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\ArrayPaginatorNormalizer:
+        arguments:
+            - '@serializer'
+        tags:
+            - { name: serializer.normalizer, priority: -900 }
+
     ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\PropertyExtractorNormalizer:
         arguments:
             - '@api_platform.metadata.property.name_collection_factory'

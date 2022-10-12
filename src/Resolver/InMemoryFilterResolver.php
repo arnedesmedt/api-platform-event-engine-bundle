@@ -8,7 +8,6 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\InMemoryFilterConverter;
 use ApiPlatform\State\Pagination\ArrayPaginator;
 use Closure;
 
-use function array_values;
 use function count;
 
 final class InMemoryFilterResolver extends FilterResolver
@@ -50,7 +49,7 @@ final class InMemoryFilterResolver extends FilterResolver
             $collection = ($order)($collection);
         }
 
-        return array_values($collection);
+        return $collection;
     }
 
     /**
