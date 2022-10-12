@@ -221,7 +221,7 @@ services:
     ADS\Bundle\ApiPlatformEventEngineBundle\Resolver\InMemoryFilterResolver:
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Filter\InMemoryFilterConverter'
-    ADS\Bundle\ApiPlatformEventEngineBundle\Resolver\DocumentStoreFilterResolver:
+    ADS\Bundle\ApiPlatformEventEngineBundle\Resolver\StatesFilterResolver:
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Filter\DocumentStoreFilterConverter'
 
