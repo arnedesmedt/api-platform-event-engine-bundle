@@ -23,7 +23,7 @@ abstract class StatesResolver implements MetaDataResolver
     /**
      * @param StatesFilterResolver<TStates, TState, TId> $documentStoreFilterResolver
      */
-    public function __construct(private readonly StatesFilterResolver $documentStoreFilterResolver)
+    public function __construct(protected readonly StatesFilterResolver $documentStoreFilterResolver)
     {
     }
 
