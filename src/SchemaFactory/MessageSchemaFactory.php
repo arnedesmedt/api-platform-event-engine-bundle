@@ -66,8 +66,6 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
         bool $forceCollection = false
     ): Schema {
         $schema ??= new Schema();
-        $input = $operation?->getInput();
-        $messageClass = $input['class'] ?? null;
 
         if (MessageTypeFactory::isComplexType($className)) {
             $schema['type'] = MessageTypeFactory::complexType($className);
@@ -75,7 +73,10 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
             return $schema;
         }
 
+        $input = $operation?->getInput();
+        $messageClass = $input['class'] ?? null;
         $classReflectionClass = new ReflectionClass($className);
+
         if ($classReflectionClass->implementsInterface(Discriminator::class)) {
             $definitionName = $className::__type() . ($format === 'json' ? '' : '.' . $format);
             $ref = sprintf(
