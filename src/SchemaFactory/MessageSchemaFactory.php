@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory;
 
+use ADS\Bundle\ApiPlatformEventEngineBundle\TypeFactory\MessageTypeFactory;
 use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
 use ADS\Bundle\EventEngineBundle\Response\HasResponses;
 use ADS\JsonImmutableObjects\Polymorphism\Discriminator;
@@ -67,6 +68,12 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
         $schema ??= new Schema();
         $input = $operation?->getInput();
         $messageClass = $input['class'] ?? null;
+
+        if (MessageTypeFactory::isComplexType($className)) {
+            $schema['type'] = MessageTypeFactory::complexType($className);
+
+            return $schema;
+        }
 
         $classReflectionClass = new ReflectionClass($className);
         if ($classReflectionClass->implementsInterface(Discriminator::class)) {
@@ -177,6 +184,11 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
                 );
 
                 if ($statusCode === $defaultStatusCode) {
+                    if (MessageTypeFactory::isComplexType($responseClass)) {
+                        $schema['type'] = MessageTypeFactory::complexType($responseClass);
+                        continue;
+                    }
+
                     $schema = $responseSchema;
                     continue;
                 }

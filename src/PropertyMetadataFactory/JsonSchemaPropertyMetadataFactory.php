@@ -21,7 +21,6 @@ use ReflectionNamedType;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Request;
 
-use function addslashes;
 use function array_filter;
 use function in_array;
 use function method_exists;
@@ -72,13 +71,7 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
             ->withReadable(true)
             ->withWritable(true)
             ->withReadableLink(true)
-            ->withOpenapiContext(array_filter(
-                [
-                    'type' => MessageTypeFactory::complexType($className)
-                        ? '\\' . addslashes($className)
-                        : null,
-                ]
-            ));
+            ->withOpenapiContext(array_filter(['type' => MessageTypeFactory::complexType($className)]));
     }
 
     private function addDefault(ApiProperty &$apiProperty, string $resourceClass, string $property): self

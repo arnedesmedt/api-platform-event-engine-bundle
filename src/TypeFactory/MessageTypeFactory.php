@@ -13,6 +13,8 @@ use RuntimeException;
 use Symfony\Component\PropertyInfo\Type;
 
 use function addslashes;
+use function assert;
+use function is_string;
 use function preg_match;
 use function preg_quote;
 use function reset;
@@ -37,6 +39,10 @@ final class MessageTypeFactory implements TypeFactoryInterface
         ?array $serializerContext = null,
         ?Schema $schema = null
     ): array {
+        if (self::isComplexType($type->getClassName())) {
+            return [];
+        }
+
         $newType = $this->typeFactory->getType($type, $format, $readableLink, $serializerContext, $schema);
 
         if ($type->isCollection()) {
@@ -76,12 +82,12 @@ final class MessageTypeFactory implements TypeFactoryInterface
 
         $reflectionClass = new ReflectionClass($className);
 
-        if (self::complexType($className)) {
+        if (self::isComplexType($className)) {
             if (isset($existingType['$ref'])) {
                 unset($existingType['$ref']);
             }
 
-            $existingType['type'] = '\\' . addslashes($className);
+            $existingType['type'] = self::complexType($className);
         }
 
         if ($reflectionClass->implementsInterface(ProvidesValidationRules::class)) {
@@ -96,10 +102,21 @@ final class MessageTypeFactory implements TypeFactoryInterface
         return $existingType;
     }
 
-    public static function complexType(?string $className): bool
+    public static function isComplexType(?string $className): bool
     {
         return isset($_GET['complex'])
             && $className
             && preg_match(sprintf('#%s#', preg_quote($_GET['complex'], '#')), $className);
+    }
+
+    public static function complexType(?string $className): ?string
+    {
+        if (! self::isComplexType($className)) {
+            return null;
+        }
+
+        assert(is_string($className));
+
+        return '\\' . addslashes($className);
     }
 }

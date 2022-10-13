@@ -38,7 +38,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
 use Symfony\Component\PropertyInfo\Type;
 
-use function addslashes;
 use function array_combine;
 use function array_filter;
 use function array_key_exists;
@@ -148,9 +147,9 @@ final class MessageResourceMetadataCollectionFactory implements ResourceMetadata
                         ],
                         static fn ($value) => $value !== null
                     ),
-                        normalizationContext: empty($normalizationContext) ? null : $normalizationContext,
-                        denormalizationContext: empty($denormalizationContext) ? null : $denormalizationContext,
-                        processor: $messageClass::__processor() ?? (
+                    normalizationContext: empty($normalizationContext) ? null : $normalizationContext,
+                    denormalizationContext: empty($denormalizationContext) ? null : $denormalizationContext,
+                    processor: $messageClass::__processor() ?? (
                         $reflectionClass->implementsInterface(Command::class)
                             ? CommandProcessor::class
                             : null
@@ -270,14 +269,11 @@ final class MessageResourceMetadataCollectionFactory implements ResourceMetadata
                 $type = null;
                 if (isset($_GET['complex'])) {
                     $types = $this->propertyInfoExtractor->getTypes($messageClass, $parameterName) ?? [];
-                    $type = reset($types);
+                    $type = empty($types) ? null : reset($types);
                 }
 
-                if (
-                    $type
-                    && MessageTypeFactory::complexType($type->getClassName())
-                ) {
-                    $propertySchema['type'] = '\\' . addslashes($type->getClassName() ?? '');
+                if (MessageTypeFactory::isComplexType($type?->getClassName())) {
+                    $propertySchema['type'] = MessageTypeFactory::complexType($type?->getClassName());
                 }
 
                 $openApiSchema = OpenApiSchemaFactory::toOpenApiSchema($propertySchema);
