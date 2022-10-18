@@ -6,10 +6,10 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Provider;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Resolver\InMemoryFilterResolver;
 use ApiPlatform\Metadata\Operation;
+use ApiPlatform\State\Pagination\PartialPaginatorInterface;
 use EventEngine\Data\ImmutableRecord;
 use EventEngine\Messaging\MessageProducer;
-
-use function is_array;
+use Traversable;
 
 /**
  * @template T of ImmutableRecord
@@ -43,7 +43,7 @@ final class DocumentStoreCollectionProvider extends Provider
         /** @var array<T>|object $result */
         $result = $this->eventEngine->produce($message);
 
-        if (! is_array($result)) {
+        if ($result instanceof PartialPaginatorInterface || ! $result instanceof Traversable) {
             return $result;
         }
 

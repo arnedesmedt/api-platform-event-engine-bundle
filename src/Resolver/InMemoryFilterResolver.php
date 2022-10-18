@@ -7,8 +7,10 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Resolver;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\InMemoryFilterConverter;
 use ApiPlatform\State\Pagination\ArrayPaginator;
 use Closure;
+use Traversable;
 
 use function count;
+use function iterator_to_array;
 
 final class InMemoryFilterResolver extends FilterResolver
 {
@@ -21,10 +23,14 @@ final class InMemoryFilterResolver extends FilterResolver
     }
 
     /**
-     * @param array<mixed> $collection
+     * @param Traversable<mixed>|array<mixed> $collection
      */
-    public function setCollection(array $collection): static
+    public function setCollection(Traversable|array $collection): static
     {
+        if ($collection instanceof Traversable) {
+            $collection = iterator_to_array($collection);
+        }
+
         $this->collection = $collection;
 
         return $this;
