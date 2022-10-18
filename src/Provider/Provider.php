@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Provider;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\FinderException;
-use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use EventEngine\Data\ImmutableRecord;
 use EventEngine\Messaging\Message;
@@ -19,29 +18,6 @@ abstract class Provider implements ProviderInterface
 {
     public function __construct(protected MessageProducer $eventEngine)
     {
-    }
-
-    /**
-     * @param array<mixed> $uriVariables
-     * @param array<mixed> $context
-     *
-     * @return array<T>|object
-     */
-    protected function collectionProvider(
-        Operation $operation,
-        array $uriVariables = [],
-        array $context = []
-    ): array|object {
-        $message = $this->needMessage($context, $operation->getName());
-
-        if (! empty($context['filters'] ?? [])) {
-            $message = $message->withAddedMetadata('context', $context);
-        }
-
-        /** @var array<T>|object $result */
-        $result = $this->eventEngine->produce($message);
-
-        return $result;
     }
 
     /**

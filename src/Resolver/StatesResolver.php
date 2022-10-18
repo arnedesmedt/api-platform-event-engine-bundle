@@ -21,11 +21,10 @@ abstract class StatesResolver implements MetaDataResolver
     protected DefaultStateRepository $repository;
 
     /**
-     * @param StatesFilterResolver<TStates, TState, TId> $documentStoreFilterResolver
+     * @var StatesFilterResolver<TStates, TState, TId> $statesFilterResolver
+     * @required
      */
-    public function __construct(protected readonly StatesFilterResolver $documentStoreFilterResolver)
-    {
-    }
+    public StatesFilterResolver $statesFilterResolver;
 
     /**
      * @param array<string, array<string, array<string, string>>> $metaData
@@ -34,15 +33,15 @@ abstract class StatesResolver implements MetaDataResolver
      */
     public function setMetaData(array $metaData): static
     {
-        $this->documentStoreFilterResolver->setMetaData($metaData);
+        $this->statesFilterResolver->setMetaData($metaData);
 
         return $this;
     }
 
     public function __invoke(mixed $message): mixed
     {
-        $this->documentStoreFilterResolver->setRepository($this->repository);
+        $this->statesFilterResolver->setRepository($this->repository);
 
-        return ($this->documentStoreFilterResolver)($message);
+        return ($this->statesFilterResolver)($message);
     }
 }

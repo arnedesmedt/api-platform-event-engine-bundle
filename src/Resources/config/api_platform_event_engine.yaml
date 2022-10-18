@@ -24,6 +24,7 @@ services:
 
     ADS\Bundle\ApiPlatformEventEngineBundle\Provider\DocumentStoreCollectionProvider:
         arguments:
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Resolver\InMemoryFilterResolver'
             - '@ADS\Bundle\EventEngineBundle\Messenger\QueueableEventEngine'
         tags:
             - 'api_platform.state_provider'
