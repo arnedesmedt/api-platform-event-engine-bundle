@@ -8,6 +8,7 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\Resolver\InMemoryFilterResolver;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\PartialPaginatorInterface;
 use EventEngine\Data\ImmutableRecord;
+use EventEngine\Messaging\MessageBag;
 use EventEngine\Messaging\MessageProducer;
 use Traversable;
 
@@ -55,7 +56,7 @@ final class DocumentStoreCollectionProvider extends Provider
         /** @var array<T>|object $filteredResult */
         $filteredResult = ($this->inMemoryFilterResolver
             ->setMetaData($message->metadata())
-            ->setCollection($result))($message);
+            ->setCollection($result))($message->get(MessageBag::MESSAGE));
 
         return $filteredResult;
     }
