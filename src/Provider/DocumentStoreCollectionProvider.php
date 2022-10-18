@@ -11,6 +11,8 @@ use EventEngine\Data\ImmutableRecord;
 use EventEngine\Messaging\MessageProducer;
 use Traversable;
 
+use function is_array;
+
 /**
  * @template T of ImmutableRecord
  * @extends  Provider<T>
@@ -43,7 +45,10 @@ final class DocumentStoreCollectionProvider extends Provider
         /** @var array<T>|object $result */
         $result = $this->eventEngine->produce($message);
 
-        if ($result instanceof PartialPaginatorInterface || ! $result instanceof Traversable) {
+        if (
+            $result instanceof PartialPaginatorInterface
+            || ! ($result instanceof Traversable || is_array($result))
+        ) {
             return $result;
         }
 
