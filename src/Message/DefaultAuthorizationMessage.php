@@ -11,6 +11,8 @@ use ReflectionMethod;
 use Symfony\Component\HttpFoundation\Response;
 
 use function array_filter;
+use function array_merge;
+use function array_unique;
 use function preg_match;
 
 trait DefaultAuthorizationMessage
@@ -35,10 +37,10 @@ trait DefaultAuthorizationMessage
         $authorizationAttributes = [];
 
         foreach ($authorizationMethods as $authorizationMethod) {
-            $authorizationAttributes += $authorizationMethod->invoke(null);
+            $authorizationAttributes = array_merge($authorizationAttributes, $authorizationMethod->invoke(null));
         }
 
-        return $authorizationAttributes;
+        return array_unique($authorizationAttributes);
     }
 
     /**
