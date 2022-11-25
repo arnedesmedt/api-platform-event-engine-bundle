@@ -6,6 +6,9 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Message;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Responses\Forbidden;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Responses\Unauthorized;
+use ADS\Bundle\EventEngineBundle\Command\Command;
+use ADS\Bundle\EventEngineBundle\Query\Query;
+use ADS\Util\StringUtil;
 use ReflectionClass;
 use ReflectionMethod;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,7 +16,11 @@ use Symfony\Component\HttpFoundation\Response;
 use function array_filter;
 use function array_merge;
 use function array_unique;
+use function class_implements;
+use function in_array;
 use function preg_match;
+use function sprintf;
+use function strtoupper;
 
 trait DefaultAuthorizationMessage
 {
@@ -52,5 +59,30 @@ trait DefaultAuthorizationMessage
             Response::HTTP_UNAUTHORIZED => Unauthorized::class,
             Response::HTTP_FORBIDDEN => Forbidden::class,
         ];
+    }
+
+    /**
+     * @return array<string>
+     */
+    public static function __extraAuthorizationForResources(): array
+    {
+        $interfaces = class_implements(static::class);
+
+        if ($interfaces === false) {
+            return [];
+        }
+
+        $entityName = strtoupper(StringUtil::entityNameFromClassName(static::class));
+
+        return array_filter(
+            [
+                in_array(Command::class, $interfaces)
+                    ? sprintf('ROLE_OAUTH2_%s:WRITE', $entityName)
+                    : null,
+                in_array(Query::class, $interfaces)
+                    ? sprintf('ROLE_OAUTH2_%s:READ', $entityName)
+                    : null,
+            ]
+        );
     }
 }
