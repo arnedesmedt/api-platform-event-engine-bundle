@@ -76,6 +76,7 @@ trait DefaultAuthorizationMessage
 
         return array_filter(
             [
+                sprintf('ROLE_OAUTH2_%s', $entityName),
                 in_array(Command::class, $interfaces)
                     ? sprintf('ROLE_OAUTH2_%s:WRITE', $entityName)
                     : null,
