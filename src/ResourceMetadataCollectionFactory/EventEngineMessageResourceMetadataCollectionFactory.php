@@ -18,7 +18,6 @@ use ADS\Bundle\EventEngineBundle\Command\Command;
 use ADS\Bundle\EventEngineBundle\Message\ValidationMessage;
 use ADS\Bundle\EventEngineBundle\Query\Query;
 use ADS\Bundle\EventEngineBundle\Response\HasResponses;
-use ADS\Util\StringUtil;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\HttpOperation;
 use ApiPlatform\Metadata\Operations;
@@ -283,7 +282,7 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
                 $openApiSchema = OpenApiSchemaFactory::toOpenApiSchema($propertySchema);
 
                 return [
-                    'name' => StringUtil::decamelize($parameterName),
+                    'name' => $parameterName,
                     'in' => in_array($parameterName, $pathParameterNames) ? 'path' : 'query',
                     'schema' => $openApiSchema,
                     'required' => in_array($parameterName, $pathSchema['required']),
