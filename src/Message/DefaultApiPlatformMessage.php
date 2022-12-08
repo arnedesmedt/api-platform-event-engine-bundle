@@ -115,11 +115,6 @@ trait DefaultApiPlatformMessage
             : null;
     }
 
-    public static function __stateless(): ?bool
-    {
-        return null;
-    }
-
     public static function __schemaStateClass(): string
     {
         return static::__resource();
@@ -173,16 +168,6 @@ trait DefaultApiPlatformMessage
         }
 
         return $responses;
-    }
-
-    public static function __inputClass(): ?string
-    {
-        return null;
-    }
-
-    public static function __outputClass(): ?string
-    {
-        return null;
     }
 
     /**

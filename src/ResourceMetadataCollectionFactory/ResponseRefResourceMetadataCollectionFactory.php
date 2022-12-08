@@ -41,6 +41,7 @@ final class ResponseRefResourceMetadataCollectionFactory implements ResourceMeta
      */
     public function create(string $resourceClass): ResourceMetadataCollection
     {
+        // todo move this to event engine message resource metadata collection factory
         $resourceMetadataCollection = $this->decorated->create($resourceClass);
 
         /** @var ApiResource $resource */

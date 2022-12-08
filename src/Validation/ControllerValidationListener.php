@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Validation;
 
+use ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\CustomContextBuilder;
 use ApiPlatform\Symfony\EventListener\ValidateListener;
-use EventEngine\Messaging\MessageBag;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 
 final class ControllerValidationListener
@@ -21,8 +21,7 @@ final class ControllerValidationListener
     public function onKernelView(ViewEvent $event): void
     {
         $request = $event->getRequest();
-        /** @var MessageBag|null $message */
-        $message = $request->attributes->get('message');
+        $message = CustomContextBuilder::messageFromRequest($request);
 
         if ($message !== null) {
             return;

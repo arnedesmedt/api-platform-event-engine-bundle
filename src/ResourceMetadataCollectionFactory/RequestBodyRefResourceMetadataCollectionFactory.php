@@ -33,6 +33,7 @@ final class RequestBodyRefResourceMetadataCollectionFactory implements ResourceM
      */
     public function create(string $resourceClass): ResourceMetadataCollection
     {
+        // todo move this to event engine message resource metadata collection factory
         $resourceMetadataCollection = $this->decorated->create($resourceClass);
 
         /** @var ApiResource $resource */
