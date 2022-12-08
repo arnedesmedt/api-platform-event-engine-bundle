@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Validation;
 
+use ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\CustomContextBuilder;
 use ApiPlatform\Metadata\Resource\Factory\ResourceMetadataCollectionFactoryInterface;
 use ApiPlatform\Symfony\EventListener\EventPriorities;
 use ApiPlatform\Util\RequestAttributesExtractor;
 use ApiPlatform\Validator\ValidatorInterface;
-use EventEngine\Messaging\MessageBag;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 
@@ -33,19 +34,20 @@ final class RequestValidationListener implements EventSubscriberInterface
 
     public function validateMessage(RequestEvent $event): void
     {
-        if (! $event->isMainRequest()) {
-            return;
-        }
-
         $request = $event->getRequest();
         $attributes = RequestAttributesExtractor::extractAttributes($request);
+        $method = $request->getMethod();
 
-        if (! isset($attributes['resource_class'])) {
+        if (
+            ($method !== Request::METHOD_DELETE && ! $request->isMethodSafe())
+            || ! $attributes
+            || ! $attributes['receive']
+            || ! isset($attributes['resource_class'])
+        ) {
             return;
         }
 
-        /** @var MessageBag|null $message */
-        $message = $request->attributes->get('message');
+        $message = CustomContextBuilder::messageFromRequest($request);
 
         if ($message === null) {
             return;

@@ -7,9 +7,10 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Serializer;
 use ArrayObject;
 use EventEngine\Messaging\CommandDispatchResult;
 use EventEngine\Messaging\CommandDispatchResultCollection;
+use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
-final class CommandDispatchResultNormalizer implements NormalizerInterface
+final class EmptyResponseNormalizer implements NormalizerInterface
 {
     /**
      * @param array<mixed> $context
@@ -21,7 +22,7 @@ final class CommandDispatchResultNormalizer implements NormalizerInterface
         ?string $format = null,
         array $context = []
     ): array|string|int|float|bool|ArrayObject|null {
-        return null;
+        return new ArrayObject();
     }
 
     /**
@@ -29,6 +30,8 @@ final class CommandDispatchResultNormalizer implements NormalizerInterface
      */
     public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
-        return $data instanceof CommandDispatchResult || $data instanceof CommandDispatchResultCollection;
+        return $data instanceof CommandDispatchResult
+            || $data instanceof CommandDispatchResultCollection
+            || $data instanceof Envelope;
     }
 }

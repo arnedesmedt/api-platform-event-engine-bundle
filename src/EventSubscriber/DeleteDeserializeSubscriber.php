@@ -37,6 +37,7 @@ final class DeleteDeserializeSubscriber implements EventSubscriberInterface
 
     public function deserializeForDelete(RequestEvent $requestEvent): void
     {
+        // todo check what to do with this one?
         $request = $requestEvent->getRequest();
         $method = $request->getMethod();
 

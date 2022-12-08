@@ -6,16 +6,22 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Serializer;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\FilterFinder;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\SearchFilter;
+use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
+use ADS\Bundle\EventEngineBundle\Command\Command;
 use ADS\Bundle\EventEngineBundle\Messenger\Queueable;
-use ADS\Util\ArrayUtil;
+use ADS\Bundle\EventEngineBundle\Query\Query;
+use ApiPlatform\Metadata\HttpOperation;
 use EventEngine\EventEngine;
-use ReflectionClass;
+use RuntimeException;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 use function array_diff_key;
+use function array_filter;
 use function array_key_exists;
 use function array_merge;
 use function assert;
+use function class_implements;
+use function in_array;
 use function is_array;
 use function method_exists;
 
@@ -24,6 +30,7 @@ final class MessageNormalizer implements DenormalizerInterface
     public function __construct(
         private EventEngine $eventEngine,
         private FilterFinder $filterFinder,
+        private readonly DenormalizerInterface $denormalizer,
         private string $pageParameterName = 'page',
         private string $orderParameterName = 'order',
         private string $itemsPerPageParameterName = 'items-per-page'
@@ -31,22 +38,22 @@ final class MessageNormalizer implements DenormalizerInterface
     }
 
     /**
-     * @param array<string, class-string> $context
+     * @param array<string, mixed> $context
      **/
     public function denormalize(mixed $data, string $type, ?string $format = null, array $context = []): mixed
     {
-        if ($context['message'] ?? null) {
-            return $context['message'];
-        }
+        $data = $this->data($data, $type, $context);
+        $context['message_as_array'] = true;
+        $message = $this->denormalizer->denormalize($data, $type, $format, $context);
 
-        $payload = $this->messageData($context['message_class'], $data, $type, $context);
-        $metadata = $this->messageMetadata($context['message_class'], $payload);
+        /** @var array<string, string> $input */
+        $input = $context['input'];
 
         return $this->eventEngine->messageFactory()->createMessageFromArray(
-            $context['message_class'],
+            $input['class'],
             [
-                'payload' => $payload,
-                'metadata' => $metadata,
+                'payload' => $message,
+                'metadata' => $this->metadata($context),
             ]
         );
     }
@@ -60,32 +67,37 @@ final class MessageNormalizer implements DenormalizerInterface
         ?string $format = null,
         array $context = []
     ): bool {
-        return isset($context['message_class']);
+        return ($context['input'] ?? false)
+            && $this->denormalizer->supportsDenormalization($data, $type, $format);
     }
 
     /**
-     * @param class-string $message
      * @param array<string, mixed> $context
      *
      * @return array<mixed>
      */
-    private function messageData(string $message, mixed $data, string $type, array $context): array
+    private function data(mixed $data, string $type, array $context): array
     {
+        /** @var class-string<ApiPlatformMessage> $messageClass */
+        $messageClass = self::needMessageClassFromContext($context);
+
         if (
-            method_exists($message, '__requestBodyArrayProperty')
-            && $message::__requestBodyArrayProperty()
+            method_exists($messageClass, '__requestBodyArrayProperty')
+            && $messageClass::__requestBodyArrayProperty()
         ) {
-            $data = [$message::__requestBodyArrayProperty() => $data];
+            $data = [$messageClass::__requestBodyArrayProperty() => $data];
         }
 
         assert(is_array($data));
 
         $filter = ($this->filterFinder)($type, SearchFilter::class);
 
+        /** @var array<string, mixed> $uriVariables */
+        $uriVariables = $context['uri_variables'] ?? [];
+        $pathParameters = array_filter($uriVariables);
+        // todo how to handle query parameters? They won't be anymore in the context
         /** @var array<string, mixed> $queryParameters */
         $queryParameters = $context['query_parameters'] ?? [];
-        /** @var array<string, mixed> $pathParameters */
-        $pathParameters = $context['path_parameters'] ?? [];
 
         if ($filter !== null) {
             $descriptions = $filter->getDescription($type);
@@ -104,29 +116,64 @@ final class MessageNormalizer implements DenormalizerInterface
             unset($queryParameters[$this->itemsPerPageParameterName]);
         }
 
-        $data = array_merge(
+        return array_merge(
             $data,
             $pathParameters,
             $queryParameters
         );
-
-        return ArrayUtil::toCamelCasedKeys($data, true);
     }
 
     /**
-     * @param class-string $messageClass
+     * @param array<string, mixed> $context
      *
      * @return array<string, mixed>
      */
-    private function messageMetadata(string $messageClass, mixed $data): array
+    private function metadata(array $context): array
     {
-        $reflectionClass = new ReflectionClass($messageClass);
-        if (! $reflectionClass->implementsInterface(Queueable::class)) {
+        /** @var class-string<Queueable>|null $messageClass */
+        $messageClass = self::messageClassFromContext($context);
+
+        if ($messageClass === null) {
+            return [];
+        }
+
+        $interfaces = class_implements($messageClass);
+
+        if ($interfaces === false || ! in_array(Queueable::class, $interfaces)) {
             return [];
         }
 
         return [
-            'async' => $messageClass::__dispatchAsync($data),
+            'async' => $messageClass::__dispatchAsync(),
         ];
+    }
+
+    /**
+     * @param array<string, mixed> $context
+     *
+     * @return class-string<Query|Command>
+     */
+    public static function needMessageClassFromContext(array $context): string
+    {
+        $messageClass = self::messageClassFromContext($context);
+
+        if ($messageClass === null) {
+            throw new RuntimeException('No message class found in the context.');
+        }
+
+        return $messageClass;
+    }
+
+    /**
+     * @param array<string, mixed> $context
+     *
+     * @return class-string<Query|Command>
+     */
+    public static function messageClassFromContext(array $context): string|null
+    {
+        /** @var HttpOperation|null $operation */
+        $operation = $context['operation'] ?? null;
+
+        return $operation?->getInput()['class'] ?? null;
     }
 }

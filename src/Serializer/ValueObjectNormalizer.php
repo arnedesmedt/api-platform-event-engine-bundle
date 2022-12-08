@@ -6,11 +6,14 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Serializer;
 
 use ADS\ValueObjects\ValueObject;
 use ArrayObject;
+use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 use function assert;
+use function class_exists;
+use function is_subclass_of;
 
-final class ValueObjectNormalizer implements NormalizerInterface
+final class ValueObjectNormalizer implements NormalizerInterface, DenormalizerInterface
 {
     /**
      * @param array<mixed> $context
@@ -33,5 +36,19 @@ final class ValueObjectNormalizer implements NormalizerInterface
     public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         return $data instanceof ValueObject;
+    }
+
+    /**
+     * @param array<mixed> $context
+     * @param class-string<ValueObject> $type
+     */
+    public function denormalize(mixed $data, string $type, ?string $format = null, array $context = []): ValueObject
+    {
+        return $type::fromValue($data);
+    }
+
+    public function supportsDenormalization(mixed $data, string $type, ?string $format = null): bool
+    {
+        return class_exists($type) && is_subclass_of($type, ValueObject::class);
     }
 }

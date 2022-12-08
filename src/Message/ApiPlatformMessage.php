@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Message;
 
+use ApiPlatform\State\ProcessorInterface;
 use EventEngine\JsonSchema\JsonSchemaAwareCollection;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 
@@ -26,9 +27,8 @@ interface ApiPlatformMessage extends JsonSchemaAwareRecord
 
     public static function __apiPlatformController(): string;
 
-    public static function __processor(): ?string;
-
-    public static function __stateless(): ?bool;
+    /** @return class-string<ProcessorInterface>|null */
+    public static function __processor(): string|null;
 
     /**
      * @return class-string<JsonSchemaAwareRecord>
@@ -38,7 +38,7 @@ interface ApiPlatformMessage extends JsonSchemaAwareRecord
     /**
      * @return class-string<JsonSchemaAwareCollection>
      */
-    public static function __schemaStatesClass(): ?string;
+    public static function __schemaStatesClass(): string|null;
 
     /**
      * @return array<string>
@@ -48,11 +48,7 @@ interface ApiPlatformMessage extends JsonSchemaAwareRecord
     /**
      * If the request body is an array, we use a property that will used for the request body
      */
-    public static function __requestBodyArrayProperty(): ?string;
-
-    public static function __inputClass(): ?string;
-
-    public static function __outputClass(): ?string;
+    public static function __requestBodyArrayProperty(): string|null;
 
     /**
      * @return array<string, mixed>
