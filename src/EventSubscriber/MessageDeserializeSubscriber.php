@@ -63,7 +63,7 @@ final class MessageDeserializeSubscriber implements EventSubscriberInterface
 
         /** @var array<string, string[]> $formats */
         $formats = $operation?->getInputFormats() ?? [];
-        $format = $method === Request::METHOD_DELETE
+        $format = $method === Request::METHOD_DELETE || $request->isMethodSafe()
             ? 'json'
             : $this->getFormat($request, $formats);
         $data = $request->attributes->get('data');
