@@ -99,8 +99,6 @@ services:
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataCollectionFactory\RemoveComplexResourceMetadataCollectionFactory.inner'
 
-
-
     ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\MessageNormalizer:
         arguments:
             - '@EventEngine\EventEngine'
