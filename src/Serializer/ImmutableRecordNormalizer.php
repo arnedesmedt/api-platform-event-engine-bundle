@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Serializer;
 
+use ADS\Util\ArrayUtil;
 use ApiPlatform\Serializer\AbstractItemNormalizer;
 use ArrayObject;
 use EventEngine\Data\ImmutableRecord;
@@ -110,6 +111,11 @@ final class ImmutableRecordNormalizer extends AbstractItemNormalizer
         ?string $format = null,
         array $context = []
     ): void {
+        if (is_array($value)) {
+            // todo fix this with extra denormalizer
+            $value = ArrayUtil::toCamelCasedKeys($value, true);
+        }
+
         $this->data[$attribute] = $value;
     }
 
