@@ -6,7 +6,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Attribute;
 
 use Attribute;
 
-#[Attribute(Attribute::TARGET_CLASS | Attribute::IS_REPEATABLE)]
+#[Attribute(Attribute::TARGET_CLASS)]
 class EventEngineState
 {
 }
