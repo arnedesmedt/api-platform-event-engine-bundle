@@ -103,6 +103,12 @@ trait DefaultApiPlatformMessage
         };
     }
 
+    /** @inheritDoc */
+    public static function __requirements(): ?array
+    {
+        return null;
+    }
+
     public static function __apiPlatformController(): string
     {
         return PlaceholderAction::class;

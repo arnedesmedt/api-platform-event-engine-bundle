@@ -25,6 +25,9 @@ interface ApiPlatformMessage extends JsonSchemaAwareRecord
 
     public static function __uriTemplate(): string;
 
+    /** @return array<string, string> */
+    public static function __requirements(): ?array;
+
     public static function __apiPlatformController(): string;
 
     /** @return class-string<ProcessorInterface>|null */

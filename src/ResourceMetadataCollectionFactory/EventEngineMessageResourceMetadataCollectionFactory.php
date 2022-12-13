@@ -89,6 +89,7 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
                 class: $resourceClass,
                 uriTemplate: '/' . ltrim(Uri::fromString($messageClass::__uriTemplate())->toUrlPart(), '/'),
                 uriVariables: null, //todo
+                requirements: $messageClass::__requirements(),
                 read: in_array(Query::class, $messageInterfaces),
                 write: in_array(Command::class, $messageInterfaces),
                 serialize: null, // todo
