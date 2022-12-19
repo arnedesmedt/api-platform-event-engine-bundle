@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Filter;
 
+use ApiPlatform\Metadata\Operation;
+
 use function intval;
 
 abstract class FilterConverter
@@ -25,7 +27,7 @@ abstract class FilterConverter
      * @param array<string, mixed> $filters
      * @param class-string $resourceClass
      */
-    abstract public function filter(array $filters, string $resourceClass): mixed;
+    abstract public function filter(array $filters, Operation $operation, string $resourceClass): mixed;
 
     /**
      * @param array<string, mixed> $filters

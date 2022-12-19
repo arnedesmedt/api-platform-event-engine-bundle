@@ -11,6 +11,7 @@ use ADS\Bundle\EventEngineBundle\Command\Command;
 use ADS\Bundle\EventEngineBundle\Messenger\Queueable;
 use ADS\Bundle\EventEngineBundle\Query\Query;
 use ApiPlatform\Metadata\HttpOperation;
+use ApiPlatform\Metadata\Operation;
 use EventEngine\EventEngine;
 use RuntimeException;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
@@ -90,7 +91,9 @@ final class MessageNormalizer implements DenormalizerInterface
 
         assert(is_array($data));
 
-        $filter = ($this->filterFinder)($type, SearchFilter::class);
+        /** @var Operation $operation */
+        $operation = $context['operation'];
+        $filter = ($this->filterFinder)($operation, SearchFilter::class);
 
         /** @var array<string, mixed> $uriVariables */
         $uriVariables = $context['uri_variables'] ?? [];

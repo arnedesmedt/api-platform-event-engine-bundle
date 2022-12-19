@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Filter;
 
-use ADS\Util\StringUtil;
 use ApiPlatform\Api\FilterInterface;
 use ApiPlatform\Doctrine\Common\Filter\SearchFilterInterface;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
@@ -53,9 +52,8 @@ class SearchFilter implements FilterInterface
                 continue;
             }
 
-            $decamelizedPropertyName = StringUtil::decamelize($propertyName);
-            $description[$decamelizedPropertyName] = [
-                'property' => $decamelizedPropertyName,
+            $description[$propertyName] = [
+                'property' => $propertyName,
                 'type' => $schema['properties'][$propertyName]['type'],
                 'required' => false,
                 'strategy' => SearchFilterInterface::STRATEGY_PARTIAL,

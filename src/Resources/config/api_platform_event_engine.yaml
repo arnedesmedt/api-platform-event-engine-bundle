@@ -243,7 +243,6 @@ services:
 
     ADS\Bundle\ApiPlatformEventEngineBundle\Filter\FilterFinder:
         arguments:
-            - '@api_platform.metadata.resource.metadata_collection_factory'
             - '@api_platform.filter_locator'
 
     ADS\Bundle\ApiPlatformEventEngineBundle\Filter\DocumentStoreFilterConverter:

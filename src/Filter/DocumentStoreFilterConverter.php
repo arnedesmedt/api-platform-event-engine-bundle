@@ -6,6 +6,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Filter;
 
 use ADS\Util\StringUtil;
 use ApiPlatform\Doctrine\Common\Filter\SearchFilterInterface;
+use ApiPlatform\Metadata\Operation;
 use EventEngine\DocumentStore\Filter\AndFilter;
 use EventEngine\DocumentStore\Filter\EqFilter;
 use EventEngine\DocumentStore\Filter\Filter;
@@ -63,9 +64,9 @@ final class DocumentStoreFilterConverter extends FilterConverter
     /**
      * @inheritDoc
      */
-    public function filter(array $filters, string $resourceClass): ?Filter
+    public function filter(array $filters, Operation $operation, string $resourceClass): ?Filter
     {
-        $searchFilter = ($this->filterFinder)($resourceClass, SearchFilter::class);
+        $searchFilter = ($this->filterFinder)($operation, SearchFilter::class);
 
         if ($searchFilter === null) {
             return null;

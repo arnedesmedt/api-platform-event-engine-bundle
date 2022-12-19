@@ -7,6 +7,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Resolver;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\FilterConverter;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
 use ADS\Bundle\EventEngineBundle\Resolver\MetaDataResolver;
+use ApiPlatform\Metadata\Operation;
 use Closure;
 use EventEngine\DocumentStore\Filter\Filter;
 
@@ -22,18 +23,20 @@ abstract class FilterResolver implements MetaDataResolver
     private ?int $page = null;
     /** @var array<string, mixed> */
     private array $requestFilters = [];
-    /** @var array<string, array<string, string>> */
+    /** @var array<string, mixed> */
     private array $context = [];
 
     /**
-     * @param array<string, array<string, array<string, string>>> $metaData
+     * @param array<string, array<string, mixed>> $metaData
      *
      * @inheritDoc
      */
     public function setMetaData(array $metaData): static
     {
         $this->context = $metaData['context'] ?? [];
-        $this->requestFilters = $this->context['filters'] ?? [];
+        /** @var array<string, mixed> $filters */
+        $filters = $this->context['filters'] ?? [];
+        $this->requestFilters = $filters;
 
         return $this;
     }
@@ -102,9 +105,15 @@ abstract class FilterResolver implements MetaDataResolver
     {
         assert($message instanceof ApiPlatformMessage);
 
+        /** @var Operation $operation */
+        $operation = $this->context['operation'];
         $this
             ->setOrderBy($this->filterConverter->order($this->requestFilters))
-            ->setFilter($this->filterConverter->filter($this->requestFilters, $message::__resource()))
+            ->setFilter($this->filterConverter->filter(
+                $this->requestFilters,
+                $operation,
+                $message::__resource(),
+            ))
             ->setSkip($this->filterConverter->skip($this->requestFilters))
             ->setItemsPerPage($this->filterConverter->itemsPerPage($this->requestFilters))
             ->setPage($this->filterConverter->page($this->requestFilters));

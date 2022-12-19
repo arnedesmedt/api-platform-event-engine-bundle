@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Filter;
 
-use ADS\Util\StringUtil;
 use ApiPlatform\Api\FilterInterface;
 use ApiPlatform\Doctrine\Common\Filter\OrderFilterInterface;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
@@ -62,7 +61,7 @@ class OrderFilter implements FilterInterface
                 continue;
             }
 
-            $description[sprintf('%s[%s]', $this->orderParameterName, StringUtil::decamelize($propertyName))] = [
+            $description[sprintf('%s[%s]', $this->orderParameterName, $propertyName)] = [
                 'property' => $property,
                 'type' => 'string',
                 'required' => false,
