@@ -37,11 +37,9 @@ final class DocumentStoreCollectionProvider extends Provider
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|iterable|null
     {
-        $message = $this->needMessage($context, $operation->getName());
-
-        if (! empty($context['filters'] ?? [])) {
-            $message = $message->withAddedMetadata('context', $context);
-        }
+        $message = $this
+            ->needMessage($context, $operation->getName())
+            ->withAddedMetadata('context', $context);
 
         /** @var array<T>|object $result */
         $result = $this->eventEngine->produce($message);
