@@ -10,6 +10,7 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
 use ADS\Bundle\EventEngineBundle\Command\Command;
 use ADS\Bundle\EventEngineBundle\Messenger\Queueable;
 use ADS\Bundle\EventEngineBundle\Query\Query;
+use ADS\Util\StringUtil;
 use ApiPlatform\Metadata\HttpOperation;
 use ApiPlatform\Metadata\Operation;
 use EventEngine\EventEngine;
@@ -19,6 +20,7 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use function array_diff_key;
 use function array_filter;
 use function array_key_exists;
+use function array_map;
 use function array_merge;
 use function assert;
 use function class_implements;
@@ -95,9 +97,13 @@ final class MessageNormalizer implements DenormalizerInterface
         $operation = $context['operation'];
         $filter = ($this->filterFinder)($operation, SearchFilter::class);
 
-        /** @var array<string, mixed> $uriVariables */
+        /** @var array<string, string> $uriVariables */
         $uriVariables = $context['uri_variables'] ?? [];
-        $pathParameters = array_filter($uriVariables);
+        $pathParameters = array_map(
+            static fn (string $uriVariable) => StringUtil::castFromString($uriVariable),
+            array_filter($uriVariables),
+        );
+
         // todo how to handle query parameters? They won't be anymore in the context
         /** @var array<string, mixed> $queryParameters */
         $queryParameters = $context['query_parameters'] ?? [];
