@@ -97,16 +97,14 @@ final class MessageNormalizer implements DenormalizerInterface
         $operation = $context['operation'];
         $filter = ($this->filterFinder)($operation, SearchFilter::class);
 
-        /** @var array<string, string> $uriVariables */
-        $uriVariables = $context['uri_variables'] ?? [];
-        $pathParameters = array_map(
-            static fn (string $uriVariable) => StringUtil::castFromString($uriVariable),
-            array_filter($uriVariables),
-        );
+        /** @var array<string, string> $parameters */
+        $parameters = $context['uri_variables'] ?? [];
+        $pathParameters = $this->castParameters($parameters);
 
         // todo how to handle query parameters? They won't be anymore in the context
-        /** @var array<string, mixed> $queryParameters */
-        $queryParameters = $context['query_parameters'] ?? [];
+        /** @var array<string, string> $parameters */
+        $parameters = $context['query_parameters'] ?? [];
+        $queryParameters = $this->castParameters($parameters);
 
         if ($filter !== null) {
             $descriptions = $filter->getDescription($type);
@@ -184,5 +182,18 @@ final class MessageNormalizer implements DenormalizerInterface
         $operation = $context['operation'] ?? null;
 
         return $operation?->getInput()['class'] ?? null;
+    }
+
+    /**
+     * @param array<string, string> $parameters
+     *
+     * @return array<string, mixed>
+     */
+    private function castParameters(array $parameters): array
+    {
+        return array_map(
+            static fn (string $parameter) => StringUtil::castFromString($parameter),
+            array_filter($parameters),
+        );
     }
 }
