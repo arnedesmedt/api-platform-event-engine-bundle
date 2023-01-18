@@ -133,11 +133,11 @@ services:
         tags:
             - { name: serializer.normalizer }
 
-#    ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\ArrayPaginatorNormalizer:
-#        arguments:
-#            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\ImmutableRecordNormalizer'
-#        tags:
-#            - { name: serializer.normalizer, priority: -900 }
+    ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\ArrayPaginatorNormalizer:
+      arguments:
+        - '@ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\ImmutableRecordNormalizer'
+      tags:
+        - { name: serializer.normalizer, priority: -900 }
 
 #    ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\PropertyExtractorNormalizer:
 #        arguments:
