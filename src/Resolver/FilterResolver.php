@@ -10,8 +10,10 @@ use ADS\Bundle\EventEngineBundle\Resolver\MetaDataResolver;
 use ApiPlatform\Metadata\Operation;
 use Closure;
 use EventEngine\DocumentStore\Filter\Filter;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 use function assert;
+use function sprintf;
 
 abstract class FilterResolver implements MetaDataResolver
 {
@@ -126,6 +128,18 @@ abstract class FilterResolver implements MetaDataResolver
 
         if ($skip === null || $itemsPerPage === null || $page === null) {
             return $collection;
+        }
+
+        if ($skip > $totalItems) {
+            throw new NotFoundHttpException(
+                sprintf(
+                    'Item out of range, Seek position %s where we only have %s item(s)',
+                    $skip,
+                    $totalItems
+                ),
+                null,
+                404
+            );
         }
 
         return $this->result($collection, $page, $itemsPerPage, $totalItems);
