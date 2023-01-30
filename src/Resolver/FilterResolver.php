@@ -8,8 +8,6 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\FilterConverter;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
 use ADS\Bundle\EventEngineBundle\Resolver\MetaDataResolver;
 use ApiPlatform\Metadata\Operation;
-use Closure;
-use EventEngine\DocumentStore\Filter\Filter;
 
 use function assert;
 
@@ -129,10 +127,6 @@ abstract class FilterResolver implements MetaDataResolver
         }
 
         return $this->result($collection, $page, $itemsPerPage, $totalItems);
-    }
-
-    public function addFilter(Filter|Closure|null $filter = null): void
-    {
     }
 
     /**
