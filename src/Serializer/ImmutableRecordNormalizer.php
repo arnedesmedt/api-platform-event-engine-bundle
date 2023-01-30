@@ -8,6 +8,7 @@ use ADS\Util\ArrayUtil;
 use ApiPlatform\Serializer\AbstractItemNormalizer;
 use ArrayObject;
 use EventEngine\Data\ImmutableRecord;
+use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use ReflectionClass;
 use stdClass;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
@@ -111,6 +112,18 @@ final class ImmutableRecordNormalizer extends AbstractItemNormalizer
         ?string $format = null,
         array $context = []
     ): void {
+        if ($object instanceof JsonSchemaAwareRecord) {
+            // Added this one beause we translate path parameters to their correct type if possible. But sometimes
+            // We don't want that. For example when an integer should be a string in the value object.
+            $schema = $object::__schema()->toArray();
+            $type = $schema['properties'][$attribute]['type'] ?? null;
+
+            $value = match ($type) {
+                'string' => (string) $value, // @phpstan-ignore-line
+                default => $value,
+            };
+        }
+
         if (is_array($value)) {
             // todo fix this with extra denormalizer
             $value = ArrayUtil::toCamelCasedKeys($value, true);
