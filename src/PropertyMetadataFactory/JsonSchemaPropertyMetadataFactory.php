@@ -81,7 +81,7 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
                 method_exists($resourceClass, 'propertyDefault')
                 && method_exists($resourceClass, 'defaultProperties')
             ) {
-                $default = $resourceClass::propertyDefault($property, $resourceClass::defaultProperties());
+                $default = $resourceClass::propertyDefault($resourceClass::defaultProperties(), $property);
             }
         } catch (RuntimeException) {
         }
