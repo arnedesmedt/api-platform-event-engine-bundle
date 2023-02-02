@@ -13,6 +13,7 @@ use ADS\Bundle\EventEngineBundle\Query\Query;
 use ADS\Util\StringUtil;
 use ApiPlatform\Metadata\HttpOperation;
 use ApiPlatform\Metadata\Operation;
+use EventEngine\Data\ImmutableRecord;
 use EventEngine\EventEngine;
 use RuntimeException;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
@@ -47,15 +48,23 @@ final class MessageNormalizer implements DenormalizerInterface
     {
         $data = $this->data($data, $type, $context);
         $context['message_as_array'] = true;
+        /** @var array<string, mixed> $message */
         $message = $this->denormalizer->denormalize($data, $type, $format, $context);
 
         /** @var array<string, string> $input */
         $input = $context['input'];
 
+        // First we need to create the immutable record to convert for example string values to integers.
+        // For example the byte value object can have a string as output but needs an integer according the schema.
+        // And since the schema generator doesn't allow multiple types, we first need to make the transition.
+        /** @var class-string<ImmutableRecord> $messageClass */
+        $messageClass = $input['class'];
+        $message = $messageClass::fromArray($message);
+
         return $this->eventEngine->messageFactory()->createMessageFromArray(
-            $input['class'],
+            $messageClass,
             [
-                'payload' => $message,
+                'payload' => $message->toArray(),
                 'metadata' => $this->metadata($context),
             ]
         );
