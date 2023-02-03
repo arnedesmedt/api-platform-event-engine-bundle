@@ -286,7 +286,7 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
                     'name' => $parameterName,
                     'in' => in_array($parameterName, $pathParameterNames) ? 'path' : 'query',
                     'schema' => $openApiSchema,
-                    'required' => in_array($parameterName, $pathSchema['required']),
+                    'required' => in_array($parameterName, $pathSchema['required'] ?? []),
                     'description' => $openApiSchema['description'] ?? self::typeDescription(
                         $messageClass,
                         $parameterName,
