@@ -7,9 +7,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\DependencyInjection\Compiler;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Loader\ImmutableRecordLoader;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Definition;
-use Symfony\Component\DependencyInjection\Reference;
 
 class ApiPlatformEventEnginePass implements CompilerPassInterface
 {
@@ -30,10 +28,7 @@ class ApiPlatformEventEnginePass implements CompilerPassInterface
 
         $immutableRecordLoader = new Definition(
             ImmutableRecordLoader::class,
-            [
-                new Reference('annotation_reader', ContainerInterface::NULL_ON_INVALID_REFERENCE),
-                $serializerLoaders[0],
-            ],
+            [$serializerLoaders[0]],
         );
         $immutableRecordLoader->setPublic(false);
 
