@@ -9,9 +9,7 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 final class Configuration implements ConfigurationInterface
 {
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     public function getConfigTreeBuilder()
     {
         $treeBuilder = new TreeBuilder('ads_api_platform_event_engine');

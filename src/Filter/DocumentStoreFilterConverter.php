@@ -27,10 +27,8 @@ use function ucfirst;
 
 final class DocumentStoreFilterConverter extends FilterConverter
 {
-    /**
-     * @inheritDoc
-     */
-    public function order(array $filters): ?OrderBy
+    /** @inheritDoc */
+    public function order(array $filters): OrderBy|null
     {
         if (
             ! isset($filters[$this->orderParameterName])
@@ -61,10 +59,8 @@ final class DocumentStoreFilterConverter extends FilterConverter
         return $order;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function filter(array $filters, Operation $operation, string $resourceClass): ?Filter
+    /** @inheritDoc */
+    public function filter(array $filters, Operation $operation, string $resourceClass): Filter|null
     {
         $searchFilter = ($this->filterFinder)($operation, SearchFilter::class);
 
@@ -79,10 +75,10 @@ final class DocumentStoreFilterConverter extends FilterConverter
         $filters = array_map(
             fn ($decamilizedPropertyName, $filterValue) => $this->eventEngineSearchFilter(
                 $descriptions[$decamilizedPropertyName],
-                $filterValue
+                $filterValue,
             ),
             array_keys($filters),
-            $filters
+            $filters,
         );
 
         $filters = array_filter($filters);
@@ -98,10 +94,8 @@ final class DocumentStoreFilterConverter extends FilterConverter
         return new AndFilter(...$filters);
     }
 
-    /**
-     * @param array<string, string> $description
-     */
-    private function eventEngineSearchFilter(array $description, string $value): ?Filter
+    /** @param array<string, string> $description */
+    private function eventEngineSearchFilter(array $description, string $value): Filter|null
     {
         $property = sprintf('state.%s', StringUtil::camelize($description['property']));
 

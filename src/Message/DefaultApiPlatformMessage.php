@@ -48,7 +48,7 @@ trait DefaultApiPlatformMessage
 
         return (bool) preg_match(
             '/(Create|Add|GetAll|All|Enable|Import)/',
-            $shortName
+            $shortName,
         );
     }
 
@@ -97,14 +97,13 @@ trait DefaultApiPlatformMessage
             default => throw new RuntimeException(
                 sprintf(
                     'No __httpMethod method found in class \'%s\'.',
-                    static::class
-                )
+                    static::class,
+                ),
             ),
         };
     }
 
-    /** @inheritDoc */
-    public static function __requirements(): ?array
+    public static function __requirements(): array|null
     {
         return null;
     }
@@ -114,7 +113,7 @@ trait DefaultApiPlatformMessage
         return PlaceholderAction::class;
     }
 
-    public static function __processor(): ?string
+    public static function __processor(): string|null
     {
         return method_exists(static::class, '__customProcessor')
             ? static::__customProcessor()
@@ -131,22 +130,18 @@ trait DefaultApiPlatformMessage
         return static::__schemaStateClass() . 's';
     }
 
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     public static function __tags(): array
     {
         return [StringUtil::entityNameFromClassName(static::class)];
     }
 
-    public static function __requestBodyArrayProperty(): ?string
+    public static function __requestBodyArrayProperty(): string|null
     {
         return null;
     }
 
-    /**
-     * @return array<int, class-string>
-     */
+    /** @return array<int, class-string> */
     public static function __extraResponseClassesApiPlatform(): array
     {
         $responses = [];
@@ -176,17 +171,13 @@ trait DefaultApiPlatformMessage
         return $responses;
     }
 
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     public static function __normalizationContext(): array
     {
         return [];
     }
 
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     public static function __denormalizationContext(): array
     {
         return [];

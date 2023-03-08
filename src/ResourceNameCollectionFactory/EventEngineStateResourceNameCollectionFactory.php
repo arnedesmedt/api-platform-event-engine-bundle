@@ -14,12 +14,10 @@ use function array_keys;
 
 class EventEngineStateResourceNameCollectionFactory implements ResourceNameCollectionFactoryInterface
 {
-    /**
-     * @param string[] $paths
-     */
+    /** @param string[] $paths */
     public function __construct(
         private readonly array $paths,
-        private readonly ?ResourceNameCollectionFactoryInterface $decorated = null
+        private readonly ResourceNameCollectionFactoryInterface|null $decorated = null,
     ) {
     }
 

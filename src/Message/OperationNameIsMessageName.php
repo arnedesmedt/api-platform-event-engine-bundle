@@ -6,12 +6,10 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Message;
 
 use function lcfirst;
 
-/**
- * @method static string shortName()
- */
+/** @method static string shortName() */
 trait OperationNameIsMessageName
 {
-    public static function __customOperationName(): ?string
+    public static function __customOperationName(): string|null
     {
         return lcfirst(static::shortName());
     }

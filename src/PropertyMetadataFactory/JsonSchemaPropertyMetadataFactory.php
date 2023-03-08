@@ -32,7 +32,7 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
     private DocBlockFactory $docBlockFactory;
 
     public function __construct(
-        private PropertyMetadataFactoryInterface $decorated
+        private PropertyMetadataFactoryInterface $decorated,
     ) {
         $this->docBlockFactory = DocBlockFactory::createInstance();
     }
@@ -100,7 +100,7 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
         string $resourceClass,
         string $property,
         ReflectionClass $reflectionClass,
-        array $propertySchema
+        array $propertySchema,
     ): self {
         /** @var ReflectionNamedType|null $propertyType */
         $propertyType = $reflectionClass->hasProperty($property)
@@ -113,13 +113,13 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
         && $propertyType->allowsNull()
             ? sprintf(
                 "\n If '%s' is not added in the payload, then it will not be used.",
-                StringUtil::decamelize($property)
+                StringUtil::decamelize($property),
             )
             : '';
 
         if ($propertySchema['description'] ?? false) {
             $apiProperty = $apiProperty->withDescription(
-                $propertySchema['description'] . $patchPropertyDescription
+                $propertySchema['description'] . $patchPropertyDescription,
             );
 
             return $this;
@@ -139,8 +139,8 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
                         '%s%s%s',
                         $docBlock->getSummary(),
                         ! empty($description) ? "\n" . $description : $description,
-                        $patchPropertyDescription
-                    )
+                        $patchPropertyDescription,
+                    ),
                 );
             } catch (InvalidArgumentException) {
             }
@@ -150,21 +150,19 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
 
         if ($patchPropertyDescription) {
             $apiProperty = $apiProperty->withDescription(
-                $apiProperty->getDescription() ?? '' . $patchPropertyDescription
+                $apiProperty->getDescription() ?? '' . $patchPropertyDescription,
             );
         }
 
         return $this;
     }
 
-    /**
-     * @param ReflectionClass<ImmutableRecord> $reflectionClass
-     */
+    /** @param ReflectionClass<ImmutableRecord> $reflectionClass */
     private function addExample(
         ApiProperty &$apiProperty,
         string $resourceClass,
         string $property,
-        ReflectionClass $reflectionClass
+        ReflectionClass $reflectionClass,
     ): self {
         if ($reflectionClass->implementsInterface(HasPropertyExamples::class)) {
             $examples = $resourceClass::examples();
@@ -195,13 +193,11 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
         return $this;
     }
 
-    /**
-     * @param ReflectionClass<ImmutableRecord> $reflectionClass
-     */
+    /** @param ReflectionClass<ImmutableRecord> $reflectionClass */
     private function addDeprecated(
         ApiProperty &$apiProperty,
         string $property,
-        ReflectionClass $reflectionClass
+        ReflectionClass $reflectionClass,
     ): self {
         $tags = $this->docTagsFromProperty($reflectionClass, $property, 'deprecated');
 

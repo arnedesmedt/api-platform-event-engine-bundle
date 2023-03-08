@@ -23,17 +23,15 @@ abstract class MessageRequestMatcher implements RequestMatcherInterface
     ) {
     }
 
-    /**
-     * @return class-string|string|null
-     */
-    public function message(Request $request): ?string
+    /** @return class-string|string|null */
+    public function message(Request $request): string|null
     {
         $attributes = RequestAttributesExtractor::extractAttributes($request);
         $context = $this->serializerContextBuilder->createFromRequest($request, true, $attributes);
 
         try {
             $message = $this->finder->byContext($context);
-        } catch (FinderException $exception) {
+        } catch (FinderException) {
             return null;
         }
 

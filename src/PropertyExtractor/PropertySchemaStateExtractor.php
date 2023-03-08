@@ -11,7 +11,6 @@ use ADS\ValueObjects\ListValue;
 use ADS\ValueObjects\StringValue;
 use ADS\ValueObjects\ValueObject;
 use EventEngine\Data\ImmutableRecord;
-use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionIntersectionType;
@@ -29,31 +28,12 @@ use function sprintf;
 final class PropertySchemaStateExtractor implements PropertyTypeExtractorInterface
 {
     /**
-     * @param class-string $stateClass
-     *
-     * @return array<mixed>
-     */
-    private function schemaFrom(string $stateClass): ?array
-    {
-        $reflectionClass = new ReflectionClass($stateClass);
-
-        if (
-            ! $reflectionClass->implementsInterface(JsonSchemaAwareRecord::class)
-            || $reflectionClass->isInterface()
-        ) {
-            return null;
-        }
-
-        return $stateClass::__schema()->toArray();
-    }
-
-    /**
      * @param class-string $class
      * @param array<mixed> $context
      *
      * @return array<Type>|null
      */
-    public function getTypes(string $class, string $property, array $context = []): ?array
+    public function getTypes(string $class, string $property, array $context = []): array|null
     {
         $reflectionPropertyType = self::reflectionPropertyType($class, $property);
         $objectTypes = self::objectTypes($reflectionPropertyType);
@@ -70,14 +50,12 @@ final class PropertySchemaStateExtractor implements PropertyTypeExtractorInterfa
 
         return array_map(
             static fn (ReflectionClass $type) => self::type($type, $reflectionPropertyType),
-            $valueObjectTypes
+            $valueObjectTypes,
         );
     }
 
-    /**
-     * @param class-string $class
-     */
-    public static function reflectionPropertyType(string $class, string $property): ?ReflectionType
+    /** @param class-string $class */
+    public static function reflectionPropertyType(string $class, string $property): ReflectionType|null
     {
         $reflectionClass = new ReflectionClass($class);
 
@@ -90,10 +68,8 @@ final class PropertySchemaStateExtractor implements PropertyTypeExtractorInterfa
         return $reflectionProperty->getType();
     }
 
-    /**
-     * @return array<ReflectionClass<object>>
-     */
-    public static function objectTypes(?ReflectionType $reflectionType): array
+    /** @return array<ReflectionClass<object>> */
+    public static function objectTypes(ReflectionType|null $reflectionType): array
     {
         if ($reflectionType === null) {
             return [];
@@ -122,11 +98,11 @@ final class PropertySchemaStateExtractor implements PropertyTypeExtractorInterfa
         return $types;
     }
 
-    /**
-     * @param ReflectionClass<ValueObject|ImmutableRecord> $reflectionClass
-     */
-    private static function type(ReflectionClass $reflectionClass, ?ReflectionType $reflectionPropertyType = null): Type
-    {
+    /** @param ReflectionClass<ValueObject|ImmutableRecord> $reflectionClass */
+    private static function type(
+        ReflectionClass $reflectionClass,
+        ReflectionType|null $reflectionPropertyType = null,
+    ): Type {
         $symfonyType = self::mapReflectionClassToSymfonyType($reflectionClass);
 
         return new Type(
@@ -135,22 +111,18 @@ final class PropertySchemaStateExtractor implements PropertyTypeExtractorInterfa
             $reflectionClass->getName(),
             $reflectionClass->implementsInterface(ListValue::class),
             self::collectionKey(),
-            self::collectionValue($reflectionClass)
+            self::collectionValue($reflectionClass),
         );
     }
 
-    /**
-     * @return array<Type>
-     */
+    /** @return array<Type> */
     private static function collectionKey(): array
     {
         return [new Type(Type::BUILTIN_TYPE_INT), new Type(Type::BUILTIN_TYPE_STRING)];
     }
 
-    /**
-     * @param ReflectionClass<ValueObject|ImmutableRecord> $reflectionClass
-     */
-    private static function collectionValue(ReflectionClass $reflectionClass): ?Type
+    /** @param ReflectionClass<ValueObject|ImmutableRecord> $reflectionClass */
+    private static function collectionValue(ReflectionClass $reflectionClass): Type|null
     {
         if (! $reflectionClass->implementsInterface(ListValue::class)) {
             return null;
@@ -164,9 +136,7 @@ final class PropertySchemaStateExtractor implements PropertyTypeExtractorInterfa
         return self::type(new ReflectionClass($itemClass));
     }
 
-    /**
-     * @param ReflectionClass<ValueObject|ImmutableRecord> $reflectionClass
-     */
+    /** @param ReflectionClass<ValueObject|ImmutableRecord> $reflectionClass */
     private static function mapReflectionClassToSymfonyType(ReflectionClass $reflectionClass): string
     {
         return match (true) {
@@ -179,8 +149,8 @@ final class PropertySchemaStateExtractor implements PropertyTypeExtractorInterfa
             default => throw new RuntimeException(
                 sprintf(
                     'No symfony type mapping found for class \'%s\'.',
-                    $reflectionClass->getName()
-                )
+                    $reflectionClass->getName(),
+                ),
             )
         };
     }

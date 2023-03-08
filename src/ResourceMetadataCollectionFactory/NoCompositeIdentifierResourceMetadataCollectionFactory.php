@@ -16,9 +16,7 @@ final class NoCompositeIdentifierResourceMetadataCollectionFactory implements Re
     {
     }
 
-    /**
-     * @param class-string $resourceClass
-     */
+    /** @param class-string $resourceClass */
     public function create(string $resourceClass): ResourceMetadataCollection
     {
         $resourceMetadataCollection = $this->decorated->create($resourceClass);

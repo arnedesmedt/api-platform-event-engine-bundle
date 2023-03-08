@@ -22,9 +22,7 @@ final class InMemoryFilterResolver extends FilterResolver
         $this->filterConverter = $filterConverter;
     }
 
-    /**
-     * @param Traversable<mixed>|array<mixed> $collection
-     */
+    /** @param Traversable<mixed>|array<mixed> $collection */
     public function setCollection(Traversable|array $collection): static
     {
         if ($collection instanceof Traversable) {
@@ -36,9 +34,7 @@ final class InMemoryFilterResolver extends FilterResolver
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     protected function collection(): array
     {
         $collection = $this->collection;
@@ -58,17 +54,13 @@ final class InMemoryFilterResolver extends FilterResolver
         return $collection;
     }
 
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     protected function totalItems(array $collection): int
     {
         return count($collection);
     }
 
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     protected function result(array $collection, int $page, int $itemsPerPage, int $totalItems): mixed
     {
         return new ArrayPaginator(

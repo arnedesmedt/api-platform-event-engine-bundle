@@ -6,8 +6,6 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Resource;
 
 interface ChangeIdentifierResource
 {
-    /**
-     * @return array<string, string>
-     */
+    /** @return array<string, string> */
     public static function identifierNameMapping(): array;
 }

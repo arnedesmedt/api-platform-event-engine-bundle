@@ -35,10 +35,10 @@ final class MessageRefSchemaFactory implements SchemaFactoryInterface
         string $className,
         string $format = 'json',
         string $type = Schema::TYPE_OUTPUT,
-        ?Operation $operation = null,
-        ?Schema $schema = null,
-        ?array $serializerContext = null,
-        bool $forceCollection = false
+        Operation|null $operation = null,
+        Schema|null $schema = null,
+        array|null $serializerContext = null,
+        bool $forceCollection = false,
     ): Schema {
         $schema = $schema ? clone $schema : new Schema(Schema::VERSION_OPENAPI);
 
@@ -86,8 +86,8 @@ final class MessageRefSchemaFactory implements SchemaFactoryInterface
         string $className,
         string $format = 'json',
         string $type = Schema::TYPE_OUTPUT,
-        ?Operation $operation = null,
-        ?array $serializerContext = null
+        Operation|null $operation = null,
+        array|null $serializerContext = null,
     ): string {
         $inputOrOutput = ['class' => $className];
 
@@ -134,9 +134,7 @@ final class MessageRefSchemaFactory implements SchemaFactoryInterface
         return $encodedDefinitionName;
     }
 
-    /**
-     * @param class-string<JsonSchemaAwareRecord> $className
-     */
+    /** @param class-string<JsonSchemaAwareRecord> $className */
     private static function nameFromClass(string $className): string
     {
         $reflectionClass = new ReflectionClass($className);

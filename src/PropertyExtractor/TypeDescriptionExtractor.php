@@ -18,7 +18,7 @@ class TypeDescriptionExtractor implements PropertyDescriptionExtractorInterface
      * @param class-string $class
      * @param array<string, mixed> $context
      */
-    public function getShortDescription(string $class, string $property, array $context = []): ?string
+    public function getShortDescription(string $class, string $property, array $context = []): string|null
     {
         $docBlock = $this->docBlock($class, $property);
 
@@ -29,7 +29,7 @@ class TypeDescriptionExtractor implements PropertyDescriptionExtractorInterface
      * @param class-string $class
      * @param array<string, mixed> $context
      */
-    public function getLongDescription(string $class, string $property, array $context = []): ?string
+    public function getLongDescription(string $class, string $property, array $context = []): string|null
     {
         $docBlock = $this->docBlock($class, $property);
         $description = $docBlock?->getDescription()->render();
@@ -42,7 +42,7 @@ class TypeDescriptionExtractor implements PropertyDescriptionExtractorInterface
     }
 
     /** @param class-string $class */
-    private function docBlock(string $class, string $property): ?DocBlock
+    private function docBlock(string $class, string $property): DocBlock|null
     {
         $reflectionPropertyType = PropertySchemaStateExtractor::reflectionPropertyType($class, $property);
         $objectTypes = PropertySchemaStateExtractor::objectTypes($reflectionPropertyType);

@@ -19,20 +19,16 @@ use function count;
  */
 class Paginator implements PartialPaginatorInterface, IteratorAggregate, PaginatorInterface
 {
-    /**
-     * @param array<mixed> $collection
-     */
+    /** @param array<mixed> $collection */
     public function __construct(
         private readonly array $collection,
         private int $page,
         private int $itemsPerPage,
-        private int $totalItems
+        private int $totalItems,
     ) {
     }
 
-    /**
-     * @return array<mixed>
-     */
+    /** @return array<mixed> */
     public function collection(): array
     {
         return $this->collection;
@@ -63,9 +59,7 @@ class Paginator implements PartialPaginatorInterface, IteratorAggregate, Paginat
         return $this->totalItems;
     }
 
-    /**
-     * @return ArrayObject<(int|string), mixed>
-     */
+    /** @return ArrayObject<(int|string), mixed> */
     public function getIterator(): ArrayObject
     {
         return new ArrayObject($this->collection);

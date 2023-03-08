@@ -20,10 +20,8 @@ abstract class Provider implements ProviderInterface
     {
     }
 
-    /**
-     * @param array<mixed> $context
-     */
-    protected function needMessage(array $context, ?string $operationName): Message
+    /** @param array<mixed> $context */
+    protected function needMessage(array $context, string|null $operationName): Message
     {
         /** @var Message|null $message */
         $message = $context['message'] ?? null;

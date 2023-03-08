@@ -20,9 +20,7 @@ use function sprintf;
 
 final class Uri extends StringValue
 {
-    /**
-     * @return array<string>
-     */
+    /** @return array<string> */
     public function toPathParameterNames(): array
     {
         return $this->matchParameters($this->toUrlPart());
@@ -38,9 +36,7 @@ final class Uri extends StringValue
         return $this->toParameters($parameters, $this->toPathParameterNames());
     }
 
-    /**
-     * @return array<string>
-     */
+    /** @return array<string> */
     public function toQueryParameterNames(): array
     {
         return $this->matchParameters($this->toQueryPart());
@@ -56,9 +52,7 @@ final class Uri extends StringValue
         return $this->toParameters($parameters, $this->toQueryParameterNames());
     }
 
-    /**
-     * @return array<string>
-     */
+    /** @return array<string> */
     public function toAllParameterNames(): array
     {
         return $this->matchParameters($this->toString());
@@ -73,7 +67,7 @@ final class Uri extends StringValue
     {
         return array_merge(
             $this->toPathParameters($parameters),
-            $this->toQueryParameters($parameters)
+            $this->toQueryParameters($parameters),
         );
     }
 
@@ -88,7 +82,7 @@ final class Uri extends StringValue
         /** @var array<string, mixed> $matchingParameters */
         $matchingParameters = array_intersect_key(
             ArrayUtil::toSnakeCasedKeys($parameters),
-            array_flip($parameterNames)
+            array_flip($parameterNames),
         );
 
         $parameters = array_diff_key($parameters, ArrayUtil::toCamelCasedKeys($matchingParameters));
@@ -96,9 +90,7 @@ final class Uri extends StringValue
         return $matchingParameters;
     }
 
-    /**
-     * @return array<string>
-     */
+    /** @return array<string> */
     private function matchParameters(string $string): array
     {
         preg_match_all('/{([^({})]+)}/', $string, $matches);
@@ -121,33 +113,25 @@ final class Uri extends StringValue
         return explode('.', $uri, 2)[0] ?? '';
     }
 
-    /**
-     * @param array<string, mixed> $parameters
-     */
+    /** @param array<string, mixed> $parameters */
     public function replacePathParameters(array &$parameters): self
     {
         return $this->replaceParameters($this->toPathParameters($parameters));
     }
 
-    /**
-     * @param array<string, mixed> $parameters
-     */
+    /** @param array<string, mixed> $parameters */
     public function replaceQueryParameters(array &$parameters): self
     {
         return $this->replaceParameters($this->toQueryParameters($parameters));
     }
 
-    /**
-     * @param array<string, mixed> $parameters
-     */
+    /** @param array<string, mixed> $parameters */
     public function replaceAllParameters(array &$parameters): self
     {
         return $this->replaceParameters($this->toAllParameters($parameters));
     }
 
-    /**
-     * @param array<string, mixed> $parameters
-     */
+    /** @param array<string, mixed> $parameters */
     private function replaceParameters(array $parameters): self
     {
         /** @var array<string, mixed> $parameters */
@@ -155,7 +139,7 @@ final class Uri extends StringValue
 
         $patterns = array_map(
             static fn (string $pattern) => sprintf('/{%s}/', $pattern),
-            array_keys($parameters)
+            array_keys($parameters),
         );
 
         $replacedUri = preg_replace($patterns, $parameters, $this->toString());

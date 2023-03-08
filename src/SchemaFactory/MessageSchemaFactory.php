@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory;
 
+use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
 use ADS\Bundle\ApiPlatformEventEngineBundle\TypeFactory\MessageTypeFactory;
 use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
 use ADS\Bundle\EventEngineBundle\Response\HasResponses;
 use ADS\JsonImmutableObjects\Polymorphism\Discriminator;
 use ADS\Util\ArrayUtil;
-use ADS\ValueObjects\Implementation\ListValue\ListValue;
+use ADS\ValueObjects\ListValue;
 use ApiPlatform\JsonSchema\Schema;
 use ApiPlatform\JsonSchema\SchemaFactoryInterface;
 use ApiPlatform\Metadata\ApiResource;
@@ -31,7 +32,7 @@ use function array_map;
 use function array_merge;
 use function array_values;
 use function assert;
-use function class_parents;
+use function class_implements;
 use function in_array;
 use function is_callable;
 use function method_exists;
@@ -50,7 +51,7 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
     }
 
     /**
-     * @param class-string $className
+     * @param class-string<JsonSchemaAwareRecord> $className
      * @param array<string, mixed>|null $serializerContext
      * @param Schema<mixed>|null $schema
      *
@@ -60,10 +61,10 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
         string $className,
         string $format = 'json',
         string $type = Schema::TYPE_OUTPUT,
-        ?Operation $operation = null,
-        ?Schema $schema = null,
-        ?array $serializerContext = null,
-        bool $forceCollection = false
+        Operation|null $operation = null,
+        Schema|null $schema = null,
+        array|null $serializerContext = null,
+        bool $forceCollection = false,
     ): Schema {
         $schema ??= new Schema();
 
@@ -78,47 +79,12 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
         $classReflectionClass = new ReflectionClass($className);
 
         if ($classReflectionClass->implementsInterface(Discriminator::class)) {
-            $definitionName = $className::__type() . ($format === 'json' ? '' : '.' . $format);
-            $ref = sprintf(
-                $schema->getVersion() === Schema::VERSION_OPENAPI
-                    ? '#/components/schemas/%s'
-                    : '#/definitions/%s',
-                $definitionName
+            return $this->handleDiscriminator(
+                $className,
+                $format,
+                $type,
+                $schema,
             );
-            $definitionNames = array_combine(
-                $className::jsonSchemaAwareRecords(),
-                array_map(
-                    function (string $modelClass) use ($format, $type, &$schema) {
-                        unset($schema['$ref']);
-                        $schema = $this->schemaFactory->buildSchema(
-                            $modelClass,
-                            $format,
-                            $type,
-                            null,
-                            $schema
-                        );
-
-                        return $schema->getArrayCopy(false);
-                    },
-                    $className::jsonSchemaAwareRecords()
-                )
-            );
-            $schema['$ref'] = $ref;
-            $definitions = $schema->getDefinitions();
-            $definitions[$definitionName] = [
-                'oneOf' => array_values($definitionNames),
-                'discriminator' => [
-                    'propertyName' => $className::propertyName(),
-                    'mapping' => array_filter(
-                        array_map(
-                            static fn (string $oneOfClass) => $definitionNames[$oneOfClass] ?? null,
-                            $className::mapping()
-                        )
-                    ),
-                ],
-            ];
-
-            return $schema;
         }
 
         if (! $messageClass || $operation === null) {
@@ -144,7 +110,7 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
                 $operation,
                 $schema,
                 $serializerContext,
-                $forceCollection
+                $forceCollection,
             );
         }
 
@@ -158,7 +124,7 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
                 $operation,
                 $schema,
                 $serializerContext,
-                $forceCollection
+                $forceCollection,
             );
         }
 
@@ -169,7 +135,7 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
 
             foreach ($responses as $statusCode => $responseClass) {
                 $forceCollectionResponse = false;
-                if (in_array(ListValue::class, class_parents($responseClass) ?: [])) {
+                if (in_array(ListValue::class, class_implements($responseClass) ?: [])) {
                     $responseClass = $responseClass::itemType();
                     $forceCollectionResponse = true;
                 }
@@ -189,7 +155,7 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
                     $operation,
                     $schema,
                     null,
-                    $forceCollectionResponse
+                    $forceCollectionResponse,
                 );
 
                 if ($statusCode === $defaultStatusCode) {
@@ -217,8 +183,15 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
             $reflectionClass,
             $input,
             $operation,
-            $forceCollection
+            $forceCollection,
         );
+
+        $messageClass = $operation->getInput()['class'] ?? null;
+        $reflectionClass = new ReflectionClass($messageClass);
+
+        if ($reflectionClass->implementsInterface(Discriminator::class)) {
+            return $this->handleDiscriminator($messageClass, $format, $type, $schema);
+        }
 
         $inputSchema = $this->schemaFactory->buildSchema(
             $className,
@@ -227,7 +200,7 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
             $operation->withMethod(Request::METHOD_PUT),
             new Schema(Schema::VERSION_OPENAPI),
             $serializerContext,
-            $forceCollection
+            $forceCollection,
         );
 
         $definitions = $inputSchema->getDefinitions();
@@ -242,7 +215,7 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
         $parameterNames = ArrayUtil::toSnakeCasedValues(Uri::fromString($uriTemplate)->toAllParameterNames());
         $definition = self::removeParameters(
             $definition,
-            $parameterNames
+            $parameterNames,
         ) ?? ['type' => 'object'];
         $definitions[$rootDefinitionKey] = new ArrayObject($definition);
 
@@ -257,7 +230,7 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
      *
      * @return array<string, mixed>
      */
-    public static function removeParameters(array $schema, array $parameterNames): ?array
+    public static function removeParameters(array $schema, array $parameterNames): array|null
     {
         return self::changeParameters($schema, $parameterNames);
     }
@@ -268,7 +241,7 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
      *
      * @return array<string, mixed>|null
      */
-    public static function filterParameters(array $schema, array $parametersNames): ?array
+    public static function filterParameters(array $schema, array $parametersNames): array|null
     {
         return self::changeParameters($schema, $parametersNames, 'array_intersect');
     }
@@ -282,8 +255,8 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
     private static function changeParameters(
         array $schema,
         array $parameterNames,
-        string $filterMethod = 'array_diff'
-    ): ?array {
+        string $filterMethod = 'array_diff',
+    ): array|null {
         $keyFilterMethod = sprintf('%s_key', $filterMethod);
 
         if (! is_callable($keyFilterMethod) || ! is_callable($filterMethod)) {
@@ -291,8 +264,8 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
                 sprintf(
                     'Method \'%s\' or \'%s\' is not callable',
                     $keyFilterMethod,
-                    $filterMethod
-                )
+                    $filterMethod,
+                ),
             );
         }
 
@@ -325,6 +298,7 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
     }
 
     /**
+     * @param class-string<ApiPlatformMessage> $messageClass
      * @param ReflectionClass<object> $reflectionClass
      * @param array<string, mixed> $input
      */
@@ -333,32 +307,91 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
         ReflectionClass $reflectionClass,
         array $input,
         HttpOperation &$operation,
-        bool &$forceCollection
+        bool &$forceCollection,
     ): void {
-        if (! $messageClass::__requestBodyArrayProperty()) {
+        $requestBodyArrayProperty = $messageClass::__requestBodyArrayProperty();
+        if (! $requestBodyArrayProperty) {
             return;
         }
 
-        $arrayProperty = $reflectionClass->getProperty($messageClass::__requestBodyArrayProperty());
+        $arrayProperty = $reflectionClass->getProperty($requestBodyArrayProperty);
         /** @var ReflectionNamedType|null $reflectionNamedType */
         $reflectionNamedType = $arrayProperty->getType();
+        /** @var class-string<ListValue<object>>|null $listClass */
         $listClass = $reflectionNamedType?->getName();
 
         if ($listClass === null) {
             throw new RuntimeException(
                 sprintf(
                     'No class type found for property \'%s\'.',
-                    $messageClass::__requestBodyArrayProperty()
-                )
+                    $requestBodyArrayProperty,
+                ),
             );
         }
 
-        if (in_array(ListValue::class, class_parents($listClass) ?: [])) {
+        if (in_array(ListValue::class, class_implements($listClass) ?: [])) {
             $listClass = $listClass::itemType();
         }
 
         /** @var HttpOperation $operation */
         $operation = $operation->withInput(array_merge($input, ['class' => $listClass]));
         $forceCollection = true;
+    }
+
+    /**
+     * @param class-string<Discriminator> $className
+     * @param Schema<mixed> $schema
+     *
+     * @return Schema<mixed>
+     */
+    private function handleDiscriminator(
+        string $className,
+        string $format,
+        string $type,
+        Schema $schema,
+    ): Schema {
+        $definitionName = $className::__type() . ($format === 'json' ? '' : '.' . $format);
+        $ref = sprintf(
+            $schema->getVersion() === Schema::VERSION_OPENAPI
+                ? '#/components/schemas/%s'
+                : '#/definitions/%s',
+            $definitionName,
+        );
+
+        $definitionNames = array_combine(
+            $className::jsonSchemaAwareRecords(),
+            array_map(
+                function (string $modelClass) use ($format, $type, &$schema) {
+                    unset($schema['$ref']);
+                    $schema = $this->schemaFactory->buildSchema(
+                        $modelClass,
+                        $format,
+                        $type,
+                        null,
+                        $schema,
+                    );
+
+                    return $schema->getArrayCopy(false);
+                },
+                $className::jsonSchemaAwareRecords(),
+            ),
+        );
+
+        $schema['$ref'] = $ref;
+        $definitions = $schema->getDefinitions();
+        $definitions[$definitionName] = [
+            'oneOf' => array_values($definitionNames),
+            'discriminator' => [
+                'propertyName' => $className::propertyName(),
+                'mapping' => array_filter(
+                    array_map(
+                        static fn (string $oneOfClass) => $definitionNames[$oneOfClass] ?? null,
+                        $className::mapping(),
+                    ),
+                ),
+            ],
+        ];
+
+        return $schema;
     }
 }

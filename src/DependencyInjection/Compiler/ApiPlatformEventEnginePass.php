@@ -33,7 +33,7 @@ class ApiPlatformEventEnginePass implements CompilerPassInterface
             [
                 new Reference('annotation_reader', ContainerInterface::NULL_ON_INVALID_REFERENCE),
                 $serializerLoaders[0],
-            ]
+            ],
         );
         $immutableRecordLoader->setPublic(false);
 

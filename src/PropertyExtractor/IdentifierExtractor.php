@@ -45,7 +45,7 @@ class IdentifierExtractor implements IdentifiersExtractorInterface
      *
      * @inheritDoc
      */
-    public function getIdentifiersFromItem(object $item, ?Operation $operation = null, array $context = []): array
+    public function getIdentifiersFromItem(object $item, Operation|null $operation = null, array $context = []): array
     {
         $resourceClass = $this->getResourceClass($item);
 
@@ -64,7 +64,7 @@ class IdentifierExtractor implements IdentifiersExtractorInterface
 
             if (! method_exists($item, $propertyName)) {
                 throw new RuntimeException(
-                    sprintf('Can\'t find method \'%s\' to access data in object \'%s\'.', $propertyName, $item::class)
+                    sprintf('Can\'t find method \'%s\' to access data in object \'%s\'.', $propertyName, $item::class),
                 );
             }
 

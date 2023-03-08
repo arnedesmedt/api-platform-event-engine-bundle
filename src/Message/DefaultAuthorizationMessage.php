@@ -24,9 +24,7 @@ use function strtoupper;
 
 trait DefaultAuthorizationMessage
 {
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     public static function __authorizationAttributes(): array
     {
         $reflectionClass = new ReflectionClass(static::class);
@@ -38,7 +36,7 @@ trait DefaultAuthorizationMessage
                 $methodName = $reflectionMethod->getShortName();
 
                 return preg_match('/^__extraAuthorization/', $methodName);
-            }
+            },
         );
 
         $authorizationAttributes = [];
@@ -50,9 +48,7 @@ trait DefaultAuthorizationMessage
         return array_unique($authorizationAttributes);
     }
 
-    /**
-     * @return array<int, class-string>
-     */
+    /** @return array<int, class-string> */
     public static function __extraResponseClassesAuthorization(): array
     {
         return [
@@ -61,9 +57,7 @@ trait DefaultAuthorizationMessage
         ];
     }
 
-    /**
-     * @return array<string>
-     */
+    /** @return array<string> */
     public static function __extraAuthorizationForResources(): array
     {
         $interfaces = class_implements(static::class);
@@ -83,7 +77,7 @@ trait DefaultAuthorizationMessage
                 in_array(Query::class, $interfaces)
                     ? sprintf('ROLE_OAUTH2_%s:READ', $entityName)
                     : null,
-            ]
+            ],
         );
     }
 }

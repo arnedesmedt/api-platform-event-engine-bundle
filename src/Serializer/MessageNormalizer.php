@@ -37,14 +37,12 @@ final class MessageNormalizer implements DenormalizerInterface
         private readonly DenormalizerInterface $denormalizer,
         private string $pageParameterName = 'page',
         private string $orderParameterName = 'order',
-        private string $itemsPerPageParameterName = 'items-per-page'
+        private string $itemsPerPageParameterName = 'items-per-page',
     ) {
     }
 
-    /**
-     * @param array<string, mixed> $context
-     **/
-    public function denormalize(mixed $data, string $type, ?string $format = null, array $context = []): mixed
+    /** @param array<string, mixed> $context **/
+    public function denormalize(mixed $data, string $type, string|null $format = null, array $context = []): mixed
     {
         $data = $this->data($data, $type, $context);
         $context['message_as_array'] = true;
@@ -66,18 +64,16 @@ final class MessageNormalizer implements DenormalizerInterface
             [
                 'payload' => $message->toArray(),
                 'metadata' => $this->metadata($context),
-            ]
+            ],
         );
     }
 
-    /**
-     * @param array<mixed> $context
-     */
+    /** @param array<mixed> $context */
     public function supportsDenormalization(
         mixed $data,
         string $type,
-        ?string $format = null,
-        array $context = []
+        string|null $format = null,
+        array $context = [],
     ): bool {
         return ($context['input'] ?? false)
             && $this->denormalizer->supportsDenormalization($data, $type, $format);
@@ -135,7 +131,7 @@ final class MessageNormalizer implements DenormalizerInterface
         return array_merge(
             $data,
             $pathParameters,
-            $queryParameters
+            $queryParameters,
         );
     }
 

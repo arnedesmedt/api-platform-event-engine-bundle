@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Loader;
 
-use Doctrine\Common\Annotations\Reader;
 use Error;
 use EventEngine\Data\ImmutableRecord;
 use ReflectionClass;
@@ -38,7 +37,6 @@ class ImmutableRecordLoader implements LoaderInterface
     ];
 
     public function __construct(
-        private readonly Reader|null $reader,
         private readonly LoaderInterface|null $loader,
     ) {
     }
@@ -78,19 +76,19 @@ class ImmutableRecordLoader implements LoaderInterface
                 continue;
             }
 
-            foreach ($this->loadAnnotations($property) as $annotation) {
-                if ($annotation instanceof Groups) {
-                    foreach ($annotation->getGroups() as $group) {
+            foreach ($this->loadAttributes($property) as $attribute) {
+                if ($attribute instanceof Groups) {
+                    foreach ($attribute->getGroups() as $group) {
                         $attributesMetadata[$property->name]->addGroup($group);
                     }
-                } elseif ($annotation instanceof MaxDepth) {
-                    $attributesMetadata[$property->name]->setMaxDepth($annotation->getMaxDepth());
-                } elseif ($annotation instanceof SerializedName) {
-                    $attributesMetadata[$property->name]->setSerializedName($annotation->getSerializedName());
-                } elseif ($annotation instanceof Ignore) {
+                } elseif ($attribute instanceof MaxDepth) {
+                    $attributesMetadata[$property->name]->setMaxDepth($attribute->getMaxDepth());
+                } elseif ($attribute instanceof SerializedName) {
+                    $attributesMetadata[$property->name]->setSerializedName($attribute->getSerializedName());
+                } elseif ($attribute instanceof Ignore) {
                     $attributesMetadata[$property->name]->setIgnore(true);
-                } elseif ($annotation instanceof Context) {
-                    $this->setAttributeContextsForGroups($annotation, $attributesMetadata[$property->name]);
+                } elseif ($attribute instanceof Context) {
+                    $this->setAttributeContextsForGroups($attribute, $attributesMetadata[$property->name]);
                 }
             }
         }
@@ -103,7 +101,7 @@ class ImmutableRecordLoader implements LoaderInterface
      *
      * @return iterable<mixed>
      */
-    public function loadAnnotations(object $reflector): iterable
+    public function loadAttributes(object $reflector): iterable
     {
         foreach ($reflector->getAttributes() as $attribute) {
             if (! $this->isKnownAttribute($attribute->getName())) {
@@ -122,61 +120,43 @@ class ImmutableRecordLoader implements LoaderInterface
                     $reflector instanceof ReflectionMethod => sprintf(
                         ' on "%s::%s()"',
                         $reflector->getDeclaringClass()->name,
-                        $reflector->name
+                        $reflector->name,
                     ),
                     $reflector instanceof ReflectionProperty => sprintf(
                         ' on "%s::$%s"',
                         $reflector->getDeclaringClass()->name,
-                        $reflector->name
+                        $reflector->name,
                     ),
                 };
 
                 throw new MappingException(
                     sprintf('Could not instantiate attribute "%s"%s.', $attribute->getName(), $on),
                     0,
-                    $e
+                    $e,
                 );
             }
         }
-
-        if ($this->reader === null) {
-            return;
-        }
-
-        if ($reflector instanceof ReflectionClass) {
-            yield from $this->reader->getClassAnnotations($reflector);
-        }
-
-        if ($reflector instanceof ReflectionMethod) {
-            yield from $this->reader->getMethodAnnotations($reflector);
-        }
-
-        if (! ($reflector instanceof ReflectionProperty)) {
-            return;
-        }
-
-        yield from $this->reader->getPropertyAnnotations($reflector);
     }
 
     private function setAttributeContextsForGroups(
         Context $annotation,
-        AttributeMetadataInterface $attributeMetadata
+        AttributeMetadataInterface $attributeMetadata,
     ): void {
         if ($annotation->getContext()) {
             $attributeMetadata->setNormalizationContextForGroups(
                 $annotation->getContext(),
-                $annotation->getGroups()
+                $annotation->getGroups(),
             );
             $attributeMetadata->setDenormalizationContextForGroups(
                 $annotation->getContext(),
-                $annotation->getGroups()
+                $annotation->getGroups(),
             );
         }
 
         if ($annotation->getNormalizationContext()) {
             $attributeMetadata->setNormalizationContextForGroups(
                 $annotation->getNormalizationContext(),
-                $annotation->getGroups()
+                $annotation->getGroups(),
             );
         }
 
@@ -186,7 +166,7 @@ class ImmutableRecordLoader implements LoaderInterface
 
         $attributeMetadata->setDenormalizationContextForGroups(
             $annotation->getDenormalizationContext(),
-            $annotation->getGroups()
+            $annotation->getGroups(),
         );
     }
 

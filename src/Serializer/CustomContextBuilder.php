@@ -29,8 +29,11 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
      *
      * @return array<mixed>
      */
-    public function createFromRequest(Request $request, bool $normalization, ?array $extractedAttributes = null): array
-    {
+    public function createFromRequest(
+        Request $request,
+        bool $normalization,
+        array|null $extractedAttributes = null,
+    ): array {
         $context = $this->decorated->createFromRequest($request, $normalization, $extractedAttributes);
 
         $this
@@ -41,9 +44,7 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
         return $context;
     }
 
-    /**
-     * @param array<mixed> $context
-     */
+    /** @param array<mixed> $context */
     private function addMessage(Request $request, array &$context): self
     {
         $message = self::messageFromRequest($request);
@@ -57,9 +58,7 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
         return $this;
     }
 
-    /**
-     * @param array<mixed> $context
-     */
+    /** @param array<mixed> $context */
     private function extractQueryParameters(Request $request, array &$context): self
     {
         $context['query_parameters'] = $request->query->all();
@@ -78,7 +77,7 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
         return $message;
     }
 
-    public static function messageFromRequest(Request $request): ?MessageBag
+    public static function messageFromRequest(Request $request): MessageBag|null
     {
         $message = $request->attributes->get('data');
 

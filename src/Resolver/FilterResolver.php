@@ -16,9 +16,9 @@ abstract class FilterResolver implements MetaDataResolver
     protected FilterConverter $filterConverter;
     protected mixed $orderBy = null;
     protected mixed $filter = null;
-    private ?int $skip = null;
-    private ?int $itemsPerPage = null;
-    private ?int $page = null;
+    private int|null $skip = null;
+    private int|null $itemsPerPage = null;
+    private int|null $page = null;
     /** @var array<string, mixed> */
     private array $requestFilters = [];
     /** @var array<string, mixed> */
@@ -63,36 +63,36 @@ abstract class FilterResolver implements MetaDataResolver
         return $this;
     }
 
-    public function skip(): ?int
+    public function skip(): int|null
     {
         return $this->skip;
     }
 
-    public function setSkip(?int $skip): self
+    public function setSkip(int|null $skip): self
     {
         $this->skip = $skip;
 
         return $this;
     }
 
-    public function itemsPerPage(): ?int
+    public function itemsPerPage(): int|null
     {
         return $this->itemsPerPage;
     }
 
-    public function setItemsPerPage(?int $itemsPerPage): self
+    public function setItemsPerPage(int|null $itemsPerPage): self
     {
         $this->itemsPerPage = $itemsPerPage;
 
         return $this;
     }
 
-    public function page(): ?int
+    public function page(): int|null
     {
         return $this->page;
     }
 
-    public function setPage(?int $page): self
+    public function setPage(int|null $page): self
     {
         $this->page = $page;
 
@@ -129,23 +129,17 @@ abstract class FilterResolver implements MetaDataResolver
         return $this->result($collection, $page, $itemsPerPage, $totalItems);
     }
 
-    /**
-     * @return array<mixed>
-     */
+    /** @return array<mixed> */
     abstract protected function collection(): array;
 
-    /**
-     * @param array<mixed> $collection
-     */
+    /** @param array<mixed> $collection */
     abstract protected function totalItems(array $collection): int;
 
-    /**
-     * @param array<mixed> $collection
-     */
+    /** @param array<mixed> $collection */
     abstract protected function result(
         array $collection,
         int $page,
         int $itemsPerPage,
-        int $totalItems
+        int $totalItems,
     ): mixed;
 }

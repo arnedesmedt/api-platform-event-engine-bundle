@@ -130,7 +130,7 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
             ucfirst(strtolower($messageClass::__httpMethod())),
             $messageClass::__isCollection() && $messageClass::__httpMethod() === Request::METHOD_GET
                 ? 'Collection'
-                : ''
+                : '',
         );
 
         return class_exists($operationClass)
@@ -138,10 +138,8 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
             : HttpOperation::class;
     }
 
-    /**
-     * @param class-string<ApiPlatformMessage> $messageClass
-     */
-    private function docBlock(string $messageClass): ?DocBlock
+    /** @param class-string<ApiPlatformMessage> $messageClass */
+    private function docBlock(string $messageClass): DocBlock|null
     {
         $reflectionClass = new ReflectionClass($messageClass);
         try {
@@ -152,10 +150,8 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
         return null;
     }
 
-    /**
-     * @param class-string<ApiPlatformMessage> $messageClass
-     */
-    private function deprecationReason(string $messageClass): ?string
+    /** @param class-string<ApiPlatformMessage> $messageClass */
+    private function deprecationReason(string $messageClass): string|null
     {
         $reflectionClass = new ReflectionClass($messageClass);
 
@@ -188,7 +184,7 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
                 'callbacks' => $this->buildCallbacks($messageClass, $messageInterfaces),
                 'parameters' => $this->parameters($messageClass),
             ],
-            static fn ($value) => $value !== null
+            static fn ($value) => $value !== null,
         );
     }
 
@@ -198,14 +194,13 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
      *
      * @return array<mixed>|null
      */
-    private function buildCallbacks(string $messageClass, array $messageInterfaces): ?array
+    private function buildCallbacks(string $messageClass, array $messageInterfaces): array|null
     {
         if (! in_array(CallbackMessage::class, $messageInterfaces)) {
             return null;
         }
 
         /** @var array<string, class-string<JsonSchemaAwareRecord>> $events */
-        /** @var class-string<CallbackMessage> $messageClass */
         $events = $messageClass::__callbackEvents();
 
         return array_map(
@@ -219,7 +214,7 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
                                 'content' => [
                                     'application/json' => [
                                         'schema' => OpenApiSchemaFactory::toOpenApiSchema(
-                                            $schemaClass::__schema()->toArray()
+                                            $schemaClass::__schema()->toArray(),
                                         ),
                                     ],
                                 ],
@@ -231,7 +226,7 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
                     ],
                 ];
             },
-            $events
+            $events,
         );
     }
 
@@ -241,8 +236,8 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
      * @return array<array<string, mixed>>
      */
     private function parameters(
-        string $messageClass
-    ): ?array {
+        string $messageClass,
+    ): array|null {
         $pathUri = Uri::fromString($messageClass::__uriTemplate());
         $schema = $messageClass::__schema()->toArray();
 
@@ -256,8 +251,8 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
             throw new RuntimeException(
                 sprintf(
                     'The uri parameter names are not present in the message schema for message \'%s\'.',
-                    $messageClass
-                )
+                    $messageClass,
+                ),
             );
         }
 
@@ -290,24 +285,22 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
                     'description' => $openApiSchema['description'] ?? self::typeDescription(
                         $messageClass,
                         $parameterName,
-                        $this->docBlockFactory
+                        $this->docBlockFactory,
                     ),
                     'deprecated' => $openApiSchema['deprecated'] ?? false,
                     'example' => $openApiSchema['example'] ?? null,
                 ];
             },
-            $allParameterNames
+            $allParameterNames,
         );
     }
 
-    /**
-     * @param class-string<ImmutableRecord> $messageClass
-     */
+    /** @param class-string<ImmutableRecord> $messageClass */
     public static function typeDescription(
         string $messageClass,
         string $property,
-        DocBlockFactory $docBlockFactory
-    ): ?string {
+        DocBlockFactory $docBlockFactory,
+    ): string|null {
         $reflectionClass = new ReflectionClass($messageClass);
 
         /** @var ReflectionNamedType|null $propertyType */
@@ -327,7 +320,7 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
                 return sprintf(
                     "%s\n %s",
                     $docBlock->getSummary(),
-                    $docBlock->getDescription()->render()
+                    $docBlock->getDescription()->render(),
                 );
             } catch (InvalidArgumentException) {
             }

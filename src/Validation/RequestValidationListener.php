@@ -18,13 +18,11 @@ final class RequestValidationListener implements EventSubscriberInterface
 {
     public function __construct(
         private ValidatorInterface $validator,
-        private ResourceMetadataCollectionFactoryInterface $resourceMetadataCollectionFactory
+        private ResourceMetadataCollectionFactoryInterface $resourceMetadataCollectionFactory,
     ) {
     }
 
-    /**
-     * @return array<string, mixed>
-     */
+    /** @return array<string, mixed> */
     public static function getSubscribedEvents(): array
     {
         return [

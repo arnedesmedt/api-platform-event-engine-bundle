@@ -55,9 +55,7 @@ final class StatesFilterResolver extends FilterResolver
         return parent::setFilter($filter);
     }
 
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     protected function collection(): array
     {
         /** @var Filter|null $filter */
@@ -71,31 +69,27 @@ final class StatesFilterResolver extends FilterResolver
                 $filter,
                 $this->skip(),
                 $this->itemsPerPage(),
-                $orderBy
+                $orderBy,
             )
             ->toItems();
 
         return array_values($items);
     }
 
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     protected function totalItems(array $collection): int
     {
         return $this->repository->countDocuments(new AnyFilter());
     }
 
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     protected function result(array $collection, int $page, int $itemsPerPage, int $totalItems): mixed
     {
         return new Paginator(
             $collection,
             $page,
             $itemsPerPage,
-            $totalItems
+            $totalItems,
         );
     }
 }

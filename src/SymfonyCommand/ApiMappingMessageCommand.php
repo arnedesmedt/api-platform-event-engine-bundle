@@ -50,7 +50,7 @@ class ApiMappingMessageCommand extends Command
 
         $io->table(
             array_map('ucfirst', array_keys($firstRow)),
-            $table
+            $table,
         );
 
         return 0;
@@ -61,7 +61,7 @@ class ApiMappingMessageCommand extends Command
      *
      * @return array<int, array<string, mixed>>
      */
-    private function mappingToTable(array $mapping, ?string $filter = null): array
+    private function mappingToTable(array $mapping, string|null $filter = null): array
     {
         $table = [];
 
@@ -78,7 +78,7 @@ class ApiMappingMessageCommand extends Command
 
                 $table[] = array_merge(
                     $operationData,
-                    ['message' => $messageClass]
+                    ['message' => $messageClass],
                 );
             }
         }

@@ -39,7 +39,7 @@ final class OpenApiFactory implements OpenApiFactoryInterface
     public function __construct(
         private OpenApiFactoryInterface $openApiFactory,
         array $servers = [],
-        array $tags = []
+        array $tags = [],
     ) {
         if (isset($_SERVER['HTTP_HOST'])) {
             usort(
@@ -52,18 +52,18 @@ final class OpenApiFactory implements OpenApiFactoryInterface
                     $diff = ($percentage2 - $percentage1) / 100;
 
                     return (int) ($diff > 0 ? ceil($diff) : floor($diff));
-                }
+                },
             );
         }
 
         $this->servers = array_map(
             static fn (array $server) => new Server(rtrim($server['url'], '/') . '/api/', $server['description']),
-            $servers
+            $servers,
         );
 
         $this->tags = array_map(
             static fn (string $tag) => ['name' => $tag],
-            $tags['order'] ?? []
+            $tags['order'] ?? [],
         );
     }
 

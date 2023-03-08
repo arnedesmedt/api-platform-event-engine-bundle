@@ -22,7 +22,7 @@ final class DocumentStoreCollectionProvider extends Provider
 {
     public function __construct(
         private readonly InMemoryFilterResolver $inMemoryFilterResolver,
-        MessageProducer $eventEngine
+        MessageProducer $eventEngine,
     ) {
         parent::__construct($eventEngine);
     }

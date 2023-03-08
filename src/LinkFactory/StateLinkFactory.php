@@ -21,9 +21,7 @@ class StateLinkFactory implements LinkFactoryInterface
     {
     }
 
-    /**
-     * @return array<Link>
-     */
+    /** @return array<Link> */
     public function createLinksFromIdentifiers(ApiResource|Operation $operation): array
     {
         if ($operation instanceof ApiResource || ! isset($operation->getInput()['class'])) {
@@ -47,21 +45,17 @@ class StateLinkFactory implements LinkFactoryInterface
                 fromClass: $messageClass,
                 fromProperty: $uriVariable,
             ),
-            $uriVariables
+            $uriVariables,
         );
     }
 
-    /**
-     * @return array<Link>
-     */
+    /** @return array<Link> */
     public function createLinksFromRelations(ApiResource|Operation $operation): array
     {
         return $this->linkFactory->createLinksFromRelations($operation);
     }
 
-    /**
-     * @return array<Link>
-     */
+    /** @return array<Link> */
     public function createLinksFromAttributes(ApiResource|Operation $operation): array
     {
         return $this->linkFactory->createLinksFromAttributes($operation);

@@ -10,12 +10,9 @@ use Symfony\Component\HttpKernel\Event\ViewEvent;
 
 final class ControllerValidationListener
 {
-    private ValidateListener $validateListener;
-
     public function __construct(
-        ValidateListener $validateListener,
+        private ValidateListener $validateListener,
     ) {
-        $this->validateListener = $validateListener;
     }
 
     public function onKernelView(ViewEvent $event): void

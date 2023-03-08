@@ -21,13 +21,11 @@ final class DeleteDeserializeSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private SerializerInterface $serializer,
-        private SerializerContextBuilderInterface $serializerContextBuilder
+        private SerializerContextBuilderInterface $serializerContextBuilder,
     ) {
     }
 
-    /**
-     * @return array<string, array<mixed>>
-     */
+    /** @return array<string, array<mixed>> */
     public static function getSubscribedEvents(): array
     {
         return [
@@ -60,8 +58,8 @@ final class DeleteDeserializeSubscriber implements EventSubscriberInterface
                 (string) json_encode($context['path_parameters'], JSON_THROW_ON_ERROR),
                 $context['resource_class'],
                 'json',
-                $context
-            )
+                $context,
+            ),
         );
     }
 }

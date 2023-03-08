@@ -14,13 +14,11 @@ abstract class FilterConverter
         protected FilterFinder $filterFinder,
         protected string $pageParameterName = 'page',
         protected string $itemsPerPageParameterName = 'items-per-page',
-        protected string $orderParameterName = 'order'
+        protected string $orderParameterName = 'order',
     ) {
     }
 
-    /**
-     * @param array<string, mixed> $filters
-     */
+    /** @param array<string, mixed> $filters */
     abstract public function order(array $filters): mixed;
 
     /**
@@ -29,10 +27,8 @@ abstract class FilterConverter
      */
     abstract public function filter(array $filters, Operation $operation, string $resourceClass): mixed;
 
-    /**
-     * @param array<string, mixed> $filters
-     */
-    public function skip(array $filters): ?int
+    /** @param array<string, mixed> $filters */
+    public function skip(array $filters): int|null
     {
         if (
             $this->page($filters) === null
@@ -44,10 +40,8 @@ abstract class FilterConverter
         return ($this->page($filters) - 1) * $this->itemsPerPage($filters);
     }
 
-    /**
-     * @param array<string, mixed> $filters
-     */
-    public function itemsPerPage(array $filters): ?int
+    /** @param array<string, mixed> $filters */
+    public function itemsPerPage(array $filters): int|null
     {
         if (! isset($filters[$this->itemsPerPageParameterName])) {
             return null;
@@ -56,10 +50,8 @@ abstract class FilterConverter
         return intval($filters[$this->itemsPerPageParameterName]);
     }
 
-    /**
-     * @param array<string, mixed> $filters
-     */
-    public function page(array $filters): ?int
+    /** @param array<string, mixed> $filters */
+    public function page(array $filters): int|null
     {
         if (! isset($filters[$this->pageParameterName])) {
             return null;

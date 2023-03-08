@@ -8,13 +8,9 @@ use EventEngine\Schema\TypeSchema;
 
 interface AuthorizationMessage
 {
-    /**
-     * @return array<string>
-     */
+    /** @return array<string> */
     public static function __authorizationAttributes(): array;
 
-    /**
-     * @return array<int, TypeSchema>
-     */
+    /** @return array<int, TypeSchema> */
     public static function __extraResponseClassesAuthorization(): array;
 }

@@ -16,20 +16,16 @@ use function sprintf;
 
 class ImmutableRecordPropertyAccessor implements PropertyAccessorInterface
 {
-    /**
-     * @param object|array<string, mixed> $objectOrArray
-     */
+    /** @param object|array<string, mixed> $objectOrArray */
     public function setValue(
         object|array &$objectOrArray,
         PropertyPathInterface|string $propertyPath,
-        mixed $value
+        mixed $value,
     ): void {
         // TODO: Implement setValue() method.
     }
 
-    /**
-     * @param object|array<string, mixed> $objectOrArray
-     */
+    /** @param object|array<string, mixed> $objectOrArray */
     public function getValue(object|array $objectOrArray, PropertyPathInterface|string $propertyPath): mixed
     {
         assert($objectOrArray instanceof ImmutableRecord);
@@ -46,22 +42,18 @@ class ImmutableRecordPropertyAccessor implements PropertyAccessorInterface
 
         // todo implement propertyPathInterface
         throw new RuntimeException(
-            sprintf('%s doesn\'t support \'%s\'.', self::class, PropertyPathInterface::class)
+            sprintf('%s doesn\'t support \'%s\'.', self::class, PropertyPathInterface::class),
         );
     }
 
-    /**
-     * @param object|array<string, mixed> $objectOrArray
-     */
+    /** @param object|array<string, mixed> $objectOrArray */
     public function isWritable(object|array $objectOrArray, PropertyPathInterface|string $propertyPath): bool
     {
         return true;
         // TODO: Implement isWritable() method.
     }
 
-    /**
-     * @param object|array<string, mixed> $objectOrArray
-     */
+    /** @param object|array<string, mixed> $objectOrArray */
     public function isReadable(object|array $objectOrArray, PropertyPathInterface|string $propertyPath): bool
     {
         return true;

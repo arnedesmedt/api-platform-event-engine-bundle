@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Resolver;
 
-use ADS\Bundle\EventEngineBundle\Query\Query;
 use ADS\Bundle\EventEngineBundle\Repository\DefaultStateRepository;
 use ADS\Bundle\EventEngineBundle\Resolver\MetaDataResolver;
 use ADS\ValueObjects\Implementation\ListValue\IterableListValue;
@@ -39,7 +38,7 @@ abstract class StatesResolver implements MetaDataResolver
         return $this;
     }
 
-    public function __invoke(Query $message): mixed
+    public function __invoke(mixed $message): mixed
     {
         $this->statesFilterResolver->setRepository($this->repository);
 

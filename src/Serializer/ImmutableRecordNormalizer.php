@@ -29,8 +29,8 @@ final class ImmutableRecordNormalizer extends AbstractItemNormalizer
     public function supportsDenormalization(
         mixed $data,
         string $type,
-        ?string $format = null,
-        array $context = []
+        string|null $format = null,
+        array $context = [],
     ): bool {
         $interfaces = class_implements($type);
 
@@ -45,8 +45,8 @@ final class ImmutableRecordNormalizer extends AbstractItemNormalizer
     public function denormalize(
         mixed $data,
         string $type,
-        ?string $format = null,
-        array $context = []
+        string|null $format = null,
+        array $context = [],
     ): mixed {
         $initialDataIsEmpty = empty($data);
         $data = parent::denormalize($data, $type, $format, $context);
@@ -66,7 +66,7 @@ final class ImmutableRecordNormalizer extends AbstractItemNormalizer
     }
 
     /** @param array<string, mixed> $context */
-    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
+    public function supportsNormalization(mixed $data, string|null $format = null, array $context = []): bool
     {
         return $data instanceof ImmutableRecord;
     }
@@ -78,8 +78,8 @@ final class ImmutableRecordNormalizer extends AbstractItemNormalizer
      */
     public function normalize(
         mixed $object,
-        ?string $format = null,
-        array $context = []
+        string|null $format = null,
+        array $context = [],
     ): array|string|int|float|bool|ArrayObject|null {
         if (! isset($context['resource_class']) && is_object($object)) {
             $context['resource_class'] = $object::class;
@@ -109,8 +109,8 @@ final class ImmutableRecordNormalizer extends AbstractItemNormalizer
         object $object,
         string $attribute,
         mixed $value,
-        ?string $format = null,
-        array $context = []
+        string|null $format = null,
+        array $context = [],
     ): void {
         if ($object instanceof JsonSchemaAwareRecord) {
             // Added this one beause we translate path parameters to their correct type if possible. But sometimes
@@ -144,7 +144,7 @@ final class ImmutableRecordNormalizer extends AbstractItemNormalizer
         array &$context,
         ReflectionClass $reflectionClass,
         bool|array $allowedAttributes,
-        ?string $format = null
+        string|null $format = null,
     ): object {
         return AbstractObjectNormalizer::instantiateObject(
             $data,
@@ -152,7 +152,7 @@ final class ImmutableRecordNormalizer extends AbstractItemNormalizer
             $context,
             $reflectionClass,
             $allowedAttributes,
-            $format
+            $format,
         );
     }
 }

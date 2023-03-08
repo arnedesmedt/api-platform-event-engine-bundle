@@ -35,9 +35,9 @@ final class MessageTypeFactory implements TypeFactoryInterface
     public function getType(
         Type $type,
         string $format = 'json',
-        ?bool $readableLink = null,
-        ?array $serializerContext = null,
-        ?Schema $schema = null
+        bool|null $readableLink = null,
+        array|null $serializerContext = null,
+        Schema|null $schema = null,
     ): array {
         if (self::isComplexType($type->getClassName())) {
             return [];
@@ -102,14 +102,14 @@ final class MessageTypeFactory implements TypeFactoryInterface
         return $existingType;
     }
 
-    public static function isComplexType(?string $className): bool
+    public static function isComplexType(string|null $className): bool
     {
         return isset($_GET['complex'])
             && $className
             && preg_match(sprintf('#%s#', preg_quote($_GET['complex'], '#')), $className);
     }
 
-    public static function complexType(?string $className): ?string
+    public static function complexType(string|null $className): string|null
     {
         if (! self::isComplexType($className)) {
             return null;

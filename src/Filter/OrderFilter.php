@@ -18,12 +18,10 @@ use function strtolower;
 
 class OrderFilter implements FilterInterface
 {
-    /**
-     * @param array<string|null>|null $properties
-     */
+    /** @param array<string|null>|null $properties */
     public function __construct(
         private string $orderParameterName = 'order',
-        protected ?array $properties = null
+        protected array|null $properties = null,
     ) {
     }
 
@@ -45,8 +43,8 @@ class OrderFilter implements FilterInterface
                 sprintf(
                     'The event engine order filter can\'t be applied to a resource ' .
                     'if it\'s not implementing the \'%s\' interface.',
-                    JsonSchemaAwareRecord::class
-                )
+                    JsonSchemaAwareRecord::class,
+                ),
             );
         }
 

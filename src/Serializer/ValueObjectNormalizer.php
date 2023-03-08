@@ -20,7 +20,7 @@ final class ValueObjectNormalizer implements NormalizerInterface, DenormalizerIn
      *
      * @return array<mixed>|string|int|float|bool|ArrayObject<string, mixed>
      */
-    public function normalize(mixed $object, ?string $format = null, array $context = []): mixed
+    public function normalize(mixed $object, string|null $format = null, array $context = []): mixed
     {
         assert($object instanceof ValueObject);
 
@@ -30,10 +30,8 @@ final class ValueObjectNormalizer implements NormalizerInterface, DenormalizerIn
         return $value;
     }
 
-    /**
-     * @param array<string, mixed> $context
-     */
-    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
+    /** @param array<string, mixed> $context */
+    public function supportsNormalization(mixed $data, string|null $format = null, array $context = []): bool
     {
         return $data instanceof ValueObject;
     }
@@ -42,12 +40,12 @@ final class ValueObjectNormalizer implements NormalizerInterface, DenormalizerIn
      * @param array<mixed> $context
      * @param class-string<ValueObject> $type
      */
-    public function denormalize(mixed $data, string $type, ?string $format = null, array $context = []): ValueObject
+    public function denormalize(mixed $data, string $type, string|null $format = null, array $context = []): ValueObject
     {
         return $type::fromValue($data);
     }
 
-    public function supportsDenormalization(mixed $data, string $type, ?string $format = null): bool
+    public function supportsDenormalization(mixed $data, string $type, string|null $format = null): bool
     {
         return class_exists($type) && is_subclass_of($type, ValueObject::class);
     }

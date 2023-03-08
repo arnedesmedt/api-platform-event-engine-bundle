@@ -29,10 +29,8 @@ use const SORT_DESC;
 
 final class InMemoryFilterConverter extends FilterConverter
 {
-    /**
-     * @inheritDoc
-     */
-    public function order(array $filters): ?Closure
+    /** @inheritDoc */
+    public function order(array $filters): Closure|null
     {
         if (
             ! isset($filters[$this->orderParameterName])
@@ -57,7 +55,7 @@ final class InMemoryFilterConverter extends FilterConverter
                         strtoupper($sorting) === OrderFilterInterface::DIRECTION_ASC
                             ? SORT_ASC
                             : SORT_DESC,
-                    ]
+                    ],
                 );
             }
 
@@ -72,16 +70,14 @@ final class InMemoryFilterConverter extends FilterConverter
             return array_values(
                 array_replace(
                     array_flip($keysSort),
-                    $items
-                )
+                    $items,
+                ),
             );
         };
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function filter(array $filters, Operation $operation, string $resourceClass): ?Closure
+    /** @inheritDoc */
+    public function filter(array $filters, Operation $operation, string $resourceClass): Closure|null
     {
         $searchFilter = ($this->filterFinder)($operation, SearchFilter::class);
 
@@ -101,7 +97,7 @@ final class InMemoryFilterConverter extends FilterConverter
                     $itemArrays,
                     static fn (array $item) => (bool) preg_match(
                         sprintf('#.*%s.*#', preg_quote($value, '#')),
-                        $item[$filter]
+                        $item[$filter],
                     )
                 );
             }
@@ -109,8 +105,8 @@ final class InMemoryFilterConverter extends FilterConverter
             return array_values(
                 array_intersect_key(
                     $items,
-                    array_flip(array_keys($itemArrays))
-                )
+                    array_flip(array_keys($itemArrays)),
+                ),
             );
         };
     }

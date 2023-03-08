@@ -8,18 +8,14 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\Message\Callback\ValueObject\Callbac
 
 interface CallbackMessage
 {
-    public function callbackUrl(): ?CallbackUrl;
+    public function callbackUrl(): CallbackUrl|null;
 
     public static function __defaultCallbackEvent(): string;
 
-    /**
-     * @return array<string, string>
-     */
+    /** @return array<string, string> */
     public static function __callbackEvents(): array;
 
-    /**
-     * @param array<string, mixed> $callbackResponses
-     */
+    /** @param array<string, mixed> $callbackResponses */
     public static function __callbackEvent(array $callbackResponses): string;
 
     /**

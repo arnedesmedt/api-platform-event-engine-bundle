@@ -36,9 +36,7 @@ final class ResponseRefResourceMetadataCollectionFactory implements ResourceMeta
         $this->docBlockFactory = DocBlockFactory::createInstance();
     }
 
-    /**
-     * @param class-string $resourceClass
-     */
+    /** @param class-string $resourceClass */
     public function create(string $resourceClass): ResourceMetadataCollection
     {
         // todo move this to event engine message resource metadata collection factory
@@ -77,11 +75,11 @@ final class ResponseRefResourceMetadataCollectionFactory implements ResourceMeta
                         array_map(
                             function (
                                 $responseClass,
-                                $statusCode
+                                $statusCode,
                             ) use (
                                 $outputFormats,
                                 $operation,
-                                $defaultStatusCode
+                                $defaultStatusCode,
                             ) {
                                 $responseReflectionClass = new ReflectionClass($responseClass);
 
@@ -114,39 +112,37 @@ final class ResponseRefResourceMetadataCollectionFactory implements ResourceMeta
                                         array_keys($outputFormats),
                                         array_map(
                                             function (
-                                                string $format
+                                                string $format,
                                             ) use (
                                                 $responseClass,
                                                 $forceCollection,
                                                 $serializerContext,
-                                                $operation
+                                                $operation,
                                             ) {
                                                 $schema = $this->schemaFactory->buildSchema(
                                                     $responseClass,
                                                     $format,
                                                     Schema::TYPE_OUTPUT,
-                                                    (new HttpOperation(
-                                                        $operation->getMethod() ?? HttpOperation::METHOD_GET
-                                                    )
+                                                    (new HttpOperation($operation->getMethod())
                                                     ),
                                                     null,
                                                     $serializerContext,
-                                                    $forceCollection
+                                                    $forceCollection,
                                                 );
 
                                                 return ['schema' => $schema->getArrayCopy(false)];
                                             },
-                                            $outputFormats
-                                        )
+                                            $outputFormats,
+                                        ),
                                     ),
                                     'headers' => null,
                                     'links' => null,
                                 ];
                             },
                             $responseClasses,
-                            array_keys($responseClasses)
-                        )
-                    )
+                            array_keys($responseClasses),
+                        ),
+                    ),
                 );
 
                 $operation = $operation->withOpenapiContext($openApiContext);

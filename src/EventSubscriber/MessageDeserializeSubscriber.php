@@ -25,13 +25,11 @@ final class MessageDeserializeSubscriber implements EventSubscriberInterface
 
     public function __construct(
         private SerializerContextBuilderInterface $serializerContextBuilder,
-        private SerializerInterface $deserializer
+        private SerializerInterface $deserializer,
     ) {
     }
 
-    /**
-     * @return array<string, array<mixed>>
-     */
+    /** @return array<string, array<mixed>> */
     public static function getSubscribedEvents(): array
     {
         return [
@@ -78,13 +76,11 @@ final class MessageDeserializeSubscriber implements EventSubscriberInterface
 
         $request->attributes->set(
             'data',
-            $this->deserializer->deserialize($content, $context['resource_class'], $format, $context)
+            $this->deserializer->deserialize($content, $context['resource_class'], $format, $context),
         );
     }
 
-    /**
-     * @param array<string, string[]> $formats
-     */
+    /** @param array<string, string[]> $formats */
     private function getFormat(Request $request, array $formats): string
     {
         /** @var string $contentType */
@@ -103,8 +99,8 @@ final class MessageDeserializeSubscriber implements EventSubscriberInterface
                 sprintf(
                     'The content-type "%s" is not supported. Supported MIME types are "%s".',
                     $contentType,
-                    implode('", "', $supportedMimeTypes)
-                )
+                    implode('", "', $supportedMimeTypes),
+                ),
             );
         }
 

@@ -269,16 +269,14 @@ final class OpenApiSchemaFactory
 
             $definitions = array_merge(
                 $definitions,
-                self::findTypeRefs($value)
+                self::findTypeRefs($value),
             );
         }
 
         return array_unique($definitions);
     }
 
-    /**
-     * @param array<string, mixed> $schema
-     */
+    /** @param array<string, mixed> $schema */
     public static function replaceRefs(array &$schema, string $refName, string $newRefName): void
     {
         foreach ($schema as $name => &$value) {

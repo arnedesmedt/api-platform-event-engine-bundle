@@ -10,9 +10,7 @@ use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 
 interface ApiPlatformMessage extends JsonSchemaAwareRecord
 {
-    /**
-     * @return class-string
-     */
+    /** @return class-string */
     public static function __resource(): string;
 
     public static function __isCollection(): bool;
@@ -26,26 +24,20 @@ interface ApiPlatformMessage extends JsonSchemaAwareRecord
     public static function __uriTemplate(): string;
 
     /** @return array<string, string> */
-    public static function __requirements(): ?array;
+    public static function __requirements(): array|null;
 
     public static function __apiPlatformController(): string;
 
     /** @return class-string<ProcessorInterface>|null */
     public static function __processor(): string|null;
 
-    /**
-     * @return class-string<JsonSchemaAwareRecord>
-     */
+    /** @return class-string<JsonSchemaAwareRecord> */
     public static function __schemaStateClass(): string;
 
-    /**
-     * @return class-string<JsonSchemaAwareCollection>
-     */
+    /** @return class-string<JsonSchemaAwareCollection> */
     public static function __schemaStatesClass(): string|null;
 
-    /**
-     * @return array<string>
-     */
+    /** @return array<string> */
     public static function __tags(): array;
 
     /**
@@ -53,14 +45,10 @@ interface ApiPlatformMessage extends JsonSchemaAwareRecord
      */
     public static function __requestBodyArrayProperty(): string|null;
 
-    /**
-     * @return array<string, mixed>
-     */
+    /** @return array<string, mixed> */
     public static function __normalizationContext(): array;
 
-    /**
-     * @return array<string, mixed>
-     */
+    /** @return array<string, mixed> */
     public static function __denormalizationContext(): array;
 
     public static function __overrideDefaultApiPlatformResponse(): bool;

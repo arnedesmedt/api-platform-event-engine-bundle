@@ -27,9 +27,7 @@ final class Finder
         return $this->byOperation($operation);
     }
 
-    /**
-     * @param array<string, mixed> $context
-     */
+    /** @param array<string, mixed> $context */
     public function hasMessageByContext(array $context): bool
     {
         try {
@@ -41,9 +39,7 @@ final class Finder
         }
     }
 
-    /**
-     * @return string|class-string
-     */
+    /** @return string|class-string */
     public function byOperation(HttpOperation $operation): string
     {
         return self::byConfigAndOperation($this->config, $operation);

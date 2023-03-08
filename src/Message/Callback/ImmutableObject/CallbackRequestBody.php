@@ -14,5 +14,5 @@ class CallbackRequestBody implements JsonSchemaAwareRecord
     use JsonSchemaAwareRecordLogic;
 
     private CallbackEvent $event;
-    private ?CallbackMessage $message = null;
+    private CallbackMessage|null $message = null;
 }

@@ -16,9 +16,9 @@ trait CallbackMessageLogic
      * The url that will be called if everything is executed.
      * If no 'callback_url' is provided, the callback call will not be executed.
      */
-    private ?CallbackUrl $callbackUrl = null;
+    private CallbackUrl|null $callbackUrl = null;
 
-    public function callbackUrl(): ?CallbackUrl
+    public function callbackUrl(): CallbackUrl|null
     {
         return $this->callbackUrl;
     }
@@ -28,9 +28,7 @@ trait CallbackMessageLogic
         return 'success';
     }
 
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     public static function __callbackEvents(): array
     {
         return [
@@ -38,33 +36,25 @@ trait CallbackMessageLogic
         ];
     }
 
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     public static function __callbackEvent(array $callbackResponses): string
     {
         return self::__defaultCallbackEvent();
     }
 
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     public static function __callbackRequestBody(string $callbackEvent, array $callbackResponses): array
     {
         return ['event' => $callbackEvent];
     }
 
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     public static function __callbackMessagesPayloadGenerator(array $callbackResponses): array
     {
         return [];
     }
 
-    /**
-     * @return array<int, class-string<JsonSchemaAwareRecord>>
-     */
+    /** @return array<int, class-string<JsonSchemaAwareRecord>> */
     public static function __extraResponseClassesCallback(): array
     {
         return [

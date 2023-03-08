@@ -28,9 +28,7 @@ final class RequestBodyRefResourceMetadataCollectionFactory implements ResourceM
     ) {
     }
 
-    /**
-     * @param class-string $resourceClass
-     */
+    /** @param class-string $resourceClass */
     public function create(string $resourceClass): ResourceMetadataCollection
     {
         // todo move this to event engine message resource metadata collection factory
@@ -74,7 +72,7 @@ final class RequestBodyRefResourceMetadataCollectionFactory implements ResourceM
                     $reflectionClass,
                     $input,
                     $operation,
-                    $forceCollection
+                    $forceCollection,
                 );
 
                 $openApiContext['requestBody'] = [
@@ -90,13 +88,13 @@ final class RequestBodyRefResourceMetadataCollectionFactory implements ResourceM
                                     $operation,
                                     null,
                                     null,
-                                    $forceCollection
+                                    $forceCollection,
                                 );
 
                                 return ['schema' => $schema->getArrayCopy(false)];
                             },
-                            $inputFormats
-                        )
+                            $inputFormats,
+                        ),
                     ),
                     'required' => true,
                 ];

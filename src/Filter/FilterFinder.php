@@ -11,11 +11,11 @@ use Psr\Container\ContainerInterface;
 class FilterFinder
 {
     public function __construct(
-        private ContainerInterface $filterLocator
+        private ContainerInterface $filterLocator,
     ) {
     }
 
-    public function __invoke(Operation $operation, string $type): ?FilterInterface
+    public function __invoke(Operation $operation, string $type): FilterInterface|null
     {
         $filterIds = $operation->getFilters() ?? [];
 

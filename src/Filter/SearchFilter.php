@@ -15,9 +15,7 @@ use function sprintf;
 
 class SearchFilter implements FilterInterface
 {
-    /**
-     * @param array<mixed> $properties
-     */
+    /** @param array<mixed> $properties */
     public function __construct(protected array $properties = [])
     {
     }
@@ -40,8 +38,8 @@ class SearchFilter implements FilterInterface
                 sprintf(
                     'The event engine search filter can\'t be applied to a resource ' .
                     'if it\'s not implementing the \'%s\' interface.',
-                    JsonSchemaAwareRecord::class
-                )
+                    JsonSchemaAwareRecord::class,
+                ),
             );
         }
 
