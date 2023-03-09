@@ -23,8 +23,10 @@ use ApiPlatform\Metadata\HttpOperation;
 use ApiPlatform\Metadata\Operations;
 use ApiPlatform\Metadata\Resource\Factory\ResourceMetadataCollectionFactoryInterface;
 use ApiPlatform\Metadata\Resource\ResourceMetadataCollection;
+use ApiPlatform\OpenApi\Model\Operation as OpenApiOperation;
 use ApiPlatform\State\ProcessorInterface;
 use ApiPlatform\State\ProviderInterface;
+use ArrayObject;
 use EventEngine\Data\ImmutableRecord;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use InvalidArgumentException;
@@ -38,7 +40,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
 use Symfony\Component\PropertyInfo\Type;
 
-use function array_filter;
 use function array_key_exists;
 use function array_map;
 use function class_exists;
@@ -99,7 +100,7 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
                     : null,
                 normalizationContext: $messageClass::__normalizationContext(),
                 denormalizationContext: $messageClass::__denormalizationContext(),
-                openapiContext: $this->openApiContext($messageClass, $messageInterfaces),
+                openapi: $this->openApi($messageClass, $messageInterfaces),
                 processor: $this->processor($messageClass, $messageInterfaces),
                 provider: $this->provider($messageClass, $messageInterfaces),
                 input: ['class' => $messageClass],
@@ -168,23 +169,18 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
     /**
      * @param class-string<ApiPlatformMessage> $messageClass
      * @param array<class-string> $messageInterfaces
-     *
-     * @return array<string, mixed>
      */
-    private function openApiContext(string $messageClass, array $messageInterfaces): array
+    private function openApi(string $messageClass, array $messageInterfaces): OpenApiOperation
     {
         $docBlock = $this->docBlock($messageClass);
 
-        return array_filter(
-            [
-                'operationId' => $messageClass::__operationId(),
-                'tags' => $messageClass::__tags(),
-                'summary' => $docBlock?->getSummary() ?? '',
-                'description' => $docBlock?->getDescription()->render() ?? '',
-                'callbacks' => $this->buildCallbacks($messageClass, $messageInterfaces),
-                'parameters' => $this->parameters($messageClass),
-            ],
-            static fn ($value) => $value !== null,
+        return new OpenApiOperation(
+            operationId: $messageClass::__operationId(),
+            tags: $messageClass::__tags(),
+            summary: $docBlock?->getSummary() ?? '',
+            description: $docBlock?->getDescription()->render() ?? '',
+            callbacks: $this->buildCallbacks($messageClass, $messageInterfaces),
+            parameters: $this->parameters($messageClass),
         );
     }
 
@@ -192,9 +188,9 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
      * @param class-string<ApiPlatformMessage> $messageClass
      * @param array<class-string> $messageInterfaces
      *
-     * @return array<mixed>|null
+     * @return ArrayObject<string, mixed>|null
      */
-    private function buildCallbacks(string $messageClass, array $messageInterfaces): array|null
+    private function buildCallbacks(string $messageClass, array $messageInterfaces): ArrayObject|null
     {
         if (! in_array(CallbackMessage::class, $messageInterfaces)) {
             return null;
@@ -203,10 +199,11 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
         /** @var array<string, class-string<JsonSchemaAwareRecord>> $events */
         $events = $messageClass::__callbackEvents();
 
-        return array_map(
-            /** @param class-string<JsonSchemaAwareRecord> $schemaClass */
-            static function (string $schemaClass) {
-                return [
+        /** @var ArrayObject<string, mixed> $arrayObject */
+        $arrayObject = new ArrayObject(
+            array_map(
+                /** @param class-string<JsonSchemaAwareRecord> $schemaClass */
+                static fn (string $schemaClass) => [
                     '{$request.body#/callback_url}' => [
                         'post' => [
                             'requestBody' => [
@@ -220,14 +217,16 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
                                 ],
                             ],
                             'responses' => [
-                                '200' => ['description' => 'Your server return a 200 OK, if it accpets the callback.'],
+                                '200' => ['description' => 'Your server returns a 200 OK, if it accpets the callback.'],
                             ],
                         ],
                     ],
-                ];
-            },
-            $events,
+                ],
+                $events,
+            ),
         );
+
+        return $arrayObject;
     }
 
     /**

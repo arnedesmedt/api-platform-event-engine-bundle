@@ -13,6 +13,9 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\HttpOperation;
 use ApiPlatform\Metadata\Resource\Factory\ResourceMetadataCollectionFactoryInterface;
 use ApiPlatform\Metadata\Resource\ResourceMetadataCollection;
+use ApiPlatform\OpenApi\Model\Operation as OpenApiOperation;
+use ApiPlatform\OpenApi\Model\RequestBody;
+use ArrayObject;
 use ReflectionClass;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -61,7 +64,6 @@ final class RequestBodyRefResourceMetadataCollectionFactory implements ResourceM
                     continue;
                 }
 
-                $openApiContext = $operation->getOpenapiContext();
                 /** @var array<string, array<string>> $inputFormats */
                 $inputFormats = $operation->getInputFormats();
                 $inputFormats = $this->flattenMimeTypes($inputFormats);
@@ -75,33 +77,40 @@ final class RequestBodyRefResourceMetadataCollectionFactory implements ResourceM
                     $forceCollection,
                 );
 
-                $openApiContext['requestBody'] = [
-                    'description' => '', // TODO GET DESCRIPTION FROM THE CLASS DOCBLOCK
-                    'content' => array_combine(
-                        array_keys($inputFormats),
-                        array_map(
-                            function (string $format) use ($resourceClass, $operation, $forceCollection) {
-                                $schema = $this->schemaFactory->buildSchema(
-                                    $resourceClass,
-                                    $format,
-                                    Schema::TYPE_INPUT,
-                                    $operation,
-                                    null,
-                                    null,
-                                    $forceCollection,
-                                );
-
-                                return ['schema' => $schema->getArrayCopy(false)];
-                            },
-                            $inputFormats,
-                        ),
-                    ),
-                    'required' => true,
-                ];
-
                 $operation = $operation
                     ->withInput($input)
-                    ->withOpenapiContext($openApiContext);
+                    ->withOpenapi(
+                        ($operation->getOpenapi() ?? new OpenApiOperation())->withRequestBody(
+                            new RequestBody(
+                                content: new ArrayObject(
+                                    array_combine(
+                                        array_keys($inputFormats),
+                                        array_map(
+                                            function (string $format) use (
+                                                $resourceClass,
+                                                $operation,
+                                                $forceCollection,
+                                            ) {
+                                                $schema = $this->schemaFactory->buildSchema(
+                                                    $resourceClass,
+                                                    $format,
+                                                    Schema::TYPE_INPUT,
+                                                    $operation,
+                                                    null,
+                                                    null,
+                                                    $forceCollection,
+                                                );
+
+                                                return ['schema' => $schema->getArrayCopy(false)];
+                                            },
+                                            $inputFormats,
+                                        ),
+                                    ),
+                                ),
+                                required: true,
+                            ),
+                        ),
+                    );
 
                 if ($operations === null) {
                     continue;
