@@ -24,6 +24,7 @@ use ApiPlatform\Metadata\Operations;
 use ApiPlatform\Metadata\Resource\Factory\ResourceMetadataCollectionFactoryInterface;
 use ApiPlatform\Metadata\Resource\ResourceMetadataCollection;
 use ApiPlatform\OpenApi\Model\Operation as OpenApiOperation;
+use ApiPlatform\OpenApi\Model\Parameter;
 use ApiPlatform\State\ProcessorInterface;
 use ApiPlatform\State\ProviderInterface;
 use ArrayObject;
@@ -232,7 +233,7 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
     /**
      * @param class-string<ApiPlatformMessage> $messageClass
      *
-     * @return array<array<string, mixed>>
+     * @return array<Parameter>
      */
     private function parameters(
         string $messageClass,
@@ -275,20 +276,24 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
                 }
 
                 $openApiSchema = OpenApiSchemaFactory::toOpenApiSchema($propertySchema);
+                /** @var string $description */
+                $description = $openApiSchema['description'] ?? self::typeDescription(
+                    $messageClass,
+                    $parameterName,
+                    $this->docBlockFactory,
+                ) ?? '';
+                $deprecated = $openApiSchema['deprecated'] ?? false;
+                $example = $openApiSchema['example'] ?? null;
 
-                return [
-                    'name' => $parameterName,
-                    'in' => in_array($parameterName, $pathParameterNames) ? 'path' : 'query',
-                    'schema' => $openApiSchema,
-                    'required' => in_array($parameterName, $pathSchema['required'] ?? []),
-                    'description' => $openApiSchema['description'] ?? self::typeDescription(
-                        $messageClass,
-                        $parameterName,
-                        $this->docBlockFactory,
-                    ),
-                    'deprecated' => $openApiSchema['deprecated'] ?? false,
-                    'example' => $openApiSchema['example'] ?? null,
-                ];
+                return new Parameter(
+                    name: $parameterName,
+                    in: in_array($parameterName, $pathParameterNames) ? 'path' : 'query',
+                    description: $description,
+                    required: in_array($parameterName, $pathSchema['required'] ?? []),
+                    deprecated: $deprecated,
+                    schema: $openApiSchema,
+                    example: $example,
+                );
             },
             $allParameterNames,
         );
