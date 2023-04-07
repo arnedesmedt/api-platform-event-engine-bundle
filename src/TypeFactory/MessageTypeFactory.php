@@ -104,9 +104,23 @@ final class MessageTypeFactory implements TypeFactoryInterface
 
     public static function isComplexType(string|null $className): bool
     {
-        return isset($_GET['complex'])
-            && $className
-            && preg_match(sprintf('#%s#', preg_quote($_GET['complex'], '#')), $className);
+        if (! isset($_GET['complex']) || ! isset($_ENV['complex'])) {
+            return false;
+        }
+
+        /** @var string $complexMatch */
+        $complexMatch = self::complexMatch();
+
+        return $className
+            && preg_match(
+                sprintf('#%s#', preg_quote($complexMatch, '#')),
+                $className,
+            );
+    }
+
+    public static function complexMatch(): string|null
+    {
+        return $_GET['complex'] ?? $_ENV['complex'] ?? null;
     }
 
     public static function complexType(string|null $className): string|null
