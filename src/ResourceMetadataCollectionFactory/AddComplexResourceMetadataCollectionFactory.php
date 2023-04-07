@@ -18,8 +18,8 @@ final class AddComplexResourceMetadataCollectionFactory implements ResourceMetad
     public function create(string $resourceClass): ResourceMetadataCollection
     {
         // Added here to create a different cache. Removed after the cache decorator.
-        if (isset($_GET['complex']) || isset($_ENV['complex'])) {
-            $resourceClass = sprintf('%s_%s', $resourceClass, $_GET['complex'] ?? $_ENV['complex']);
+        if (isset($_GET['complex']) || isset($_SERVER['complex'])) {
+            $resourceClass = sprintf('%s_%s', $resourceClass, $_GET['complex'] ?? $_SERVER['complex']);
         }
 
         return $this->resourceMetadataCollectionFactory->create($resourceClass);

@@ -19,11 +19,11 @@ final class RemoveComplexResourceMetadataCollectionFactory implements ResourceMe
     public function create(string $resourceClass): ResourceMetadataCollection
     {
         // Removed here after the cache decorator. Added before the decorator.
-        if (isset($_GET['complex']) || isset($_ENV['complex'])) {
+        if (isset($_GET['complex']) || isset($_SERVER['complex'])) {
             $resourceClass = substr(
                 $resourceClass,
                 0,
-                -strlen('_' . ($_GET['complex'] ?? $_ENV['complex'])),
+                -strlen('_' . ($_GET['complex'] ?? $_SERVER['complex'])),
             );
         }
 

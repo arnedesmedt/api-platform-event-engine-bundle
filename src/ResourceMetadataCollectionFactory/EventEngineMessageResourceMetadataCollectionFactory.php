@@ -265,7 +265,7 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
                 /** @var array<string, mixed> $propertySchema */
                 $propertySchema = $pathSchema['properties'][$parameterName];
 
-                if (isset($_GET['complex']) || isset($_ENV['complex'])) {
+                if (isset($_GET['complex']) || isset($_SERVER['complex'])) {
                     $types = $this->propertyInfoExtractor->getTypes($messageClass, $parameterName) ?? [];
                     /** @var Type|null $type */
                     $type = empty($types) ? null : reset($types);
