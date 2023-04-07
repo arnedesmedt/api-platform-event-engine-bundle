@@ -104,7 +104,7 @@ final class MessageTypeFactory implements TypeFactoryInterface
 
     public static function isComplexType(string|null $className): bool
     {
-        if (! isset($_GET['complex']) || ! isset($_SERVER['complex'])) {
+        if (! isset($_GET['complex']) && ! isset($_SERVER['complex'])) {
             return false;
         }
 
