@@ -32,6 +32,7 @@ final class MessageNormalizer implements DenormalizerInterface
         private EventEngine $eventEngine,
         private FilterFinder $filterFinder,
         private readonly DenormalizerInterface $denormalizer,
+        private readonly string $environment,
         private string $pageParameterName = 'page',
         private string $orderParameterName = 'order',
         private string $itemsPerPageParameterName = 'items-per-page',
@@ -151,7 +152,7 @@ final class MessageNormalizer implements DenormalizerInterface
         }
 
         return [
-            'async' => $messageClass::__dispatchAsync(),
+            'async' => $this->environment === 'test' ? false : $messageClass::__dispatchAsync(),
         ];
     }
 
