@@ -152,7 +152,7 @@ final class MessageNormalizer implements DenormalizerInterface
         }
 
         return [
-            'async' => $this->environment === 'test' ? false : $messageClass::__dispatchAsync(),
+            'async' => $this->environment === 'test' ? false : $messageClass::__queue(),
         ];
     }
 
