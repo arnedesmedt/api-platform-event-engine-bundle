@@ -8,7 +8,6 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\FilterFinder;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\SearchFilter;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
 use ADS\Bundle\EventEngineBundle\Command\Command;
-use ADS\Bundle\EventEngineBundle\Messenger\Queueable;
 use ADS\Bundle\EventEngineBundle\Query\Query;
 use ApiPlatform\Metadata\HttpOperation;
 use ApiPlatform\Metadata\Operation;
@@ -21,8 +20,6 @@ use function array_diff_key;
 use function array_key_exists;
 use function array_merge;
 use function assert;
-use function class_implements;
-use function in_array;
 use function is_array;
 use function method_exists;
 
@@ -32,7 +29,6 @@ final class MessageNormalizer implements DenormalizerInterface
         private EventEngine $eventEngine,
         private FilterFinder $filterFinder,
         private readonly DenormalizerInterface $denormalizer,
-        private readonly string $environment,
         private string $pageParameterName = 'page',
         private string $orderParameterName = 'order',
         private string $itemsPerPageParameterName = 'items-per-page',
@@ -59,10 +55,7 @@ final class MessageNormalizer implements DenormalizerInterface
 
         return $this->eventEngine->messageFactory()->createMessageFromArray(
             $messageClass,
-            [
-                'payload' => $message->toArray(),
-                'metadata' => $this->metadata($context),
-            ],
+            ['payload' => $message->toArray()],
         );
     }
 
@@ -129,31 +122,6 @@ final class MessageNormalizer implements DenormalizerInterface
             $pathParameters,
             $queryParameters,
         );
-    }
-
-    /**
-     * @param array<string, mixed> $context
-     *
-     * @return array<string, mixed>
-     */
-    private function metadata(array $context): array
-    {
-        /** @var class-string<Queueable>|null $messageClass */
-        $messageClass = self::messageClassFromContext($context);
-
-        if ($messageClass === null) {
-            return [];
-        }
-
-        $interfaces = class_implements($messageClass);
-
-        if ($interfaces === false || ! in_array(Queueable::class, $interfaces)) {
-            return [];
-        }
-
-        return [
-            'async' => $this->environment === 'test' ? false : $messageClass::__queue(),
-        ];
     }
 
     /**
