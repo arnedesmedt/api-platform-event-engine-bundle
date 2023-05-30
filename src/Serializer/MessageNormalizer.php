@@ -29,6 +29,7 @@ final class MessageNormalizer implements DenormalizerInterface
         private EventEngine $eventEngine,
         private FilterFinder $filterFinder,
         private readonly DenormalizerInterface $denormalizer,
+        private string $environment,
         private string $pageParameterName = 'page',
         private string $orderParameterName = 'order',
         private string $itemsPerPageParameterName = 'items-per-page',
@@ -55,7 +56,10 @@ final class MessageNormalizer implements DenormalizerInterface
 
         return $this->eventEngine->messageFactory()->createMessageFromArray(
             $messageClass,
-            ['payload' => $message->toArray()],
+            [
+                'payload' => $message->toArray(),
+                'metadata' => $this->environment === 'test' ? ['async' => false] : [],
+            ],
         );
     }
 
