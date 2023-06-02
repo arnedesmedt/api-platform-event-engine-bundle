@@ -12,7 +12,7 @@ services:
     # PROCESSOR
     ADS\Bundle\ApiPlatformEventEngineBundle\Processor\CommandProcessor:
         arguments:
-            - '@ADS\Bundle\EventEngineBundle\Messenger\QueueableMessageProducer'
+            - '@ADS\Bundle\EventEngineBundle\Messenger\MessengerMessageProducer'
         tags:
             - 'api_platform.state_processor'
 
@@ -20,13 +20,13 @@ services:
     ADS\Bundle\ApiPlatformEventEngineBundle\Provider\DocumentStoreCollectionProvider:
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Resolver\InMemoryFilterResolver'
-            - '@ADS\Bundle\EventEngineBundle\Messenger\QueueableMessageProducer'
+            - '@ADS\Bundle\EventEngineBundle\Messenger\MessengerMessageProducer'
         tags:
             - 'api_platform.state_provider'
 
     ADS\Bundle\ApiPlatformEventEngineBundle\Provider\DocumentStoreItemProvider:
         arguments:
-            - '@ADS\Bundle\EventEngineBundle\Messenger\QueueableMessageProducer'
+            - '@ADS\Bundle\EventEngineBundle\Messenger\MessengerMessageProducer'
         tags:
             - 'api_platform.state_provider'
 
