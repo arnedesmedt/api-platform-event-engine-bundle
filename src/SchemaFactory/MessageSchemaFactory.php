@@ -144,6 +144,14 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
                     $statusCode === $defaultStatusCode
                     && MessageTypeFactory::isComplexType($responseClass)
                 ) {
+                    $complexType = MessageTypeFactory::complexType($responseClass);
+
+                    if ($forceCollectionResponse) {
+                        $schema['type'] = 'array';
+                        $schema['items'] = $complexType;
+                        continue;
+                    }
+
                     $schema['type'] = MessageTypeFactory::complexType($responseClass);
                     continue;
                 }
