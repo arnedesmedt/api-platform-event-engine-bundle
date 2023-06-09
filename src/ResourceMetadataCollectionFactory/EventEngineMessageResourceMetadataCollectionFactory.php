@@ -83,12 +83,12 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
             /** @var array<class-string> $messageInterfaces */
             $messageInterfaces = class_implements($messageClass) ?: [];
             $stateClass = $messageClass::__isCollection()
-                ? $messageClass::__schemaStateClass()
-                : $messageClass::__schemaStatesClass();
+                ? $messageClass::__schemaStatesClass()
+                : $messageClass::__schemaStateClass();
 
             $operations[$messageClass::__operationId()] = (new $operationClass(
                 name: $messageClass::__operationId(),
-                shortName: $stateClass::__type(),
+                shortName: $messageClass::__schemaStateClass()::__type(),
                 description: $docBlock?->getSummary(),
                 deprecationReason: $this->deprecationReason($messageClass),
                 class: $resourceClass,
