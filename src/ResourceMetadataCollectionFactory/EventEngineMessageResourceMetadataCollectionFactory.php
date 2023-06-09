@@ -82,9 +82,6 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
             $docBlock = $this->docBlock($messageClass);
             /** @var array<class-string> $messageInterfaces */
             $messageInterfaces = class_implements($messageClass) ?: [];
-            $stateClass = $messageClass::__isCollection()
-                ? $messageClass::__schemaStatesClass()
-                : $messageClass::__schemaStateClass();
 
             $operations[$messageClass::__operationId()] = (new $operationClass(
                 name: $messageClass::__operationId(),
@@ -108,8 +105,8 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
                 processor: $this->processor($messageClass, $messageInterfaces),
                 provider: $this->provider($messageClass, $messageInterfaces),
                 input: ['class' => $messageClass],
-                output: $resourceClass !== $stateClass
-                    ? ['class' => $stateClass]
+                output: $resourceClass !== $messageClass::__schemaStateClass()
+                    ? ['class' => $messageClass::__schemaStateClass()]
                     : null,
             ))
                 ->withMethod($messageClass::__httpMethod());
