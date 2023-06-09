@@ -43,6 +43,13 @@ final class MessageRefSchemaFactory implements SchemaFactoryInterface
         $schema = $schema ? clone $schema : new Schema(Schema::VERSION_OPENAPI);
 
         if (MessageTypeFactory::isComplexType($className)) {
+            if ($forceCollection) {
+                $schema['type'] = 'array';
+                $schema['items'] = ['type' => MessageTypeFactory::complexType($className)];
+
+                return $schema;
+            }
+
             $schema['type'] = MessageTypeFactory::complexType($className);
 
             return $schema;

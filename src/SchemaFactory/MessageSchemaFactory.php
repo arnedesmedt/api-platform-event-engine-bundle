@@ -69,6 +69,13 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
         $schema ??= new Schema();
 
         if (MessageTypeFactory::isComplexType($className)) {
+            if ($forceCollection) {
+                $schema['type'] = 'array';
+                $schema['items'] = ['type' => MessageTypeFactory::complexType($className)];
+
+                return $schema;
+            }
+
             $schema['type'] = MessageTypeFactory::complexType($className);
 
             return $schema;
@@ -144,6 +151,13 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
                     $statusCode === $defaultStatusCode
                     && MessageTypeFactory::isComplexType($responseClass)
                 ) {
+                    if ($forceCollectionResponse) {
+                        $schema['type'] = 'array';
+                        $schema['items'] = ['type' => MessageTypeFactory::complexType($className)];
+
+                        continue;
+                    }
+
                     $schema['type'] = MessageTypeFactory::complexType($responseClass);
                     continue;
                 }
