@@ -6,6 +6,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataCollectionFact
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Config;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
+use ADS\Bundle\ApiPlatformEventEngineBundle\Message\CacheMessage;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\CallbackMessage;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Processor\CommandProcessor;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Provider\DocumentStoreCollectionProvider;
@@ -40,7 +41,6 @@ use RuntimeException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
 use Symfony\Component\PropertyInfo\Type;
-
 use function array_key_exists;
 use function array_map;
 use function class_exists;
@@ -107,6 +107,13 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
                 input: ['class' => $messageClass],
                 output: $resourceClass !== $messageClass::__schemaStateClass()
                     ? ['class' => $messageClass::__schemaStateClass()]
+                    : null,
+                cacheHeaders: in_array(CacheMessage::class, $messageInterfaces)
+                    ? [
+                        'max_age' => $messageClass::__maxAge(),
+                        'shared_max_age' => $messageClass::__sharedMaxAge(),
+                        'vary' => $messageClass::__vary(),
+                    ]
                     : null,
             ))
                 ->withMethod($messageClass::__httpMethod());
