@@ -15,7 +15,6 @@ use ReflectionClass;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-
 use function class_exists;
 use function lcfirst;
 use function method_exists;
