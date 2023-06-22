@@ -397,12 +397,10 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
             'oneOf' => array_values($definitionNames),
             'discriminator' => [
                 'propertyName' => $className::propertyName(),
-                'mapping' => array_values(
-                    array_filter(
-                        array_map(
-                            static fn (string $oneOfClass) => $definitionNames[$oneOfClass] ?? null,
-                            $className::mapping(),
-                        ),
+                'mapping' => array_filter(
+                    array_map(
+                        static fn (string $oneOfClass) => $definitionNames[$oneOfClass]['$ref'] ?? null,
+                        $className::mapping(),
                     ),
                 ),
             ],
