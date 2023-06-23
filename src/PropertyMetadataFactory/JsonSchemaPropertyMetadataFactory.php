@@ -172,7 +172,7 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
         $docTags = $this->docTagsFromProperty($reflectionClass, $property, 'example');
 
         if (empty($docTags)) {
-            return $this;
+            return null;
         }
 
         /** @var DocBlock\Tags\Example $exampleTag */
