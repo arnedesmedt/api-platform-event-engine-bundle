@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Serializer;
 
+use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\BadRequestHttpException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\FilterFinder;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\SearchFilter;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
 use ADS\Bundle\EventEngineBundle\Command\Command;
 use ADS\Bundle\EventEngineBundle\Query\Query;
+use ADS\ValueObjects\Exception\PatternException;
 use ApiPlatform\Metadata\HttpOperation;
 use ApiPlatform\Metadata\Operation;
 use EventEngine\Data\ImmutableRecord;
@@ -52,7 +54,11 @@ final class MessageNormalizer implements DenormalizerInterface
         // And since the schema generator doesn't allow multiple types, we first need to make the transition.
         /** @var class-string<ImmutableRecord> $messageClass */
         $messageClass = $input['class'];
-        $message = $messageClass::fromArray($message);
+        try {
+            $message = $messageClass::fromArray($message);
+        } catch (PatternException $exception) {
+            throw new BadRequestHttpException($exception->getMessage(), $exception);
+        }
 
         return $this->eventEngine->messageFactory()->createMessageFromArray(
             $messageClass,
