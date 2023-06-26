@@ -41,6 +41,7 @@ use RuntimeException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
 use Symfony\Component\PropertyInfo\Type;
+
 use function array_key_exists;
 use function array_map;
 use function class_exists;
@@ -225,7 +226,7 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
                                 ],
                             ],
                             'responses' => [
-                                '200' => ['description' => 'Your server returns a 200 OK, if it accpets the callback.'],
+                                '200' => ['description' => 'Your server returns a 200 OK, if it accepts the callback.'],
                             ],
                         ],
                     ],
