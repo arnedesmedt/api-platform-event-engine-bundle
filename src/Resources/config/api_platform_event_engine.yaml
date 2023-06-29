@@ -104,6 +104,7 @@ services:
             - '@EventEngine\EventEngine'
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Filter\FilterFinder'
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\ImmutableRecordNormalizer'
+            - '@request_stack'
             - '%kernel.environment%'
             - '%api_platform.collection.pagination.page_parameter_name%'
             - '%api_platform.collection.order_parameter_name%'

@@ -13,6 +13,7 @@ use ADS\Bundle\EventEngineBundle\Query\Query;
 use ADS\ValueObjects\Exception\PatternException;
 use ApiPlatform\Metadata\HttpOperation;
 use ApiPlatform\Metadata\Operation;
+use Chrisguitarguy\RequestId\RequestIdStorage;
 use EventEngine\Data\ImmutableRecord;
 use EventEngine\EventEngine;
 use RuntimeException;
@@ -31,6 +32,7 @@ final class MessageNormalizer implements DenormalizerInterface
         private EventEngine $eventEngine,
         private FilterFinder $filterFinder,
         private readonly DenormalizerInterface $denormalizer,
+        private readonly RequestIdStorage $requestIdStorage,
         private string $environment,
         private string $pageParameterName = 'page',
         private string $orderParameterName = 'order',
@@ -65,6 +67,7 @@ final class MessageNormalizer implements DenormalizerInterface
             [
                 'payload' => $message->toArray(),
                 'metadata' => $this->environment === 'test' ? ['async' => false] : [],
+                'uuid' => $this->requestIdStorage->getRequestId(),
             ],
         );
     }
