@@ -33,7 +33,6 @@ final class MessageNormalizer implements DenormalizerInterface
         private FilterFinder $filterFinder,
         private readonly DenormalizerInterface $denormalizer,
         private readonly RequestIdStorage $requestIdStorage,
-        private string $environment,
         private string $pageParameterName = 'page',
         private string $orderParameterName = 'order',
         private string $itemsPerPageParameterName = 'items-per-page',
@@ -66,7 +65,6 @@ final class MessageNormalizer implements DenormalizerInterface
             $messageClass,
             [
                 'payload' => $message->toArray(),
-                'metadata' => $this->environment === 'test' ? ['async' => false] : [],
                 'uuid' => $this->requestIdStorage->getRequestId(),
             ],
         );

@@ -105,7 +105,6 @@ services:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Filter\FilterFinder'
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\ImmutableRecordNormalizer'
             - '@Chrisguitarguy\RequestId\RequestIdStorage'
-            - '%kernel.environment%'
             - '%api_platform.collection.pagination.page_parameter_name%'
             - '%api_platform.collection.order_parameter_name%'
         tags:
