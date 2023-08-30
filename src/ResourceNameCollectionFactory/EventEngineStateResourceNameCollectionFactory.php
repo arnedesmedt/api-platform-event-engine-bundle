@@ -7,7 +7,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\ResourceNameCollectionFactory;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Attribute\EventEngineState;
 use ApiPlatform\Metadata\Resource\Factory\ResourceNameCollectionFactoryInterface;
 use ApiPlatform\Metadata\Resource\ResourceNameCollection;
-use ApiPlatform\Util\ReflectionClassRecursiveIterator;
+use ApiPlatform\Metadata\Util\ReflectionClassRecursiveIterator;
 use ReflectionClass;
 
 use function array_keys;
