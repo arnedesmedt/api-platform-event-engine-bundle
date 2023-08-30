@@ -11,7 +11,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Property\Factory\PropertyMetadataFactoryInterface;
 use ApiPlatform\Metadata\Property\Factory\PropertyNameCollectionFactoryInterface;
 use ApiPlatform\Metadata\Resource\Factory\ResourceMetadataCollectionFactoryInterface;
-use ApiPlatform\Util\ResourceClassInfoTrait;
+use ApiPlatform\Metadata\Util\ResourceClassInfoTrait;
 use EventEngine\Data\ImmutableRecord;
 use RuntimeException;
 

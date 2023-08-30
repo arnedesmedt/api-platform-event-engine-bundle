@@ -17,7 +17,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\HttpOperation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Resource\Factory\ResourceMetadataCollectionFactoryInterface;
-use ApiPlatform\Util\ResourceClassInfoTrait;
+use ApiPlatform\Metadata\Util\ResourceClassInfoTrait;
 use ArrayObject;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use ReflectionClass;
