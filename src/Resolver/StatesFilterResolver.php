@@ -12,8 +12,10 @@ use ADS\ValueObjects\ValueObject;
 use EventEngine\DocumentStore\Filter\AndFilter;
 use EventEngine\DocumentStore\Filter\AnyFilter;
 use EventEngine\DocumentStore\Filter\Filter;
+use EventEngine\DocumentStore\OrderBy\AndOrder;
 use EventEngine\DocumentStore\OrderBy\OrderBy;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
+use RuntimeException;
 
 use function array_values;
 
@@ -44,15 +46,38 @@ final class StatesFilterResolver extends FilterResolver
         return $this;
     }
 
-    public function setFilter(mixed $filter): FilterResolver
+    protected function combineOrderBy(mixed $firstOrderBy, mixed $secondOrderBy): mixed
     {
-        if ($this->filter instanceof Filter) {
-            $filter = $filter instanceof Filter
-                ? new AndFilter($this->filter, $filter)
-                : $this->filter;
+        if ($firstOrderBy === null) {
+            return $secondOrderBy;
         }
 
-        return parent::setFilter($filter);
+        if ($secondOrderBy === null) {
+            return $firstOrderBy;
+        }
+
+        if ($firstOrderBy instanceof OrderBy && $secondOrderBy instanceof OrderBy) {
+            return AndOrder::by($firstOrderBy, $secondOrderBy);
+        }
+
+        throw new RuntimeException('Cannot combine order by');
+    }
+
+    protected function combineFilters(mixed $firstFilter, mixed $secondFilter): mixed
+    {
+        if ($firstFilter === null) {
+            return $secondFilter;
+        }
+
+        if ($secondFilter === null) {
+            return $firstFilter;
+        }
+
+        if ($firstFilter instanceof Filter && $secondFilter instanceof Filter) {
+            return new AndFilter($firstFilter, $secondFilter);
+        }
+
+        throw new RuntimeException('Cannot combine filters');
     }
 
     /** @inheritDoc */

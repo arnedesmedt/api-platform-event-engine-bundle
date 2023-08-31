@@ -7,6 +7,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Resolver;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\InMemoryFilterConverter;
 use ApiPlatform\State\Pagination\ArrayPaginator;
 use Closure;
+use RuntimeException;
 use Traversable;
 
 use function count;
@@ -32,6 +33,40 @@ final class InMemoryFilterResolver extends FilterResolver
         $this->collection = $collection;
 
         return $this;
+    }
+
+    protected function combineOrderBy(mixed $firstOrderBy, mixed $secondOrderBy): mixed
+    {
+        if ($firstOrderBy === null) {
+            return $secondOrderBy;
+        }
+
+        if ($secondOrderBy === null) {
+            return $firstOrderBy;
+        }
+
+        if ($firstOrderBy instanceof Closure && $secondOrderBy instanceof Closure) {
+            return static fn (array $collection): array => $secondOrderBy($firstOrderBy($collection));
+        }
+
+        throw new RuntimeException('Cannot combine order by');
+    }
+
+    protected function combineFilters(mixed $firstFilter, mixed $secondFilter): mixed
+    {
+        if ($firstFilter === null) {
+            return $secondFilter;
+        }
+
+        if ($secondFilter === null) {
+            return $firstFilter;
+        }
+
+        if ($firstFilter instanceof Closure && $secondFilter instanceof Closure) {
+            return static fn (array $collection): array => $secondFilter($firstFilter($collection));
+        }
+
+        throw new RuntimeException('Cannot combine filters');
     }
 
     /** @inheritDoc */

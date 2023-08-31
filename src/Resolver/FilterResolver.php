@@ -105,13 +105,12 @@ abstract class FilterResolver implements MetaDataResolver
 
         /** @var Operation $operation */
         $operation = $this->context['operation'];
+        $requestOrderBy = $this->filterConverter->order($this->requestFilters);
+        $requestFilter = $this->filterConverter->filter($this->requestFilters, $operation, $message::__resource());
+
         $this
-            ->setOrderBy($this->filterConverter->order($this->requestFilters))
-            ->setFilter($this->filterConverter->filter(
-                $this->requestFilters,
-                $operation,
-                $message::__resource(),
-            ))
+            ->setOrderBy($this->combineOrderBy($requestOrderBy, $this->orderBy))
+            ->setFilter($this->combineFilters($requestFilter, $this->filter))
             ->setSkip($this->filterConverter->skip($this->requestFilters))
             ->setItemsPerPage($this->filterConverter->itemsPerPage($this->requestFilters))
             ->setPage($this->filterConverter->page($this->requestFilters));
@@ -128,6 +127,10 @@ abstract class FilterResolver implements MetaDataResolver
 
         return $this->result($collection, $page, $itemsPerPage, $totalItems);
     }
+
+    abstract protected function combineOrderBy(mixed $firstOrderBy, mixed $secondOrderBy): mixed;
+
+    abstract protected function combineFilters(mixed $firstFilter, mixed $secondFilter): mixed;
 
     /** @return array<mixed> */
     abstract protected function collection(): array;
