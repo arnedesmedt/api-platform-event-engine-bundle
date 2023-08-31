@@ -45,8 +45,13 @@ final class ValueObjectNormalizer implements NormalizerInterface, DenormalizerIn
         return $type::fromValue($data);
     }
 
-    public function supportsDenormalization(mixed $data, string $type, string|null $format = null): bool
-    {
+    /** @param array<string, mixed> $context */
+    public function supportsDenormalization(
+        mixed $data,
+        string $type,
+        string|null $format = null,
+        array $context = [],
+    ): bool {
         return class_exists($type) && is_subclass_of($type, ValueObject::class);
     }
 }
