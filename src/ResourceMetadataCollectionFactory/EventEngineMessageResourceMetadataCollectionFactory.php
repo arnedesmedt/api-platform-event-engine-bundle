@@ -22,6 +22,7 @@ use ADS\Bundle\EventEngineBundle\Response\HasResponses;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\HttpOperation;
 use ApiPlatform\Metadata\Operations;
+use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Resource\Factory\ResourceMetadataCollectionFactoryInterface;
 use ApiPlatform\Metadata\Resource\ResourceMetadataCollection;
 use ApiPlatform\OpenApi\Model\Operation as OpenApiOperation;
@@ -84,7 +85,7 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
             /** @var array<class-string> $messageInterfaces */
             $messageInterfaces = class_implements($messageClass) ?: [];
 
-            $operations[$messageClass::__operationId()] = (new $operationClass(
+            $operation = (new $operationClass(
                 name: $messageClass::__operationId(),
                 shortName: $messageClass::__schemaStateClass()::__type(),
                 description: $docBlock?->getSummary(),
@@ -118,6 +119,12 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
                     : null,
             ))
                 ->withMethod($messageClass::__httpMethod());
+
+            if ($operation instanceof Put) {
+                $operation = $operation->withExtraProperties(['standard_put' => true]);
+            }
+
+            $operations[$messageClass::__operationId()] = $operation;
         }
 
         $resourceMetadataCollection[] = (new ApiResource(class: $resourceClass))
