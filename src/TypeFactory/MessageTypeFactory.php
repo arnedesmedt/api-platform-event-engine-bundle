@@ -9,7 +9,6 @@ use ApiPlatform\JsonSchema\Schema;
 use ApiPlatform\JsonSchema\TypeFactoryInterface;
 use EventEngine\JsonSchema\ProvidesValidationRules;
 use ReflectionClass;
-use RuntimeException;
 use Symfony\Component\PropertyInfo\Type;
 
 use function addslashes;
@@ -52,7 +51,7 @@ final class MessageTypeFactory implements TypeFactoryInterface
             $firstValueType = reset($valueType);
 
             if (! $firstValueType) {
-                throw new RuntimeException('No value type found for collection');
+                return $newType;
             }
 
             $key = $firstKeyType !== false && $firstKeyType->getBuiltinType() === Type::BUILTIN_TYPE_STRING
