@@ -16,9 +16,9 @@ final class CommandProcessor implements ProcessorInterface
     }
 
     /**
-     * @param array<mixed> $uriVariables
+     * @param array<mixed>         $uriVariables
      * @param array<string, mixed> $context
-     * @param Message $data
+     * @param Message              $data
      *
      * @return array<mixed>|object|null
      *

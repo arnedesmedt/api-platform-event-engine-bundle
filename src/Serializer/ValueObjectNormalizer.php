@@ -37,7 +37,7 @@ final class ValueObjectNormalizer implements NormalizerInterface, DenormalizerIn
     }
 
     /**
-     * @param array<mixed> $context
+     * @param array<mixed>              $context
      * @param class-string<ValueObject> $type
      */
     public function denormalize(mixed $data, string $type, string|null $format = null, array $context = []): ValueObject

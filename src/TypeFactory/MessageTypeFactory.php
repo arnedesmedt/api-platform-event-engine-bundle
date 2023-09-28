@@ -27,7 +27,7 @@ final class MessageTypeFactory implements TypeFactoryInterface
 
     /**
      * @param Schema<mixed>|null $schema
-     * @param array<mixed>|null $serializerContext
+     * @param array<mixed>|null  $serializerContext
      *
      * @return mixed[]
      */

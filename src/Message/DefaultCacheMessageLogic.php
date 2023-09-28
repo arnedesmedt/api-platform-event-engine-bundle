@@ -21,5 +21,4 @@ trait DefaultCacheMessageLogic
     {
         return ['Authorization', 'Accept-Language'];
     }
-
 }

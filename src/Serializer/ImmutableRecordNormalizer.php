@@ -88,8 +88,8 @@ final class ImmutableRecordNormalizer extends AbstractItemNormalizer
     }
 
     /**
-     * @param mixed $object
-     * @param mixed $format
+     * @param mixed                $object
+     * @param mixed                $format
      * @param array<string, mixed> $context
      *
      * @return array<string>
@@ -115,8 +115,8 @@ final class ImmutableRecordNormalizer extends AbstractItemNormalizer
     }
 
     /**
-     * @param array<string, mixed> $data
-     * @param array<string, mixed> $context
+     * @param array<string, mixed>      $data
+     * @param array<string, mixed>      $context
      * @param array<string, mixed>|bool $allowedAttributes
      * @param ReflectionClass<stdClass> $reflectionClass
      */

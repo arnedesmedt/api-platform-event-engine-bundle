@@ -23,7 +23,7 @@ abstract class FilterConverter
 
     /**
      * @param array<string, mixed> $filters
-     * @param class-string $resourceClass
+     * @param class-string         $resourceClass
      */
     abstract public function filter(array $filters, Operation $operation, string $resourceClass): mixed;
 

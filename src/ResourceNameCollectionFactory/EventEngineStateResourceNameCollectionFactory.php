@@ -10,7 +10,11 @@ use ApiPlatform\Metadata\Resource\ResourceNameCollection;
 use ApiPlatform\Metadata\Util\ReflectionClassRecursiveIterator;
 use ReflectionClass;
 
+use function array_combine;
+use function array_fill;
 use function array_keys;
+use function count;
+use function iterator_to_array;
 
 class EventEngineStateResourceNameCollectionFactory implements ResourceNameCollectionFactoryInterface
 {
@@ -26,9 +30,8 @@ class EventEngineStateResourceNameCollectionFactory implements ResourceNameColle
         $classes = [];
 
         if ($this->decorated) {
-            foreach ($this->decorated->create() as $resourceClass) {
-                $classes[$resourceClass] = true;
-            }
+            $resourceClasses = iterator_to_array($this->decorated->create());
+            $classes = array_combine($resourceClasses, array_fill(0, count($resourceClasses), true));
         }
 
         /** @var array<ReflectionClass<object>> $reflectionClasses */

@@ -28,7 +28,7 @@ final class DocumentStoreCollectionProvider extends Provider
     }
 
     /**
-     * @param array<mixed> $uriVariables
+     * @param array<mixed>         $uriVariables
      * @param array<string, mixed> $context
      *
      * @return array<T>|object|null

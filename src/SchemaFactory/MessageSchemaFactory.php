@@ -52,8 +52,8 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
 
     /**
      * @param class-string<JsonSchemaAwareRecord> $className
-     * @param array<string, mixed>|null $serializerContext
-     * @param Schema<mixed>|null $schema
+     * @param array<string, mixed>|null           $serializerContext
+     * @param Schema<mixed>|null                  $schema
      *
      * @return Schema<mixed>
      */
@@ -239,7 +239,7 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
     }
 
     /**
-     * @param array<mixed> $schema
+     * @param array<mixed>  $schema
      * @param array<string> $parameterNames
      *
      * @return array<string, mixed>
@@ -250,7 +250,7 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
     }
 
     /**
-     * @param array<mixed> $schema
+     * @param array<mixed>  $schema
      * @param array<string> $parametersNames
      *
      * @return array<string, mixed>|null
@@ -262,7 +262,7 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
 
     /**
      * @param array<string, mixed> $schema
-     * @param array<string> $parameterNames
+     * @param array<string>        $parameterNames
      *
      * @return array<string, mixed>
      */
@@ -313,8 +313,8 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
 
     /**
      * @param class-string<ApiPlatformMessage> $messageClass
-     * @param ReflectionClass<object> $reflectionClass
-     * @param array<string, mixed> $input
+     * @param ReflectionClass<object>          $reflectionClass
+     * @param array<string, mixed>             $input
      */
     public static function updateOperationForLists(
         string $messageClass,
@@ -354,7 +354,7 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
 
     /**
      * @param class-string<Discriminator> $className
-     * @param Schema<mixed> $schema
+     * @param Schema<mixed>               $schema
      *
      * @return Schema<mixed>
      */

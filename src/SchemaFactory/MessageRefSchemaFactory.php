@@ -26,8 +26,8 @@ final class MessageRefSchemaFactory implements SchemaFactoryInterface
 {
     /**
      * @param class-string<JsonSchemaAwareRecord> $className
-     * @param array<string, mixed>|null $serializerContext
-     * @param Schema<mixed>|null $schema
+     * @param array<string, mixed>|null           $serializerContext
+     * @param Schema<mixed>|null                  $schema
      *
      * @return Schema<mixed>
      */
@@ -87,7 +87,7 @@ final class MessageRefSchemaFactory implements SchemaFactoryInterface
 
     /**
      * @param class-string<JsonSchemaAwareRecord> $className
-     * @param array<string, string>|null $serializerContext
+     * @param array<string, string>|null          $serializerContext
      */
     public static function buildDefinitionName(
         string $className,

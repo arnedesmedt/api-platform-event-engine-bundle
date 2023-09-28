@@ -73,7 +73,7 @@ final class Uri extends StringValue
 
     /**
      * @param array<string, mixed> $parameters
-     * @param array<string> $parameterNames
+     * @param array<string>        $parameterNames
      *
      * @return array<string, mixed>
      */

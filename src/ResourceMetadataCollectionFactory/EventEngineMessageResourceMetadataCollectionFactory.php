@@ -184,7 +184,7 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
 
     /**
      * @param class-string<ApiPlatformMessage> $messageClass
-     * @param array<class-string> $messageInterfaces
+     * @param array<class-string>              $messageInterfaces
      */
     private function openApi(string $messageClass, array $messageInterfaces): OpenApiOperation
     {
@@ -202,7 +202,7 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
 
     /**
      * @param class-string<ApiPlatformMessage> $messageClass
-     * @param array<class-string> $messageInterfaces
+     * @param array<class-string>              $messageInterfaces
      *
      * @return ArrayObject<string, mixed>|null
      */
@@ -350,7 +350,7 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
 
     /**
      * @param class-string<ApiPlatformMessage> $messageClass
-     * @param array<class-string> $messageInterfaces
+     * @param array<class-string>              $messageInterfaces
      *
      * @return class-string<ProcessorInterface>|null
      */
@@ -365,7 +365,7 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
 
     /**
      * @param class-string<ApiPlatformMessage> $messageClass
-     * @param array<class-string> $messageInterfaces
+     * @param array<class-string>              $messageInterfaces
      *
      * @return class-string<ProviderInterface<object>>|null
      */

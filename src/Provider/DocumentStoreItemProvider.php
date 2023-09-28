@@ -15,7 +15,7 @@ final class DocumentStoreItemProvider extends Provider
 {
     /**
      * @param array<string, mixed> $uriVariables
-     * @param array<mixed> $context
+     * @param array<mixed>         $context
      *
      * @return T|null
      *

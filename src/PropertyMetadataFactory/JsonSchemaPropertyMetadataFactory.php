@@ -93,7 +93,7 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
 
     /**
      * @param ReflectionClass<ImmutableRecord> $reflectionClass
-     * @param array<mixed> $propertySchema
+     * @param array<mixed>                     $propertySchema
      */
     private function description(
         ApiProperty $apiProperty,

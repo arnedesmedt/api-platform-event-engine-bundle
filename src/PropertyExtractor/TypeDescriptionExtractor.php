@@ -15,7 +15,7 @@ use function sprintf;
 class TypeDescriptionExtractor implements PropertyDescriptionExtractorInterface
 {
     /**
-     * @param class-string $class
+     * @param class-string         $class
      * @param array<string, mixed> $context
      */
     public function getShortDescription(string $class, string $property, array $context = []): string|null
@@ -26,7 +26,7 @@ class TypeDescriptionExtractor implements PropertyDescriptionExtractorInterface
     }
 
     /**
-     * @param class-string $class
+     * @param class-string         $class
      * @param array<string, mixed> $context
      */
     public function getLongDescription(string $class, string $property, array $context = []): string|null
