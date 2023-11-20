@@ -32,4 +32,14 @@ final class EmptyResponseNormalizer implements NormalizerInterface
             || $data instanceof CommandDispatchResultCollection
             || $data instanceof Envelope;
     }
+
+    /** @return array<class-string, bool> */
+    public function getSupportedTypes(string|null $format): array
+    {
+        return [
+            CommandDispatchResult::class => true,
+            CommandDispatchResultCollection::class => true,
+            Envelope::class => true,
+        ];
+    }
 }

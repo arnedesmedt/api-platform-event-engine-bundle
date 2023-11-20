@@ -54,4 +54,10 @@ final class ValueObjectNormalizer implements NormalizerInterface, DenormalizerIn
     ): bool {
         return class_exists($type) && is_subclass_of($type, ValueObject::class);
     }
+
+    /** @return array<class-string, bool> */
+    public function getSupportedTypes(string|null $format): array
+    {
+        return [ValueObject::class => true];
+    }
 }
