@@ -61,13 +61,17 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
     public function __construct(
         private readonly Config $config,
         private readonly PropertyInfoExtractorInterface $propertyInfoExtractor,
+        private readonly ResourceMetadataCollectionFactoryInterface|null $decorated = null,
     ) {
         $this->docBlockFactory = DocBlockFactory::createInstance();
     }
 
     public function create(string $resourceClass): ResourceMetadataCollection
     {
-        $resourceMetadataCollection = new ResourceMetadataCollection($resourceClass);
+        $resourceMetadataCollection = $this->decorated
+            ? $this->decorated->create($resourceClass)
+            : new ResourceMetadataCollection($resourceClass);
+
         $messageMapping = $this->config->messageMapping();
 
         // if no event engine messages are found linked with this resource.

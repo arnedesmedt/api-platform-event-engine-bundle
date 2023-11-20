@@ -23,7 +23,7 @@ class EventEngineResource extends ApiResource
      * @param array<string> $queryFolders
      * @param array<class-string<Query>> $queryClasses
      * @param array<string>|string|null $types
-     * @param array<int, HttpOperation>|array<string, HttpOperation>|Operations|null $operations
+     * @param array<int, HttpOperation>|array<string, HttpOperation>|null $operations
      * @param array<string>|string|null $formats
      * @param array<string>|string|null $inputFormats
      * @param array<string>|string|null $outputFormats
@@ -47,9 +47,7 @@ class EventEngineResource extends ApiResource
      */
     public function __construct(
         private readonly array $commandFolders = [],
-        private readonly array $commandClasses = [],
         private readonly array $queryFolders = [],
-        private readonly array $queryClasses = [],
         string|null $uriTemplate = null,
         string|null $shortName = null,
         string|null $description = null,
@@ -122,7 +120,7 @@ class EventEngineResource extends ApiResource
             shortName: $shortName,
             description: $description,
             types: $types,
-            operations: $operations,
+            operations: $operations ?? [],
             formats: $formats,
             inputFormats: $inputFormats,
             outputFormats: $outputFormats,
@@ -193,21 +191,9 @@ class EventEngineResource extends ApiResource
         return $this->commandFolders;
     }
 
-    /** @return array<class-string<Command>> */
-    public function commandClasses(): array
-    {
-        return $this->commandClasses;
-    }
-
     /** @return array<string> */
     public function queryFolders(): array
     {
         return $this->queryFolders;
-    }
-
-    /** @return array<class-string<Query>> */
-    public function queryClasses(): array
-    {
-        return $this->queryClasses;
     }
 }
