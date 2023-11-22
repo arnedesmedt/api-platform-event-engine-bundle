@@ -94,8 +94,8 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
                 uriTemplate: '/' . ltrim(Uri::fromString($messageClass::__uriTemplate())->toUrlPart(), '/'),
                 uriVariables: null, //todo
                 requirements: $messageClass::__requirements(),
-                read: in_array(Query::class, $messageInterfaces),
-                write: in_array(Command::class, $messageInterfaces),
+                read: $this->read($messageClass, $messageInterfaces),
+                write: $this->write($messageClass, $messageInterfaces),
                 serialize: null, // todo
                 validate: in_array(ValidationMessage::class, $messageInterfaces),
                 status: in_array(HasResponses::class, $messageInterfaces)
@@ -378,5 +378,39 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
         return $messageClass::__isCollection()
             ? DocumentStoreCollectionProvider::class
             : DocumentStoreItemProvider::class;
+    }
+
+    /**
+     * @param class-string<JsonSchemaAwareRecord> $messageClass
+     * @param array<class-string> $messageInterfaces
+     */
+    public function read(string $messageClass, array $messageInterfaces): bool
+    {
+        if (in_array(Query::class, $messageInterfaces)) {
+            return true;
+        }
+
+        $reflectionClass = new ReflectionClass($messageClass);
+
+        $queryAttributes = $reflectionClass->getAttributes(\ADS\Bundle\EventEngineBundle\Attribute\Query::class);
+
+        return ! empty($queryAttributes);
+    }
+
+    /**
+     * @param class-string<JsonSchemaAwareRecord> $messageClass
+     * @param array<class-string> $messageInterfaces
+     */
+    public function write(string $messageClass, array $messageInterfaces): bool
+    {
+        if (in_array(Command::class, $messageInterfaces)) {
+            return true;
+        }
+
+        $reflectionClass = new ReflectionClass($messageClass);
+
+        $commandAttributes = $reflectionClass->getAttributes(\ADS\Bundle\EventEngineBundle\Attribute\Command::class);
+
+        return ! empty($commandAttributes);
     }
 }
