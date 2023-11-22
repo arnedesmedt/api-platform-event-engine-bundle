@@ -96,8 +96,8 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
                 uriTemplate: '/' . ltrim(Uri::fromString($messageClass::__uriTemplate())->toUrlPart(), '/'),
                 uriVariables: null, //todo
                 requirements: $messageClass::__requirements(),
-                read: $this->read($messageClass, $messageInterfaces),
-                write: $this->write($messageClass, $messageInterfaces),
+                read: $this->isQuery($messageClass, $messageInterfaces),
+                write: $this->isCommand($messageClass, $messageInterfaces),
                 serialize: null, // todo
                 validate: in_array(ValidationMessage::class, $messageInterfaces),
                 status: in_array(HasResponses::class, $messageInterfaces)
@@ -358,7 +358,7 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
      */
     private function processor(string $messageClass, array $messageInterfaces): string|null
     {
-        if (! in_array(Command::class, $messageInterfaces)) {
+        if (! $this->isCommand($messageClass, $messageInterfaces)) {
             return null;
         }
 
@@ -373,7 +373,7 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
      */
     private function provider(string $messageClass, array $messageInterfaces): string|null
     {
-        if (! in_array(Query::class, $messageInterfaces)) {
+        if (! $this->isQuery($messageClass, $messageInterfaces)) {
             return null;
         }
 
@@ -386,7 +386,7 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
      * @param class-string<JsonSchemaAwareRecord> $messageClass
      * @param array<class-string> $messageInterfaces
      */
-    public function read(string $messageClass, array $messageInterfaces): bool
+    public function isQuery(string $messageClass, array $messageInterfaces): bool
     {
         if (in_array(Query::class, $messageInterfaces)) {
             return true;
@@ -403,7 +403,7 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
      * @param class-string<JsonSchemaAwareRecord> $messageClass
      * @param array<class-string> $messageInterfaces
      */
-    public function write(string $messageClass, array $messageInterfaces): bool
+    public function isCommand(string $messageClass, array $messageInterfaces): bool
     {
         if (in_array(Command::class, $messageInterfaces)) {
             return true;
