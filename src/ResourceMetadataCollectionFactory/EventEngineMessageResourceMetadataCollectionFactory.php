@@ -15,6 +15,8 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageSchemaFactory;
 use ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\OpenApiSchemaFactory;
 use ADS\Bundle\ApiPlatformEventEngineBundle\TypeFactory\MessageTypeFactory;
 use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
+use ADS\Bundle\EventEngineBundle\Attribute\AggregateCommand;
+use ADS\Bundle\EventEngineBundle\Attribute\ControllerCommand;
 use ADS\Bundle\EventEngineBundle\Command\Command;
 use ADS\Bundle\EventEngineBundle\Message\ValidationMessage;
 use ADS\Bundle\EventEngineBundle\Query\Query;
@@ -409,8 +411,14 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
 
         $reflectionClass = new ReflectionClass($messageClass);
 
-        $commandAttributes = $reflectionClass->getAttributes(\ADS\Bundle\EventEngineBundle\Attribute\Command::class);
+        $controllerCommandAttributes = $reflectionClass->getAttributes(ControllerCommand::class);
 
-        return ! empty($commandAttributes);
+        if (! empty($controllerCommandAttributes)) {
+            return true;
+        }
+
+        $aggregateCommandAttributes = $reflectionClass->getAttributes(AggregateCommand::class);
+
+        return ! empty($aggregateCommandAttributes);
     }
 }
