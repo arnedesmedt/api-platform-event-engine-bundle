@@ -14,13 +14,10 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\Provider\DocumentStoreItemProvider;
 use ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageSchemaFactory;
 use ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\OpenApiSchemaFactory;
 use ADS\Bundle\ApiPlatformEventEngineBundle\TypeFactory\MessageTypeFactory;
+use ADS\Bundle\ApiPlatformEventEngineBundle\Util;
 use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
-use ADS\Bundle\EventEngineBundle\Attribute\AggregateCommand;
-use ADS\Bundle\EventEngineBundle\Attribute\ControllerCommand;
 use ADS\Bundle\EventEngineBundle\Attribute\Response;
-use ADS\Bundle\EventEngineBundle\Command\Command;
 use ADS\Bundle\EventEngineBundle\Message\ValidationMessage;
-use ADS\Bundle\EventEngineBundle\Query\Query;
 use ADS\Bundle\EventEngineBundle\Response\HasResponses;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\HttpOperation;
@@ -97,8 +94,8 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
                 uriTemplate: '/' . ltrim(Uri::fromString($messageClass::__uriTemplate())->toUrlPart(), '/'),
                 uriVariables: null, //todo
                 requirements: $messageClass::__requirements(),
-                read: $this->isQuery($messageClass, $messageInterfaces),
-                write: $this->isCommand($messageClass, $messageInterfaces),
+                read: Util::isQuery($messageClass, $messageInterfaces),
+                write: Util::isCommand($messageClass, $messageInterfaces),
                 serialize: null, // todo
                 validate: in_array(ValidationMessage::class, $messageInterfaces),
                 status: $this->defaultStatusCode($messageClass, $messageInterfaces),
@@ -357,7 +354,7 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
      */
     private function processor(string $messageClass, array $messageInterfaces): string|null
     {
-        if (! $this->isCommand($messageClass, $messageInterfaces)) {
+        if (! Util::isCommand($messageClass, $messageInterfaces)) {
             return null;
         }
 
@@ -372,53 +369,13 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
      */
     private function provider(string $messageClass, array $messageInterfaces): string|null
     {
-        if (! $this->isQuery($messageClass, $messageInterfaces)) {
+        if (! Util::isQuery($messageClass, $messageInterfaces)) {
             return null;
         }
 
         return $messageClass::__isCollection()
             ? DocumentStoreCollectionProvider::class
             : DocumentStoreItemProvider::class;
-    }
-
-    /**
-     * @param class-string<JsonSchemaAwareRecord> $messageClass
-     * @param array<class-string> $messageInterfaces
-     */
-    public function isQuery(string $messageClass, array $messageInterfaces): bool
-    {
-        if (in_array(Query::class, $messageInterfaces)) {
-            return true;
-        }
-
-        $reflectionClass = new ReflectionClass($messageClass);
-
-        $queryAttributes = $reflectionClass->getAttributes(\ADS\Bundle\EventEngineBundle\Attribute\Query::class);
-
-        return ! empty($queryAttributes);
-    }
-
-    /**
-     * @param class-string<JsonSchemaAwareRecord> $messageClass
-     * @param array<class-string> $messageInterfaces
-     */
-    public function isCommand(string $messageClass, array $messageInterfaces): bool
-    {
-        if (in_array(Command::class, $messageInterfaces)) {
-            return true;
-        }
-
-        $reflectionClass = new ReflectionClass($messageClass);
-
-        $controllerCommandAttributes = $reflectionClass->getAttributes(ControllerCommand::class);
-
-        if (! empty($controllerCommandAttributes)) {
-            return true;
-        }
-
-        $aggregateCommandAttributes = $reflectionClass->getAttributes(AggregateCommand::class);
-
-        return ! empty($aggregateCommandAttributes);
     }
 
     /**

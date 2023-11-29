@@ -6,8 +6,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Message;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Responses\Forbidden;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Responses\Unauthorized;
-use ADS\Bundle\EventEngineBundle\Command\Command;
-use ADS\Bundle\EventEngineBundle\Query\Query;
+use ADS\Bundle\ApiPlatformEventEngineBundle\Util;
 use ADS\Util\StringUtil;
 use ReflectionClass;
 use ReflectionMethod;
@@ -17,7 +16,6 @@ use function array_filter;
 use function array_merge;
 use function array_unique;
 use function class_implements;
-use function in_array;
 use function preg_match;
 use function sprintf;
 use function strtoupper;
@@ -71,10 +69,10 @@ trait DefaultAuthorizationMessage
         return array_filter(
             [
                 sprintf('ROLE_OAUTH2_%s', $entityName),
-                in_array(Command::class, $interfaces)
+                Util::isCommand(static::class, $interfaces)
                     ? sprintf('ROLE_OAUTH2_%s:WRITE', $entityName)
                     : null,
-                in_array(Query::class, $interfaces)
+                Util::isQuery(static::class, $interfaces)
                     ? sprintf('ROLE_OAUTH2_%s:READ', $entityName)
                     : null,
             ],

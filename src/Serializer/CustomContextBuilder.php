@@ -4,18 +4,17 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Serializer;
 
-use ADS\Bundle\EventEngineBundle\Command\Command;
-use ADS\Bundle\EventEngineBundle\Query\Query;
+use ADS\Bundle\ApiPlatformEventEngineBundle\Util;
 use ApiPlatform\Metadata\HttpOperation;
 use ApiPlatform\Serializer\SerializerContextBuilder;
 use ApiPlatform\Serializer\SerializerContextBuilderInterface;
+use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use EventEngine\Messaging\MessageBag;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 
 use function class_implements;
-use function in_array;
 
 final class CustomContextBuilder implements SerializerContextBuilderInterface
 {
@@ -106,7 +105,7 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
 
         /** @var array<string, mixed>|null $input */
         $input = $operation->getInput();
-        /** @var class-string|null $inputClass */
+        /** @var class-string<JsonSchemaAwareRecord>|null $inputClass */
         $inputClass = $input['class'] ?? null;
 
         if (! $inputClass) {
@@ -119,7 +118,7 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
             return $this;
         }
 
-        if (! in_array(Command::class, $interfaces) && ! in_array(Query::class, $interfaces)) {
+        if (! Util::isCommand($inputClass, $interfaces) && ! Util::isQuery($inputClass, $interfaces)) {
             return $this;
         }
 

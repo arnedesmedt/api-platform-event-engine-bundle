@@ -16,6 +16,7 @@ use ApiPlatform\Metadata\Operation;
 use Chrisguitarguy\RequestId\RequestIdStorage;
 use EventEngine\Data\ImmutableRecord;
 use EventEngine\EventEngine;
+use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use RuntimeException;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
@@ -138,7 +139,7 @@ final class MessageNormalizer implements DenormalizerInterface
     /**
      * @param array<string, mixed> $context
      *
-     * @return class-string<Query|Command>
+     * @return class-string<Query|Command|JsonSchemaAwareRecord>
      */
     public static function needMessageClassFromContext(array $context): string
     {
@@ -154,7 +155,7 @@ final class MessageNormalizer implements DenormalizerInterface
     /**
      * @param array<string, mixed> $context
      *
-     * @return class-string<Query|Command>
+     * @return class-string<Query|Command|JsonSchemaAwareRecord>
      */
     public static function messageClassFromContext(array $context): string|null
     {
