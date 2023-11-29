@@ -17,6 +17,7 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\TypeFactory\MessageTypeFactory;
 use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
 use ADS\Bundle\EventEngineBundle\Attribute\AggregateCommand;
 use ADS\Bundle\EventEngineBundle\Attribute\ControllerCommand;
+use ADS\Bundle\EventEngineBundle\Attribute\Response;
 use ADS\Bundle\EventEngineBundle\Command\Command;
 use ADS\Bundle\EventEngineBundle\Message\ValidationMessage;
 use ADS\Bundle\EventEngineBundle\Query\Query;
@@ -100,9 +101,7 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
                 write: $this->isCommand($messageClass, $messageInterfaces),
                 serialize: null, // todo
                 validate: in_array(ValidationMessage::class, $messageInterfaces),
-                status: in_array(HasResponses::class, $messageInterfaces)
-                    ? $messageClass::__defaultStatusCode()
-                    : null,
+                status: $this->defaultStatusCode($messageClass, $messageInterfaces),
                 normalizationContext: $messageClass::__normalizationContext(),
                 denormalizationContext: $messageClass::__denormalizationContext(),
                 openapi: $this->openApi($messageClass, $messageInterfaces),
@@ -420,5 +419,29 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
         $aggregateCommandAttributes = $reflectionClass->getAttributes(AggregateCommand::class);
 
         return ! empty($aggregateCommandAttributes);
+    }
+
+    /**
+     * @param class-string<JsonSchemaAwareRecord> $messageClass
+     * @param array<class-string> $messageInterfaces
+     */
+    public function defaultStatusCode(string $messageClass, array $messageInterfaces): int|null
+    {
+        if (in_array(HasResponses::class, $messageInterfaces)) {
+            return $messageClass::__defaultStatusCode();
+        }
+
+        $reflectionClass = new ReflectionClass($messageClass);
+
+        $responseAttributes = $reflectionClass->getAttributes(Response::class);
+
+        if (! empty($responseAttributes)) {
+            /** @var Response $responseAttribute */
+            $responseAttribute = reset($responseAttributes)->newInstance();
+
+            return $responseAttribute->defaultStatusCode();
+        }
+
+        return null;
     }
 }
