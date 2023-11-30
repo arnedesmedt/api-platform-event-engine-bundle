@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle;
 
-use ADS\Bundle\EventEngineBundle\Attribute\AggregateCommand;
-use ADS\Bundle\EventEngineBundle\Attribute\ControllerCommand;
+use ADS\Bundle\EventEngineBundle\Attribute\Command as CommandAttribute;
+use ADS\Bundle\EventEngineBundle\Attribute\Query as QueryAttribute;
 use ADS\Bundle\EventEngineBundle\Command\Command;
 use ADS\Bundle\EventEngineBundle\Query\Query;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
+use ReflectionAttribute;
 use ReflectionClass;
 
 use function in_array;
@@ -27,7 +28,10 @@ final class Util
 
         $reflectionClass = new ReflectionClass($messageClass);
 
-        $queryAttributes = $reflectionClass->getAttributes(\ADS\Bundle\EventEngineBundle\Attribute\Query::class);
+        $queryAttributes = $reflectionClass->getAttributes(
+            QueryAttribute::class,
+            ReflectionAttribute::IS_INSTANCEOF,
+        );
 
         return ! empty($queryAttributes);
     }
@@ -44,14 +48,11 @@ final class Util
 
         $reflectionClass = new ReflectionClass($messageClass);
 
-        $controllerCommandAttributes = $reflectionClass->getAttributes(ControllerCommand::class);
+        $commandAttributes = $reflectionClass->getAttributes(
+            CommandAttribute::class,
+            ReflectionAttribute::IS_INSTANCEOF,
+        );
 
-        if (! empty($controllerCommandAttributes)) {
-            return true;
-        }
-
-        $aggregateCommandAttributes = $reflectionClass->getAttributes(AggregateCommand::class);
-
-        return ! empty($aggregateCommandAttributes);
+        return ! empty($commandAttributes);
     }
 }
