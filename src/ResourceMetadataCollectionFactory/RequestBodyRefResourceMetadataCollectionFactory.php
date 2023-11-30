@@ -6,7 +6,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataCollectionFact
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\CallbackMessage;
 use ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageSchemaFactory;
-use ADS\Bundle\ApiPlatformEventEngineBundle\Util;
+use ADS\Bundle\EventEngineBundle\MetadataExtractor\CommandExtractor;
 use ApiPlatform\JsonSchema\Schema;
 use ApiPlatform\JsonSchema\SchemaFactoryInterface;
 use ApiPlatform\Metadata\ApiResource;
@@ -22,13 +22,13 @@ use Symfony\Component\HttpFoundation\Request;
 use function array_combine;
 use function array_keys;
 use function array_map;
-use function class_implements;
 
 final class RequestBodyRefResourceMetadataCollectionFactory implements ResourceMetadataCollectionFactoryInterface
 {
     public function __construct(
         private ResourceMetadataCollectionFactoryInterface $decorated,
         private SchemaFactoryInterface $schemaFactory,
+        private CommandExtractor $commandExtractor,
     ) {
     }
 
@@ -56,15 +56,9 @@ final class RequestBodyRefResourceMetadataCollectionFactory implements ResourceM
                 }
 
                 $reflectionClass = new ReflectionClass($messageClass);
-                $interfaces = class_implements($messageClass);
 
-                if ($interfaces === false) {
-                    continue;
-                }
-
-                $isCommand = Util::isCommand($messageClass, $interfaces);
                 if (
-                    ! $isCommand
+                    ! $this->commandExtractor->isCommandFromReflectionClass($reflectionClass)
                     || ($operation->getMethod() === Request::METHOD_DELETE
                         && ! $reflectionClass->implementsInterface(CallbackMessage::class)
                     )
