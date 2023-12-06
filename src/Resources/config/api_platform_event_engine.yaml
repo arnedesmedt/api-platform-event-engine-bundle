@@ -82,6 +82,7 @@ services:
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataCollectionFactory\ResponseRefResourceMetadataCollectionFactory.inner'
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageRefSchemaFactory'
+            - '@ADS\Bundle\EventEngineBundle\MetadataExtractor\ResponseExtractor'
 
     ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataCollectionFactory\RequestBodyRefResourceMetadataCollectionFactory:
         decorates: 'api_platform.metadata.resource.metadata_collection_factory'

@@ -32,14 +32,15 @@ use function reset;
 final class ResponseRefResourceMetadataCollectionFactory implements ResourceMetadataCollectionFactoryInterface
 {
     private DocBlockFactory $docBlockFactory;
+    private ThrowsExtractor $throwsExtractor;
 
     public function __construct(
         private ResourceMetadataCollectionFactoryInterface $decorated,
         private SchemaFactoryInterface $schemaFactory,
         private readonly ResponseExtractor $responseExtractor,
-        private readonly ThrowsExtractor $throwsExtractor,
     ) {
         $this->docBlockFactory = DocBlockFactory::createInstance();
+        $this->throwsExtractor = new ThrowsExtractor();
     }
 
     /** @param class-string $resourceClass */
