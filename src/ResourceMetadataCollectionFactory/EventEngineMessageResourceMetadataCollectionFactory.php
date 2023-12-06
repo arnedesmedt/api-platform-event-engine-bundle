@@ -32,6 +32,7 @@ use EventEngine\Data\ImmutableRecord;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use InvalidArgumentException;
 use JetBrains\PhpStorm\Deprecated;
+use LogicException;
 use phpDocumentor\Reflection\DocBlock;
 use phpDocumentor\Reflection\DocBlockFactory;
 use ReflectionClass;
@@ -88,6 +89,11 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
             $reflectionClass = new ReflectionClass($messageClass);
             $isQuery = $this->queryExtractor->isQueryFromReflectionClass($reflectionClass);
             $isCommand = $this->commandExtractor->isCommandFromReflectionClass($reflectionClass);
+            try {
+                $statusCode = $this->responseExtractor->defaultStatusCodeFromReflectionClass($reflectionClass);
+            } catch (LogicException) {
+                $statusCode = null;
+            }
 
             $operation = (new $operationClass(
                 name: $messageClass::__operationId(),
@@ -102,7 +108,7 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
                 write: $isCommand,
                 serialize: null, // todo
                 validate: in_array(ValidationMessage::class, $messageInterfaces),
-                status: $this->responseExtractor->defaultStatusCodeFromReflectionClass($reflectionClass),
+                status: $statusCode,
                 normalizationContext: $messageClass::__normalizationContext(),
                 denormalizationContext: $messageClass::__denormalizationContext(),
                 openapi: $this->openApi($messageClass, $messageInterfaces),
