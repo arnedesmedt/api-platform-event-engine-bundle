@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Filter;
 
+use ADS\Util\StringUtil;
 use ApiPlatform\Api\FilterInterface;
 use ApiPlatform\Doctrine\Common\Filter\SearchFilterInterface;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
@@ -11,6 +12,7 @@ use ReflectionClass;
 use RuntimeException;
 
 use function array_key_exists;
+use function explode;
 use function sprintf;
 
 class SearchFilter implements FilterInterface
@@ -46,13 +48,21 @@ class SearchFilter implements FilterInterface
         $schema = $resourceClass::__schema()->toArray();
 
         foreach ($this->properties as $propertyName => $property) {
-            if (! array_key_exists($propertyName, $schema['properties'] ?? [])) {
-                continue;
+            $propertyNameParts = explode('.', $propertyName);
+
+            foreach ($propertyNameParts as $propertyNamePart) {
+                if (! array_key_exists($propertyNamePart, $schema['properties'] ?? [])) {
+                    continue 2;
+                }
+
+                $schema = $schema['properties'][$propertyNamePart];
             }
 
-            $description[$propertyName] = [
-                'property' => $propertyName,
-                'type' => $schema['properties'][$propertyName]['type'],
+            $camelizedPropertyName = StringUtil::camelize($propertyName, '.');
+
+            $description[$camelizedPropertyName] = [
+                'property' => $camelizedPropertyName,
+                'type' => $schema['type'],
                 'required' => false,
                 'strategy' => SearchFilterInterface::STRATEGY_PARTIAL,
                 'is_collection' => false,
