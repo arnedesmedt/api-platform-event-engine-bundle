@@ -7,6 +7,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Filter;
 use ApiPlatform\Doctrine\Common\Filter\OrderFilterInterface;
 use ApiPlatform\Metadata\Operation;
 use Closure;
+use LogicException;
 
 use function array_column;
 use function array_filter;
@@ -19,6 +20,7 @@ use function array_multisort;
 use function array_pop;
 use function array_replace;
 use function array_values;
+use function explode;
 use function preg_match;
 use function preg_quote;
 use function sprintf;
@@ -93,12 +95,29 @@ final class InMemoryFilterConverter extends FilterConverter
             $itemArrays = array_map(static fn ($item) => $item->toArray(), $items);
 
             foreach ($filters as $filter => $value) {
+                $filterParts = explode('.', $filter);
+
                 $itemArrays = array_filter(
                     $itemArrays,
-                    static fn (array $item) => (bool) preg_match(
-                        sprintf('#.*%s.*#', preg_quote($value, '#')),
-                        $item[$filter],
-                    )
+                    static function (array $item) use ($filter, $filterParts, $value): bool {
+                        foreach ($filterParts as $filterPart) {
+                            if (! isset($item[$filterPart])) {
+                                throw new LogicException(
+                                    sprintf(
+                                        'Property \'%s\' not found in item.',
+                                        $filter,
+                                    ),
+                                );
+                            }
+
+                            $item = $item[$filterPart];
+                        }
+
+                        return (bool) preg_match(
+                            sprintf('#.*%s.*#', preg_quote($value, '#')),
+                            $item,
+                        );
+                    },
                 );
             }
 
