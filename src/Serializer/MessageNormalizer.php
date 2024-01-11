@@ -164,4 +164,10 @@ final class MessageNormalizer implements DenormalizerInterface
 
         return $operation?->getInput()['class'] ?? null;
     }
+
+    /** @inheritDoc */
+    public function getSupportedTypes(string|null $format): array
+    {
+        return [ImmutableRecord::class => true];
+    }
 }
