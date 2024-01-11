@@ -63,6 +63,7 @@ class SearchFilter implements FilterInterface
                 'required' => false,
                 'strategy' => SearchFilterInterface::STRATEGY_PARTIAL,
                 'is_collection' => false,
+                // todo add descriptions
             ];
         }
 
