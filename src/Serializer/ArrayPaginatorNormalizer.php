@@ -21,8 +21,11 @@ final class ArrayPaginatorNormalizer implements NormalizerInterface
      *
      * @return array<mixed>|string|int|float|bool|ArrayObject<string, mixed>
      */
-    public function normalize(mixed $object, string|null $format = null, array $context = []): mixed
-    {
+    public function normalize(
+        mixed $object,
+        string|null $format = null,
+        array $context = [],
+    ): array|string|int|float|bool|ArrayObject|null {
         assert($object instanceof ArrayPaginator);
 
         $normalized = [];
@@ -37,5 +40,11 @@ final class ArrayPaginatorNormalizer implements NormalizerInterface
     public function supportsNormalization(mixed $data, string|null $format = null, array $context = []): bool
     {
         return $data instanceof ArrayPaginator && $format === 'json';
+    }
+
+    /** @inheritDoc */
+    public function getSupportedTypes(string|null $format): array
+    {
+        return [ArrayPaginator::class => true];
     }
 }
