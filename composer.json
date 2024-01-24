@@ -12,18 +12,18 @@
         }
     ],
     "require": {
-        "php": "^8.1",
+        "php": "^8.1 || ^8.2",
         "ext-json": "*",
         "api-platform/core": "~3.0",
         "arnedesmedt/event-engine-symfony-bundle": "~0.1",
         "arnedesmedt/json-immutable-objects": "~0.1",
-        "chrisguitarguy/request-id-bundle": "~5.0",
-        "symfony/security-core": "^6.2"
+        "chrisguitarguy/request-id-bundle": "~6.0",
+        "symfony/security-core": "~6.0 || ~7.0"
     },
     "require-dev": {
         "doctrine/coding-standard": "~11.0",
         "jetbrains/phpstorm-attributes": "~1.0",
-        "phpro/grumphp": "~1.0",
+        "phpro/grumphp": "~2.0",
         "phpstan/phpstan": "~1.0",
         "rector/rector": "~0.1",
         "roave/security-advisories": "dev-master",
