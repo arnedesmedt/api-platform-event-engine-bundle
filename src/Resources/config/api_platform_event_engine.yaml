@@ -72,6 +72,9 @@ services:
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Config'
             - '@property_info'
+            - '@ADS\Bundle\EventEngineBundle\MetadataExtractor\CommandExtractor'
+            - '@ADS\Bundle\EventEngineBundle\MetadataExtractor\QueryExtractor'
+            - '@ADS\Bundle\EventEngineBundle\MetadataExtractor\ResponseExtractor'
 
     ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataCollectionFactory\ResponseRefResourceMetadataCollectionFactory:
         decorates: 'api_platform.metadata.resource.metadata_collection_factory'
@@ -79,6 +82,7 @@ services:
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataCollectionFactory\ResponseRefResourceMetadataCollectionFactory.inner'
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageRefSchemaFactory'
+            - '@ADS\Bundle\EventEngineBundle\MetadataExtractor\ResponseExtractor'
 
     ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataCollectionFactory\RequestBodyRefResourceMetadataCollectionFactory:
         decorates: 'api_platform.metadata.resource.metadata_collection_factory'
@@ -86,6 +90,7 @@ services:
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataCollectionFactory\RequestBodyRefResourceMetadataCollectionFactory.inner'
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageRefSchemaFactory'
+            - '@ADS\Bundle\EventEngineBundle\MetadataExtractor\CommandExtractor'
 
     ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataCollectionFactory\AddComplexResourceMetadataCollectionFactory:
         decorates: 'api_platform.metadata.resource.metadata_collection_factory'
@@ -157,6 +162,7 @@ services:
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageSchemaFactory.inner'
             - '@api_platform.metadata.resource.metadata_collection_factory'
+            - '@ADS\Bundle\EventEngineBundle\MetadataExtractor\ResponseExtractor'
 
     ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageRefSchemaFactory: ~
 
@@ -188,6 +194,7 @@ services:
         class: ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\CustomContextBuilder
         arguments:
             - '@ApiPlatform\Serializer\SerializerContextBuilder'
+            - '@ADS\Bundle\EventEngineBundle\MetadataExtractor\QueryExtractor'
 
     ApiPlatform\Serializer\SerializerContextBuilder:
         arguments:
