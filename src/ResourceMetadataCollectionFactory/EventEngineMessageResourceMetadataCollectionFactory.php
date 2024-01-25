@@ -59,6 +59,7 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
     private readonly DocBlockFactory $docBlockFactory;
 
     public function __construct(
+        private readonly ResourceMetadataCollectionFactoryInterface $resourceMetadataCollectionFactory,
         private readonly Config $config,
         private readonly PropertyInfoExtractorInterface $propertyInfoExtractor,
         private readonly CommandExtractor $commandExtractor,
@@ -70,7 +71,7 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
 
     public function create(string $resourceClass): ResourceMetadataCollection
     {
-        $resourceMetadataCollection = new ResourceMetadataCollection($resourceClass);
+        $resourceMetadataCollection = $this->resourceMetadataCollectionFactory->create($resourceClass);
         $messageMapping = $this->config->messageMapping();
 
         // if no event engine messages are found linked with this resource.

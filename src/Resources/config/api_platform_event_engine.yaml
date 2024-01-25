@@ -38,38 +38,17 @@ services:
         tags:
             - 'property_info.description_extractor'
 
-
-
-    # RESOURCE NAME COLLECTION FACTORY
-    api_platform.metadata.resource.name_collection_factory.event_engine_state:
-        class: 'ADS\Bundle\ApiPlatformEventEngineBundle\ResourceNameCollectionFactory\EventEngineStateResourceNameCollectionFactory'
-        decorates: 'api_platform.metadata.resource.name_collection_factory'
-        arguments:
-            - '%api_platform.resource_class_directories%'
-            - '@api_platform.metadata.resource.name_collection_factory.event_engine_state.inner'
-
+    # RESOURCE METADATA COLLECTION FACTORY
     ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataCollectionFactory\NoCompositeIdentifierResourceMetadataCollectionFactory:
         decorates: 'api_platform.metadata.resource.metadata_collection_factory'
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataCollectionFactory\NoCompositeIdentifierResourceMetadataCollectionFactory.inner'
 
-    api_platform.metadata.resource.metadata_collection_factory:
-        alias: 'api_platform.metadata.resource.metadata_collection_factory.event_engine'
-
-    api_platform.metadata.resource.metadata_collection_factory.attributes:
-        class: 'ApiPlatform\Metadata\Resource\Factory\AttributesResourceMetadataCollectionFactory'
+    ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataCollectionFactory\EventEngineMessageResourceMetadataCollectionFactory:
         decorates: 'api_platform.metadata.resource.metadata_collection_factory'
-        decoration_priority: 850
-        public: false
+        decoration_priority: 990
         arguments:
-            - '@api_platform.metadata.resource.metadata_collection_factory.attributes.inner'
-            - '@logger'
-            - '%api_platform.defaults%'
-            - '%api_platform.graphql.enabled%'
-
-    api_platform.metadata.resource.metadata_collection_factory.event_engine:
-        class: 'ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataCollectionFactory\EventEngineMessageResourceMetadataCollectionFactory'
-        arguments:
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataCollectionFactory\EventEngineMessageResourceMetadataCollectionFactory.inner'
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Config'
             - '@property_info'
             - '@ADS\Bundle\EventEngineBundle\MetadataExtractor\CommandExtractor'
@@ -195,6 +174,7 @@ services:
         arguments:
             - '@ApiPlatform\Serializer\SerializerContextBuilder'
             - '@ADS\Bundle\EventEngineBundle\MetadataExtractor\QueryExtractor'
+            - '@ADS\Bundle\EventEngineBundle\MetadataExtractor\CommandExtractor'
 
     ApiPlatform\Serializer\SerializerContextBuilder:
         arguments:
