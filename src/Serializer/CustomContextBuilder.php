@@ -4,22 +4,24 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Serializer;
 
-use ADS\Bundle\ApiPlatformEventEngineBundle\Util;
+use ADS\Bundle\EventEngineBundle\MetadataExtractor\CommandExtractor;
+use ADS\Bundle\EventEngineBundle\MetadataExtractor\QueryExtractor;
 use ApiPlatform\Metadata\HttpOperation;
 use ApiPlatform\Serializer\SerializerContextBuilder;
 use ApiPlatform\Serializer\SerializerContextBuilderInterface;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use EventEngine\Messaging\MessageBag;
+use ReflectionClass;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
-
-use function class_implements;
 
 final class CustomContextBuilder implements SerializerContextBuilderInterface
 {
     public function __construct(
         private SerializerContextBuilder $decorated,
+        private readonly QueryExtractor $queryExtractor,
+        private readonly CommandExtractor $commandExtractor,
     ) {
     }
 
@@ -112,13 +114,12 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
             return $this;
         }
 
-        $interfaces = class_implements($inputClass);
+        $reflectionClass = new ReflectionClass($inputClass);
 
-        if ($interfaces === false) {
-            return $this;
-        }
-
-        if (! Util::isCommand($inputClass, $interfaces) && ! Util::isQuery($inputClass, $interfaces)) {
+        if (
+            ! $this->commandExtractor->isCommandFromReflectionClass($reflectionClass)
+            && ! $this->queryExtractor->isQueryFromReflectionClass($reflectionClass)
+        ) {
             return $this;
         }
 

@@ -14,11 +14,11 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\Provider\DocumentStoreItemProvider;
 use ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageSchemaFactory;
 use ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\OpenApiSchemaFactory;
 use ADS\Bundle\ApiPlatformEventEngineBundle\TypeFactory\MessageTypeFactory;
-use ADS\Bundle\ApiPlatformEventEngineBundle\Util;
 use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
-use ADS\Bundle\EventEngineBundle\Attribute\Response;
 use ADS\Bundle\EventEngineBundle\Message\ValidationMessage;
-use ADS\Bundle\EventEngineBundle\Response\HasResponses;
+use ADS\Bundle\EventEngineBundle\MetadataExtractor\CommandExtractor;
+use ADS\Bundle\EventEngineBundle\MetadataExtractor\QueryExtractor;
+use ADS\Bundle\EventEngineBundle\MetadataExtractor\ResponseExtractor;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\HttpOperation;
 use ApiPlatform\Metadata\Operations;
@@ -61,6 +61,9 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
     public function __construct(
         private readonly Config $config,
         private readonly PropertyInfoExtractorInterface $propertyInfoExtractor,
+        private readonly CommandExtractor $commandExtractor,
+        private readonly QueryExtractor $queryExtractor,
+        private readonly ResponseExtractor $responseExtractor,
     ) {
         $this->docBlockFactory = DocBlockFactory::createInstance();
     }
@@ -80,6 +83,7 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
         $operations = [];
 
         foreach ($messages as $messageClass) {
+            $messageReflectionClass = new ReflectionClass($messageClass);
             $operationClass = $this->operationClass($messageClass);
             $docBlock = $this->docBlock($messageClass);
             /** @var array<class-string> $messageInterfaces */
@@ -94,16 +98,16 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
                 uriTemplate: '/' . ltrim(Uri::fromString($messageClass::__uriTemplate())->toUrlPart(), '/'),
                 uriVariables: null, //todo
                 requirements: $messageClass::__requirements(),
-                read: Util::isQuery($messageClass, $messageInterfaces),
-                write: Util::isCommand($messageClass, $messageInterfaces),
+                read: $this->queryExtractor->isQueryFromReflectionClass($messageReflectionClass),
+                write: $this->commandExtractor->isCommandFromReflectionClass($messageReflectionClass),
                 serialize: null, // todo
                 validate: in_array(ValidationMessage::class, $messageInterfaces),
-                status: $this->defaultStatusCode($messageClass, $messageInterfaces),
+                status: $this->defaultStatusCode($messageReflectionClass),
                 normalizationContext: $messageClass::__normalizationContext(),
                 denormalizationContext: $messageClass::__denormalizationContext(),
                 openapi: $this->openApi($messageClass, $messageInterfaces),
-                processor: $this->processor($messageClass, $messageInterfaces),
-                provider: $this->provider($messageClass, $messageInterfaces),
+                processor: $this->processor($messageReflectionClass),
+                provider: $this->provider($messageReflectionClass),
                 input: ['class' => $messageClass],
                 output: $resourceClass !== $messageClass::__schemaStateClass()
                     ? ['class' => $messageClass::__schemaStateClass()]
@@ -347,58 +351,46 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
     }
 
     /**
-     * @param class-string<ApiPlatformMessage> $messageClass
-     * @param array<class-string> $messageInterfaces
+     * @param ReflectionClass<ApiPlatformMessage> $messageReflectionClass
      *
-     * @return class-string<ProcessorInterface>|null
+     * @return class-string<ProcessorInterface<mixed, mixed>>|null
      */
-    private function processor(string $messageClass, array $messageInterfaces): string|null
+    private function processor(ReflectionClass $messageReflectionClass): string|null
     {
-        if (! Util::isCommand($messageClass, $messageInterfaces)) {
+        if (! $this->commandExtractor->isCommandFromReflectionClass($messageReflectionClass)) {
             return null;
         }
+
+        /** @var ApiPlatformMessage $messageClass */
+        $messageClass = $messageReflectionClass->getName();
 
         return $messageClass::__processor() ?? CommandProcessor::class;
     }
 
     /**
-     * @param class-string<ApiPlatformMessage> $messageClass
-     * @param array<class-string> $messageInterfaces
+     * @param ReflectionClass<ApiPlatformMessage> $messageReflectionClass
      *
-     * @return class-string<ProviderInterface<object>>|null
+     * @return class-string<ProviderInterface<ImmutableRecord>>|null
      */
-    private function provider(string $messageClass, array $messageInterfaces): string|null
+    private function provider(ReflectionClass $messageReflectionClass): string|null
     {
-        if (! Util::isQuery($messageClass, $messageInterfaces)) {
+        if (! $this->queryExtractor->isQueryFromReflectionClass($messageReflectionClass)) {
             return null;
         }
+
+        /** @var ApiPlatformMessage $messageClass */
+        $messageClass = $messageReflectionClass->getName();
 
         return $messageClass::__isCollection()
             ? DocumentStoreCollectionProvider::class
             : DocumentStoreItemProvider::class;
     }
 
-    /**
-     * @param class-string<JsonSchemaAwareRecord> $messageClass
-     * @param array<class-string> $messageInterfaces
-     */
-    public function defaultStatusCode(string $messageClass, array $messageInterfaces): int|null
+    /** @param ReflectionClass<ApiPlatformMessage> $messageReflectionClass */
+    public function defaultStatusCode(ReflectionClass $messageReflectionClass): int|null
     {
-        if (in_array(HasResponses::class, $messageInterfaces)) {
-            return $messageClass::__defaultStatusCode();
-        }
-
-        $reflectionClass = new ReflectionClass($messageClass);
-
-        $responseAttributes = $reflectionClass->getAttributes(Response::class);
-
-        if (! empty($responseAttributes)) {
-            /** @var Response $responseAttribute */
-            $responseAttribute = reset($responseAttributes)->newInstance();
-
-            return $responseAttribute->defaultStatusCode();
-        }
-
-        return null;
+        return $this->responseExtractor->hasResponsesFromReflectionClass($messageReflectionClass)
+            ? $this->responseExtractor->defaultStatusCodeFromReflectionClass($messageReflectionClass)
+            : null;
     }
 }

@@ -47,7 +47,7 @@ abstract class FilterConverter
             return null;
         }
 
-        return intval($filters[$this->itemsPerPageParameterName]);
+        return intval($filters[$this->itemsPerPageParameterName]); // @phpstan-ignore-line
     }
 
     /** @param array<string, mixed> $filters */
@@ -57,6 +57,6 @@ abstract class FilterConverter
             return null;
         }
 
-        return intval($filters[$this->pageParameterName]);
+        return intval($filters[$this->pageParameterName]); // @phpstan-ignore-line
     }
 }

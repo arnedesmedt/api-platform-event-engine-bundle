@@ -6,7 +6,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\EventSubscriber;
 
 use ApiPlatform\Api\FormatMatcher;
 use ApiPlatform\Serializer\SerializerContextBuilderInterface;
-use ApiPlatform\Util\OperationRequestInitiatorTrait;
+use ApiPlatform\State\Util\OperationRequestInitiatorTrait;
 use ApiPlatform\Util\RequestAttributesExtractor;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;

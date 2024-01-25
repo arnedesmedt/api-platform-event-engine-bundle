@@ -7,7 +7,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
 use ADS\Bundle\ApiPlatformEventEngineBundle\TypeFactory\MessageTypeFactory;
 use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
-use ADS\Bundle\EventEngineBundle\Response\HasResponses;
+use ADS\Bundle\EventEngineBundle\MetadataExtractor\ResponseExtractor;
 use ADS\JsonImmutableObjects\Polymorphism\Discriminator;
 use ADS\Util\ArrayUtil;
 use ADS\ValueObjects\ListValue;
@@ -45,13 +45,14 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
     public function __construct(
         private SchemaFactoryInterface $schemaFactory,
         private ResourceMetadataCollectionFactoryInterface $resourceMetadataCollectionFactory,
+        private readonly ResponseExtractor $responseExtractor,
     ) {
         $this->addDistinctFormat('jsonhal');
         $this->addDistinctFormat('jsonld');
     }
 
     /**
-     * @param class-string<JsonSchemaAwareRecord> $className
+     * @param class-string<JsonSchemaAwareRecord|Discriminator> $className
      * @param array<string, mixed>|null $serializerContext
      * @param Schema<mixed>|null $schema
      *
@@ -86,8 +87,11 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
         $classReflectionClass = new ReflectionClass($className);
 
         if ($classReflectionClass->implementsInterface(Discriminator::class)) {
+            /** @var class-string<Discriminator> $discriminatorClass */
+            $discriminatorClass = $className;
+
             return $this->handleDiscriminator(
-                $className,
+                $discriminatorClass,
                 $format,
                 $type,
                 $schema,
@@ -136,49 +140,35 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
         }
 
         // OUTPUT
-        if ($reflectionClass->implementsInterface(HasResponses::class)) {
-            $responses = $messageClass::__responseClassesPerStatusCode();
-            $defaultStatusCode = $messageClass::__defaultStatusCode();
+        if ($this->responseExtractor->hasResponsesFromReflectionClass($reflectionClass)) {
+            $responseClass = $this->responseExtractor->defaultResponseClassFromReflectionClass($reflectionClass);
 
-            foreach ($responses as $statusCode => $responseClass) {
-                $forceCollectionResponse = false;
-                if (in_array(ListValue::class, class_implements($responseClass) ?: [])) {
-                    $responseClass = $responseClass::itemType();
-                    $forceCollectionResponse = true;
-                }
-
-                if (
-                    $statusCode === $defaultStatusCode
-                    && MessageTypeFactory::isComplexType($responseClass)
-                ) {
-                    if ($forceCollectionResponse) {
-                        $schema['type'] = 'array';
-                        $schema['items'] = ['type' => MessageTypeFactory::complexType($className)];
-
-                        continue;
-                    }
-
-                    $schema['type'] = MessageTypeFactory::complexType($responseClass);
-                    continue;
-                }
-
-                $responseSchema = $this->schemaFactory->buildSchema(
-                    $responseClass,
-                    $format,
-                    Schema::TYPE_OUTPUT,
-                    $operation,
-                    $schema,
-                    null,
-                    $forceCollectionResponse,
-                );
-
-                if ($statusCode === $defaultStatusCode) {
-                    $schema = $responseSchema;
-                    continue;
-                }
-
-                $schema->setDefinitions($responseSchema->getDefinitions());
+            $forceCollectionResponse = false;
+            if (in_array(ListValue::class, class_implements($responseClass) ?: [])) {
+                // @phpstan-ignore-next-line
+                $responseClass = $responseClass::itemType();
+                $forceCollectionResponse = true;
             }
+
+            if (MessageTypeFactory::isComplexType($responseClass)) {
+                $schema['type'] = $forceCollectionResponse
+                    ? 'array'
+                    : MessageTypeFactory::complexType($responseClass);
+
+                if ($forceCollectionResponse) {
+                    $schema['items'] = ['type' => MessageTypeFactory::complexType($className)];
+                }
+            }
+
+            $this->schemaFactory->buildSchema(
+                $responseClass,
+                $format,
+                Schema::TYPE_OUTPUT,
+                $operation,
+                $schema,
+                null,
+                $forceCollectionResponse,
+            );
         }
 
         assert($operation instanceof HttpOperation);

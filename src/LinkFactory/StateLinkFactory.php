@@ -8,6 +8,7 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
 use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Link;
+use ApiPlatform\Metadata\Metadata;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Resource\Factory\LinkFactoryInterface;
 
@@ -22,7 +23,7 @@ class StateLinkFactory implements LinkFactoryInterface
     }
 
     /** @return array<Link> */
-    public function createLinksFromIdentifiers(ApiResource|Operation $operation): array
+    public function createLinksFromIdentifiers(ApiResource|Operation|Metadata $operation): array
     {
         if ($operation instanceof ApiResource || ! isset($operation->getInput()['class'])) {
             return $this->linkFactory->createLinksFromIdentifiers($operation);
@@ -50,13 +51,13 @@ class StateLinkFactory implements LinkFactoryInterface
     }
 
     /** @return array<Link> */
-    public function createLinksFromRelations(ApiResource|Operation $operation): array
+    public function createLinksFromRelations(ApiResource|Operation|Metadata $operation): array
     {
         return $this->linkFactory->createLinksFromRelations($operation);
     }
 
     /** @return array<Link> */
-    public function createLinksFromAttributes(ApiResource|Operation $operation): array
+    public function createLinksFromAttributes(ApiResource|Operation|Metadata $operation): array
     {
         return $this->linkFactory->createLinksFromAttributes($operation);
     }

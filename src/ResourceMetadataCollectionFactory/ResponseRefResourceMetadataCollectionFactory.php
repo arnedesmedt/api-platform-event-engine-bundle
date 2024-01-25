@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataCollectionFactory;
 
-use ADS\Bundle\EventEngineBundle\Response\HasResponses;
+use ADS\Bundle\EventEngineBundle\MetadataExtractor\ResponseExtractor;
 use ADS\ValueObjects\Implementation\ListValue\ListValue;
 use ApiPlatform\JsonSchema\Schema;
 use ApiPlatform\JsonSchema\SchemaFactoryInterface;
@@ -34,6 +34,7 @@ final class ResponseRefResourceMetadataCollectionFactory implements ResourceMeta
     public function __construct(
         private ResourceMetadataCollectionFactoryInterface $decorated,
         private SchemaFactoryInterface $schemaFactory,
+        private readonly ResponseExtractor $responseExtractor,
     ) {
         $this->docBlockFactory = DocBlockFactory::createInstance();
     }
@@ -61,82 +62,79 @@ final class ResponseRefResourceMetadataCollectionFactory implements ResourceMeta
                 }
 
                 $reflectionClass = new ReflectionClass($messageClass);
-                if (! $reflectionClass->implementsInterface(HasResponses::class)) {
+                if (! $this->responseExtractor->hasResponsesFromReflectionClass($reflectionClass)) {
                     continue;
                 }
 
                 /** @var array<string, array<string>> $outputFormats */
                 $outputFormats = $operation->getOutputFormats();
                 $outputFormats = $this->flattenMimeTypes($outputFormats);
-                $responseClasses = $messageClass::__responseClassesPerStatusCode();
-                $defaultStatusCode = $messageClass::__defaultStatusCode();
+                $statusCode = $this->responseExtractor->defaultStatusCodeFromReflectionClass($reflectionClass);
+                $responseClass = $this->responseExtractor->defaultResponseClassFromReflectionClass($reflectionClass);
 
                 $openApi = $operation->getOpenapi();
                 if (! $openApi instanceof OpenApiOperation) {
                     $openApi = new OpenApiOperation();
                 }
 
-                foreach ($responseClasses as $statusCode => $responseClass) {
-                    $responseReflectionClass = new ReflectionClass($responseClass);
+                $responseReflectionClass = new ReflectionClass($responseClass);
 
-                    if (
-                        ! $responseReflectionClass->implementsInterface(JsonSchemaAwareRecord::class)
-                        && ! $responseReflectionClass->implementsInterface(JsonSchemaAwareCollection::class)
-                    ) {
-                        continue;
-                    }
+                if (
+                    ! $responseReflectionClass->implementsInterface(JsonSchemaAwareRecord::class)
+                    && ! $responseReflectionClass->implementsInterface(JsonSchemaAwareCollection::class)
+                ) {
+                    continue;
+                }
 
-                    $serializerContext = $defaultStatusCode === $statusCode
-                        ? $operation->getNormalizationContext()
-                        : null;
+                $serializerContext = $operation->getNormalizationContext();
 
-                    $forceCollection = false;
-                    if (in_array(ListValue::class, class_parents($responseClass) ?: [])) {
-                        $responseClass = $responseClass::itemType();
-                        $forceCollection = true;
-                    }
+                $forceCollection = false;
+                if (in_array(ListValue::class, class_parents($responseClass) ?: [])) {
+                    // @phpstan-ignore-next-line
+                    $responseClass = $responseClass::itemType();
+                    $forceCollection = true;
+                }
 
-                    try {
-                        $docBlock = $this->docBlockFactory->create($responseReflectionClass);
-                    } catch (InvalidArgumentException) {
-                        $docBlock = null;
-                    }
+                try {
+                    $docBlock = $this->docBlockFactory->create($responseReflectionClass);
+                } catch (InvalidArgumentException) {
+                    $docBlock = null;
+                }
 
-                    $openApi->addResponse(
-                        new Response(
-                            description: $docBlock?->getSummary() ?? '',
-                            content: new ArrayObject(
-                                array_combine(
-                                    array_keys($outputFormats),
-                                    array_map(
-                                        function (
-                                            string $format,
-                                        ) use (
+                $openApi->addResponse(
+                    new Response(
+                        description: $docBlock?->getSummary() ?? '',
+                        content: new ArrayObject(
+                            array_combine(
+                                array_keys($outputFormats),
+                                array_map(
+                                    function (
+                                        string $format,
+                                    ) use (
+                                        $responseClass,
+                                        $forceCollection,
+                                        $serializerContext,
+                                        $operation,
+                                    ) {
+                                        $schema = $this->schemaFactory->buildSchema(
                                             $responseClass,
-                                            $forceCollection,
+                                            $format,
+                                            Schema::TYPE_OUTPUT,
+                                            (new HttpOperation($operation->getMethod())),
+                                            null,
                                             $serializerContext,
-                                            $operation,
-                                        ) {
-                                            $schema = $this->schemaFactory->buildSchema(
-                                                $responseClass,
-                                                $format,
-                                                Schema::TYPE_OUTPUT,
-                                                (new HttpOperation($operation->getMethod())),
-                                                null,
-                                                $serializerContext,
-                                                $forceCollection,
-                                            );
+                                            $forceCollection,
+                                        );
 
-                                            return ['schema' => $schema->getArrayCopy(false)];
-                                        },
-                                        $outputFormats,
-                                    ),
+                                        return ['schema' => $schema->getArrayCopy(false)];
+                                    },
+                                    $outputFormats,
                                 ),
                             ),
                         ),
-                        $statusCode,
-                    );
-                }
+                    ),
+                    $statusCode,
+                );
 
                 $operation = $operation->withOpenapi($openApi);
 

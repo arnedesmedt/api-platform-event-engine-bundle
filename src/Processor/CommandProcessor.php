@@ -9,6 +9,7 @@ use ApiPlatform\State\ProcessorInterface;
 use EventEngine\Messaging\Message;
 use EventEngine\Messaging\MessageProducer;
 
+/** @implements ProcessorInterface<Message, array<mixed>|object|null> */
 final class CommandProcessor implements ProcessorInterface
 {
     public function __construct(private MessageProducer $eventEngine)

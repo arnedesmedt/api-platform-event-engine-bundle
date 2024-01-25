@@ -18,10 +18,13 @@ final class ValueObjectNormalizer implements NormalizerInterface, DenormalizerIn
     /**
      * @param array<mixed> $context
      *
-     * @return array<mixed>|string|int|float|bool|ArrayObject<string, mixed>
+     * @return ArrayObject<string, mixed>|bool|float|int|string|array<mixed>|null
      */
-    public function normalize(mixed $object, string|null $format = null, array $context = []): mixed
-    {
+    public function normalize(
+        mixed $object,
+        string|null $format = null,
+        array $context = [],
+    ): array|ArrayObject|bool|float|int|string|null {
         assert($object instanceof ValueObject);
 
         /** @var array<mixed>|string|int|float|bool $value */
