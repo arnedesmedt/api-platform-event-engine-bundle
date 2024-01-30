@@ -39,11 +39,6 @@ services:
             - 'property_info.description_extractor'
 
     # RESOURCE METADATA COLLECTION FACTORY
-    ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataCollectionFactory\NoCompositeIdentifierResourceMetadataCollectionFactory:
-        decorates: 'api_platform.metadata.resource.metadata_collection_factory'
-        arguments:
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataCollectionFactory\NoCompositeIdentifierResourceMetadataCollectionFactory.inner'
-
     ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataCollectionFactory\EventEngineMessageResourceMetadataCollectionFactory:
         decorates: 'api_platform.metadata.resource.metadata_collection_factory'
         decoration_priority: 990

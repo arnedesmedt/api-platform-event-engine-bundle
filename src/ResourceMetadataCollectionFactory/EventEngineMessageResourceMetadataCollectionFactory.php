@@ -19,7 +19,6 @@ use ADS\Bundle\EventEngineBundle\Message\ValidationMessage;
 use ADS\Bundle\EventEngineBundle\MetadataExtractor\CommandExtractor;
 use ADS\Bundle\EventEngineBundle\MetadataExtractor\QueryExtractor;
 use ADS\Bundle\EventEngineBundle\MetadataExtractor\ResponseExtractor;
-use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\HttpOperation;
 use ApiPlatform\Metadata\Operations;
 use ApiPlatform\Metadata\Put;
@@ -130,9 +129,11 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
             $operations[$messageClass::__operationId()] = $operation;
         }
 
-        $resourceMetadataCollection[] = (new ApiResource(class: $resourceClass))
-            ->withShortName($resourceClass::__type())
-            ->withOperations(new Operations($operations));
+        foreach ($resourceMetadataCollection as $resourceMetadata) {
+            $resourceMetadata = $resourceMetadata
+                ->withShortName($resourceClass::__type())
+                ->withOperations(new Operations($operations));
+        }
 
         return $resourceMetadataCollection;
     }
