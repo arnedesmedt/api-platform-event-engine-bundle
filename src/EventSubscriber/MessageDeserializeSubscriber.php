@@ -12,6 +12,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Exception\UnsupportedMediaTypeHttpException;
+use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -47,6 +48,7 @@ final class MessageDeserializeSubscriber implements EventSubscriberInterface
             ($method !== Request::METHOD_DELETE && ! $request->isMethodSafe())
             || ! $attributes
             || ! $attributes['receive']
+            || $event->getRequestType() === HttpKernelInterface::SUB_REQUEST
         ) {
             return;
         }
