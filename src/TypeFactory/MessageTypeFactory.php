@@ -44,6 +44,10 @@ final class MessageTypeFactory implements TypeFactoryInterface
 
         $newType = $this->typeFactory->getType($type, $format, $readableLink, $serializerContext, $schema);
 
+        if (empty($newType)) {
+            return $newType;
+        }
+
         if ($type->isCollection()) {
             $keyType = $type->getCollectionKeyTypes();
             $valueType = $type->getCollectionValueTypes();
