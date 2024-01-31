@@ -129,7 +129,7 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
             $operations[$messageClass::__operationId()] = $operation;
         }
 
-        foreach ($resourceMetadataCollection as $resourceMetadata) {
+        foreach ($resourceMetadataCollection as &$resourceMetadata) {
             $resourceMetadata = $resourceMetadata
                 ->withShortName($resourceClass::__type())
                 ->withOperations(new Operations($operations));
