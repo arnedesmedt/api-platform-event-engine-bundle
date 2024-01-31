@@ -44,8 +44,8 @@ class TypeDescriptionExtractor implements PropertyDescriptionExtractorInterface
     /** @param class-string $class */
     private function docBlock(string $class, string $property): DocBlock|null
     {
-        $reflectionPropertyType = PropertySchemaStateExtractor::reflectionPropertyType($class, $property);
-        $objectTypes = PropertySchemaStateExtractor::objectTypes($reflectionPropertyType);
+        $reflectionPropertyType = PropertySchemaStateExtractor::propertyReflectionType($class, $property);
+        $objectTypes = PropertySchemaStateExtractor::propertyTypeReflectionClasses($reflectionPropertyType);
         $firstObjectType = reset($objectTypes);
 
         if ($firstObjectType === false) {
