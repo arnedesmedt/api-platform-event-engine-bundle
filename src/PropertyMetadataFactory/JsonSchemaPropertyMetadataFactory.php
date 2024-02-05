@@ -40,7 +40,7 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
     }
 
     /**
-     * @param class-string $resourceClass
+     * @param class-string<JsonSchemaAwareRecord> $resourceClass
      * @param array<mixed> $options
      */
     public function create(string $resourceClass, string $property, array $options = []): ApiProperty
@@ -48,7 +48,7 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
         // todo change the way we work with camelize and decamilize
         $property = StringUtil::camelize($property);
         $apiProperty = $this->decorated->create($resourceClass, $property, $options);
-        /** @var ReflectionClass<ImmutableRecord> $reflectionClass */
+        /** @var ReflectionClass<JsonSchemaAwareRecord> $reflectionClass */
         $reflectionClass = new ReflectionClass($resourceClass);
 
         if (! $reflectionClass->implementsInterface(JsonSchemaAwareRecord::class)) {
@@ -63,9 +63,16 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
         $className = $firstBuiltInType?->getClassName();
 
         return $apiProperty
+            ->withSchema($propertySchema)
             ->withDefault($this->default($resourceClass, $property))
             ->withDescription(
-                $this->description($apiProperty, $resourceClass, $property, $reflectionClass, $propertySchema) ?? '',
+                $this->description(
+                    $apiProperty,
+                    $resourceClass,
+                    $property,
+                    $reflectionClass,
+                    $propertySchema,
+                ) ?? '',
             )
             ->withExample($this->example($resourceClass, $property, $reflectionClass) ?? null)
             ->withDeprecationReason($this->deprecationReason($property, $reflectionClass))
@@ -107,6 +114,7 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
             ? $reflectionClass->getProperty($property)->getType()
             : null;
 
+        // todo move this to separate property metdata factory to add the patch description.
         $patchPropertyDescription = $reflectionClass->implementsInterface(ApiPlatformMessage::class)
         && $resourceClass::__httpMethod() === Request::METHOD_PATCH
         && isset($propertyType)

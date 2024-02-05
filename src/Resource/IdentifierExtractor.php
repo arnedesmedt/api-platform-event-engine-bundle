@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ADS\Bundle\ApiPlatformEventEngineBundle\PropertyExtractor;
+namespace ADS\Bundle\ApiPlatformEventEngineBundle\Resource;
 
 use ADS\ValueObjects\ValueObject;
 use ApiPlatform\Api\IdentifiersExtractorInterface;
