@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory;
 
-use ADS\Bundle\EventEngineBundle\PropertyInfo\PropertyExamplesExtractor;
+use ADS\Bundle\EventEngineBundle\PropertyInfo\PropertyExampleExtractor;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\Property\Factory\PropertyMetadataFactoryInterface;
 
@@ -12,7 +12,7 @@ class ExamplePropertyMetadataFactory implements PropertyMetadataFactoryInterface
 {
     public function __construct(
         private readonly PropertyMetadataFactoryInterface $decorated,
-        private readonly PropertyExamplesExtractor $examplesExtractor,
+        private readonly PropertyExampleExtractor $exampleExtractor,
     ) {
     }
 
@@ -28,8 +28,8 @@ class ExamplePropertyMetadataFactory implements PropertyMetadataFactoryInterface
             return $propertyMetadata;
         }
 
-        $examples = $this->examplesExtractor->fromClassAndProperty($resourceClass, $property);
+        $example = $this->exampleExtractor->fromClassAndProperty($resourceClass, $property);
 
-        return empty($examples) ? $propertyMetadata : $propertyMetadata->withExample($examples);
+        return $example === null ? $propertyMetadata : $propertyMetadata->withExample($example);
     }
 }
