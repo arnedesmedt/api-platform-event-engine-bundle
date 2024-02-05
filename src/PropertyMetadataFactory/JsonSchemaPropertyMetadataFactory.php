@@ -47,7 +47,9 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
     {
         // todo change the way we work with camelize and decamilize
         $property = StringUtil::camelize($property);
-        $apiProperty = $this->decorated->create($resourceClass, $property, $options);
+
+        return $this->decorated->create($resourceClass, $property, $options);
+
         /** @var ReflectionClass<JsonSchemaAwareRecord> $reflectionClass */
         $reflectionClass = new ReflectionClass($resourceClass);
 

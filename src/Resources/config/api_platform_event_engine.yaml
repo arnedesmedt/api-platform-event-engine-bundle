@@ -71,13 +71,6 @@ services:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataCollectionFactory\RemoveComplexResourceMetadataCollectionFactory.inner'
 
     # PROPERTY METADATA FACTORY
-    ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\DeprecationPropertyMetadataFactory:
-        decorates: 'api_platform.metadata.property.metadata_factory'
-        decoration_priority: 11
-        arguments:
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\DeprecationPropertyMetadataFactory.inner'
-            - '@ADS\Bundle\EventEngineBundle\PropertyInfo\PropertyDeprecationExtractor'
-
     ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\JsonSchemaPropertyMetadataFactory:
         decorates: 'api_platform.metadata.property.metadata_factory'
         decoration_priority: -9
