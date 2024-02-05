@@ -66,8 +66,8 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
 
         return $apiProperty
             ->withSchema($propertySchema)
-            ->withDefault($this->default($resourceClass, $property))
-            ->withDescription(
+            ->withDefault($this->default($resourceClass, $property)) // ok
+            ->withDescription( // ok
                 $this->description(
                     $apiProperty,
                     $resourceClass,
@@ -77,10 +77,10 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
                 ) ?? '',
             )
             ->withExample($this->example($resourceClass, $property, $reflectionClass) ?? null)
-            ->withDeprecationReason($this->deprecationReason($property, $reflectionClass))
+            ->withDeprecationReason($this->deprecationReason($property, $reflectionClass)) // ok
             ->withRequired(in_array($property, $schema['required'] ?? []))
-            ->withReadable(true)
-            ->withWritable(true)
+            ->withReadable(true) // ok
+            ->withWritable(true) // ok
             ->withReadableLink(true)
             ->withOpenapiContext(array_filter(['type' => MessageTypeFactory::complexType($className)]));
     }

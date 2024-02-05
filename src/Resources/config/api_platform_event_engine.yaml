@@ -71,6 +71,20 @@ services:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataCollectionFactory\RemoveComplexResourceMetadataCollectionFactory.inner'
 
     # PROPERTY METADATA FACTORY
+    ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\DefaultPropertyMetadataFactory:
+        decorates: 'api_platform.metadata.property.metadata_factory'
+        decoration_priority: 11
+        arguments:
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\DefaultPropertyMetadataFactory.inner'
+            - '@ADS\Bundle\EventEngineBundle\PropertyInfo\PropertyDefaultExtractor'
+            -
+    ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\ExamplePropertyMetadataFactory:
+        decorates: 'api_platform.metadata.property.metadata_factory'
+        decoration_priority: 11
+        arguments:
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\ExamplePropertyMetadataFactory.inner'
+            - '@ADS\Bundle\EventEngineBundle\PropertyInfo\PropertyExampleExtractor'
+
     ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\JsonSchemaPropertyMetadataFactory:
         decorates: 'api_platform.metadata.property.metadata_factory'
         decoration_priority: -9

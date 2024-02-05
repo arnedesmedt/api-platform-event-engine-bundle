@@ -15,7 +15,7 @@
         "php": "^8.1 || ^8.2",
         "ext-json": "*",
         "api-platform/core": "~3.0",
-        "arnedesmedt/event-engine-symfony-bundle": "~0.1",
+        "arnedesmedt/event-engine-symfony-bundle": "dev-main",
         "arnedesmedt/json-immutable-objects": "~0.1",
         "chrisguitarguy/request-id-bundle": "~6.0",
         "symfony/security-core": "~6.0 || ~7.0"
