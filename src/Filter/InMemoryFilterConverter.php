@@ -84,7 +84,7 @@ final class InMemoryFilterConverter extends FilterConverter
             );
 
             if ($class !== null) {
-                return $class::fromArray($values);
+                return $class::fromItems($values);
             }
 
             return $values;
@@ -145,7 +145,7 @@ final class InMemoryFilterConverter extends FilterConverter
             );
 
             if ($class !== null) {
-                return $class::fromArray($values);
+                return $class::fromItems($values);
             }
 
             return $values;

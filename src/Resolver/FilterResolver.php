@@ -133,14 +133,14 @@ abstract class FilterResolver implements MetaDataResolver
     abstract protected function combineFilters(mixed $firstFilter, mixed $secondFilter): mixed;
 
     /** @return array<mixed> */
-    abstract protected function collection(): array;
+    abstract protected function collection(): iterable;
 
     /** @param array<mixed> $collection */
-    abstract protected function totalItems(array $collection): int;
+    abstract protected function totalItems(iterable $collection): int;
 
     /** @param array<mixed> $collection */
     abstract protected function result(
-        array $collection,
+        iterable $collection,
         int $page,
         int $itemsPerPage,
         int $totalItems,

@@ -10,7 +10,8 @@ use Closure;
 use RuntimeException;
 use Traversable;
 
-use function count;
+use function iterator_count;
+use function iterator_to_array;
 
 final class InMemoryFilterResolver extends FilterResolver
 {
@@ -65,7 +66,7 @@ final class InMemoryFilterResolver extends FilterResolver
     }
 
     /** @inheritDoc */
-    protected function collection(): array
+    protected function collection(): iterable
     {
         $collection = $this->collection;
         /** @var Closure|null $filter */
@@ -85,16 +86,16 @@ final class InMemoryFilterResolver extends FilterResolver
     }
 
     /** @inheritDoc */
-    protected function totalItems(array $collection): int
+    protected function totalItems(iterable $collection): int
     {
-        return count($collection);
+        return iterator_count($collection);
     }
 
     /** @inheritDoc */
-    protected function result(array $collection, int $page, int $itemsPerPage, int $totalItems): mixed
+    protected function result(iterable $collection, int $page, int $itemsPerPage, int $totalItems): mixed
     {
         return new ArrayPaginator(
-            $collection,
+            $collection instanceof Traversable ? iterator_to_array($collection) : $collection,
             ($page - 1) * $itemsPerPage,
             $itemsPerPage,
         );

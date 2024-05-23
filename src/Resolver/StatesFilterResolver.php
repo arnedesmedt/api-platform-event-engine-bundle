@@ -17,8 +17,6 @@ use EventEngine\DocumentStore\OrderBy\OrderBy;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use RuntimeException;
 
-use function array_values;
-
 /**
  * @template TStates of IterableListValue
  * @template TState of JsonSchemaAwareRecord
@@ -81,34 +79,33 @@ final class StatesFilterResolver extends FilterResolver
     }
 
     /** @inheritDoc */
-    protected function collection(): array
+    protected function collection(): iterable
     {
         /** @var Filter|null $filter */
         $filter = $this->filter();
         /** @var OrderBy|null $orderBy */
         $orderBy = $this->orderBy();
 
-        /** @var array<TState> $items */
+        /** @var TStates $items */
         $items = $this->repository
             ->findStates(
                 $filter,
                 $this->skip(),
                 $this->itemsPerPage(),
                 $orderBy,
-            )
-            ->toItems();
+            );
 
-        return array_values($items);
+        return $items->values();
     }
 
     /** @inheritDoc */
-    protected function totalItems(array $collection): int
+    protected function totalItems(iterable $collection): int
     {
         return $this->repository->countDocuments(new AnyFilter());
     }
 
     /** @inheritDoc */
-    protected function result(array $collection, int $page, int $itemsPerPage, int $totalItems): mixed
+    protected function result(iterable $collection, int $page, int $itemsPerPage, int $totalItems): mixed
     {
         return new Paginator(
             $collection,

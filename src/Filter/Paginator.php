@@ -8,9 +8,11 @@ use ApiPlatform\State\Pagination\PaginatorInterface;
 use ApiPlatform\State\Pagination\PartialPaginatorInterface;
 use ArrayObject;
 use IteratorAggregate;
+use Traversable;
 
 use function ceil;
-use function count;
+use function iterator_count;
+use function iterator_to_array;
 
 /**
  * @implements IteratorAggregate<mixed, object>
@@ -21,22 +23,22 @@ class Paginator implements PartialPaginatorInterface, IteratorAggregate, Paginat
 {
     /** @param array<mixed> $collection */
     public function __construct(
-        private readonly array $collection,
+        private readonly iterable $collection,
         private int $page,
         private int $itemsPerPage,
         private int $totalItems,
     ) {
     }
 
-    /** @return array<mixed> */
-    public function collection(): array
+    /** @return iterable<mixed> */
+    public function collection(): iterable
     {
         return $this->collection;
     }
 
     public function count(): int
     {
-        return count($this->collection);
+        return iterator_count($this->collection);
     }
 
     public function getCurrentPage(): float
@@ -62,6 +64,10 @@ class Paginator implements PartialPaginatorInterface, IteratorAggregate, Paginat
     /** @return ArrayObject<(int|string), mixed> */
     public function getIterator(): ArrayObject
     {
-        return new ArrayObject($this->collection);
+        return new ArrayObject(
+            $this->collection instanceof Traversable
+                ? iterator_to_array($this->collection)
+                : $this->collection,
+        );
     }
 }
