@@ -11,12 +11,11 @@ use RuntimeException;
 use Traversable;
 
 use function count;
-use function iterator_to_array;
 
 final class InMemoryFilterResolver extends FilterResolver
 {
-    /** @var array<mixed> */
-    private array $collection;
+    /** @var iterable<mixed> */
+    private iterable $collection;
 
     public function __construct(InMemoryFilterConverter $filterConverter)
     {
@@ -24,12 +23,8 @@ final class InMemoryFilterResolver extends FilterResolver
     }
 
     /** @param Traversable<mixed>|array<mixed> $collection */
-    public function setCollection(Traversable|array $collection): static
+    public function setCollection(iterable $collection): static
     {
-        if ($collection instanceof Traversable) {
-            $collection = iterator_to_array($collection);
-        }
-
         $this->collection = $collection;
 
         return $this;

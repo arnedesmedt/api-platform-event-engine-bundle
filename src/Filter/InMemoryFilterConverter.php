@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Filter;
 
+use ADS\ValueObjects\ListValue;
 use ApiPlatform\Doctrine\Common\Filter\OrderFilterInterface;
 use ApiPlatform\Metadata\Operation;
 use Closure;
 use LogicException;
+use Traversable;
 
 use function array_column;
 use function array_filter;
@@ -21,6 +23,8 @@ use function array_pop;
 use function array_replace;
 use function array_values;
 use function explode;
+use function is_object;
+use function iterator_to_array;
 use function preg_match;
 use function preg_quote;
 use function sprintf;
@@ -44,7 +48,10 @@ final class InMemoryFilterConverter extends FilterConverter
         /** @var array<string, string> $orderParameters */
         $orderParameters = $filters[$this->orderParameterName];
 
-        return static function (array $items) use ($orderParameters) {
+        return static function (iterable $items) use ($orderParameters) {
+            /** @var class-string<ListValue<object>>|null $class */
+            $class = is_object($items) ? $items::class : null;
+            $items = $items instanceof Traversable ? iterator_to_array($items) : $items;
             $itemArrays = array_map(static fn ($item) => $item->toArray(), $items);
             $itemKeys = array_keys($itemArrays);
             $arguments = [];
@@ -69,12 +76,18 @@ final class InMemoryFilterConverter extends FilterConverter
             /** @var array<int|string> $keysSort */
             $keysSort = array_pop($arguments);
 
-            return array_values(
+            $values =  array_values(
                 array_replace(
                     array_flip($keysSort),
                     $items,
                 ),
             );
+
+            if ($class !== null) {
+                return $class::fromArray($values);
+            }
+
+            return $values;
         };
     }
 
@@ -91,7 +104,10 @@ final class InMemoryFilterConverter extends FilterConverter
         /** @var array<string, string> $filters */
         $filters = array_intersect_key($filters, $descriptions);
 
-        return static function (array $items) use ($filters) {
+        return static function (iterable $items) use ($filters) {
+            /** @var class-string<ListValue<object>>|null $class */
+            $class = is_object($items) ? $items::class : null;
+            $items = $items instanceof Traversable ? iterator_to_array($items) : $items;
             $itemArrays = array_map(static fn ($item) => $item->toArray(), $items);
 
             foreach ($filters as $filter => $value) {
@@ -121,12 +137,18 @@ final class InMemoryFilterConverter extends FilterConverter
                 );
             }
 
-            return array_values(
+            $values = array_values(
                 array_intersect_key(
                     $items,
                     array_flip(array_keys($itemArrays)),
                 ),
             );
+
+            if ($class !== null) {
+                return $class::fromArray($values);
+            }
+
+            return $values;
         };
     }
 }
