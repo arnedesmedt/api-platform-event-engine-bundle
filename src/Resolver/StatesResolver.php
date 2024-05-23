@@ -9,6 +9,7 @@ use ADS\Bundle\EventEngineBundle\Resolver\MetaDataResolver;
 use ADS\ValueObjects\Implementation\ListValue\IterableListValue;
 use ADS\ValueObjects\ValueObject;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
+use Symfony\Contracts\Service\Attribute\Required;
 
 /**
  * @template TStates of IterableListValue
@@ -20,10 +21,8 @@ abstract class StatesResolver implements MetaDataResolver
     /** @var DefaultStateRepository<TStates, TState, TId> */
     protected DefaultStateRepository $repository;
 
-    /**
-     * @var StatesFilterResolver<TStates, TState, TId> $statesFilterResolver
-     * @required
-     */
+    /** @var StatesFilterResolver<TStates, TState, TId> $statesFilterResolver */
+    #[Required]
     public StatesFilterResolver $statesFilterResolver;
 
     /**
