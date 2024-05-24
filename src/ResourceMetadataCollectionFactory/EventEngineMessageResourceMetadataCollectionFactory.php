@@ -101,7 +101,7 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
                 read: $this->queryExtractor->isQueryFromReflectionClass($messageReflectionClass),
                 write: $this->commandExtractor->isCommandFromReflectionClass($messageReflectionClass),
                 serialize: null, // todo
-                validate: in_array(ValidationMessage::class, $messageInterfaces),
+                validate: null,
                 status: $this->defaultStatusCode($messageReflectionClass),
                 normalizationContext: $messageClass::__normalizationContext(),
                 denormalizationContext: $messageClass::__denormalizationContext(),
