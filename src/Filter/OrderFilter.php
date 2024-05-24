@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Filter;
 
-use ApiPlatform\Api\FilterInterface;
 use ApiPlatform\Doctrine\Common\Filter\OrderFilterInterface;
+use ApiPlatform\Metadata\FilterInterface;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use ReflectionClass;
 use RuntimeException;

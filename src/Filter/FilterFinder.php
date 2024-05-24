@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Filter;
 
-use ApiPlatform\Api\FilterInterface;
+use ApiPlatform\Metadata\FilterInterface;
 use ApiPlatform\Metadata\Operation;
 use Psr\Container\ContainerInterface;
 

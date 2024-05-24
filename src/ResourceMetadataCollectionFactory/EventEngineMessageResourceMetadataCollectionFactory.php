@@ -15,7 +15,6 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageSchemaFactory;
 use ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\OpenApiSchemaFactory;
 use ADS\Bundle\ApiPlatformEventEngineBundle\TypeFactory\MessageTypeFactory;
 use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
-use ADS\Bundle\EventEngineBundle\Message\ValidationMessage;
 use ADS\Bundle\EventEngineBundle\MetadataExtractor\CommandExtractor;
 use ADS\Bundle\EventEngineBundle\MetadataExtractor\QueryExtractor;
 use ADS\Bundle\EventEngineBundle\MetadataExtractor\ResponseExtractor;
