@@ -12,6 +12,7 @@ use ADS\JsonImmutableObjects\Polymorphism\Discriminator;
 use ADS\Util\ArrayUtil;
 use ADS\ValueObjects\ListValue;
 use ApiPlatform\JsonSchema\Schema;
+use ApiPlatform\JsonSchema\SchemaFactoryAwareInterface;
 use ApiPlatform\JsonSchema\SchemaFactoryInterface;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\HttpOperation;
@@ -38,7 +39,7 @@ use function is_callable;
 use function method_exists;
 use function sprintf;
 
-final class MessageSchemaFactory implements SchemaFactoryInterface
+final class MessageSchemaFactory implements SchemaFactoryInterface, SchemaFactoryAwareInterface
 {
     use ResourceClassInfoTrait;
 
@@ -47,6 +48,10 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
         private ResourceMetadataCollectionFactoryInterface $resourceMetadataCollectionFactory,
         private readonly ResponseExtractor $responseExtractor,
     ) {
+        if ($this->schemaFactory instanceof SchemaFactoryAwareInterface) {
+            $this->schemaFactory->setSchemaFactory($this);
+        }
+
         $this->addDistinctFormat('jsonhal');
         $this->addDistinctFormat('jsonld');
     }
@@ -397,5 +402,14 @@ final class MessageSchemaFactory implements SchemaFactoryInterface
         ];
 
         return $schema;
+    }
+
+    public function setSchemaFactory(SchemaFactoryInterface $schemaFactory): void
+    {
+        if (! ($this->schemaFactory instanceof SchemaFactoryAwareInterface)) {
+            return;
+        }
+
+        $this->schemaFactory->setSchemaFactory($schemaFactory);
     }
 }
