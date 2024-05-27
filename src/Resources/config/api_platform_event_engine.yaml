@@ -58,18 +58,6 @@ services:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageRefSchemaFactory'
             - '@ADS\Bundle\EventEngineBundle\MetadataExtractor\CommandExtractor'
 
-    ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataCollectionFactory\AddComplexResourceMetadataCollectionFactory:
-        decorates: 'api_platform.metadata.resource.metadata_collection_factory'
-        decoration_priority: -11
-        arguments:
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataCollectionFactory\AddComplexResourceMetadataCollectionFactory.inner'
-
-    ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataCollectionFactory\RemoveComplexResourceMetadataCollectionFactory:
-        decorates: 'api_platform.metadata.resource.metadata_collection_factory'
-        decoration_priority: -9
-        arguments:
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataCollectionFactory\RemoveComplexResourceMetadataCollectionFactory.inner'
-
     # PROPERTY METADATA FACTORY
     ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\DefaultPropertyMetadataFactory:
         decorates: 'api_platform.metadata.property.metadata_factory'
