@@ -30,5 +30,10 @@ final class ADSApiPlatformEventEngineExtension extends Extension
             'api_platform_event_engine.open_api.tags',
             $configs[0]['open_api']['tags'],
         );
+
+        $container->setParameter(
+            'api_platform_event_engine.use_metadata_resource_collection_cache',
+            $configs[0]['use_metadata_resource_collection_cache'],
+        );
     }
 }
