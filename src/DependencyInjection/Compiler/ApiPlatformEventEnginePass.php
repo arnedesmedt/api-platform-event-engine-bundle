@@ -14,7 +14,10 @@ class ApiPlatformEventEnginePass implements CompilerPassInterface
 {
     public function process(ContainerBuilder $container): void
     {
-        if ((bool) ($_SERVER['DISABLE_RESOURCE_CACHE'] ?? false)) {
+        /** @var bool $useResourceCache */
+        $useResourceCache = $container
+            ->getParameter('api_platform_event_engine.use_metadata_resource_collection_cache');
+        if (! $useResourceCache) {
             $container->getDefinition('api_platform.cache.metadata.resource_collection');
             $container->setDefinition(
                 'api_platform.cache.metadata.resource_collection',

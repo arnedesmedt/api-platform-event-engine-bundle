@@ -16,6 +16,9 @@ final class Configuration implements ConfigurationInterface
 
         /** @var ArrayNodeDefinition $rootNode */
         $rootNode = $treeBuilder->getRootNode();
+
+        $rootNode->children()->booleanNode('use_metadata_resource_collection_cache')->defaultTrue();
+
         $openApi = $rootNode->children()->arrayNode('open_api')->addDefaultsIfNotSet();
 
         $servers = $openApi->children()->arrayNode('servers')->arrayPrototype();
