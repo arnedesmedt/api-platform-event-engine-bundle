@@ -121,6 +121,12 @@ services:
       tags:
         - { name: serializer.normalizer, priority: -900 }
 
+    ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\ListValueNormalizer:
+      arguments:
+        - '@ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\ImmutableRecordNormalizer'
+      tags:
+        - { name: serializer.normalizer }
+
     ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageSchemaFactory:
         decorates: 'api_platform.json_schema.schema_factory'
         decoration_priority: 1
