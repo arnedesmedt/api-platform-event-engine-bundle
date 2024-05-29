@@ -212,11 +212,11 @@ final class MessageSchemaFactory implements SchemaFactoryInterface, SchemaFactor
             $forceCollection,
         );
 
-        $definitions = $inputSchema->getDefinitions();
+        $inputDefinitions = $inputSchema->getDefinitions();
         /** @var string $rootDefinitionKey */
         $rootDefinitionKey = $inputSchema->getRootDefinitionKey() ?? $inputSchema->getItemsDefinitionKey();
         /** @var ArrayObject<string, mixed> $definition */
-        $definition = $definitions->offsetGet($rootDefinitionKey);
+        $definition = $inputDefinitions->offsetGet($rootDefinitionKey);
         $definition = $definition->getArrayCopy();
         /** @var string $uriTemplate */
         $uriTemplate = $operation->getUriTemplate();
@@ -226,9 +226,10 @@ final class MessageSchemaFactory implements SchemaFactoryInterface, SchemaFactor
             $definition,
             $parameterNames,
         ) ?? ['type' => 'object'];
-        $definitions[$rootDefinitionKey] = new ArrayObject($definition);
+        $inputDefinitions[$rootDefinitionKey] = new ArrayObject($definition);
 
-        $schema->setDefinitions($definitions);
+        $definitions = $schema->getDefinitions();
+        $schema->setDefinitions(new ArrayObject([...$definitions, ...$inputDefinitions]));
 
         return $schema;
     }
