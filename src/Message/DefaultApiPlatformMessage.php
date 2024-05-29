@@ -6,11 +6,12 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Message;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Exception\ApiPlatformMappingException;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Operation\Name;
-use ADS\Bundle\ApiPlatformEventEngineBundle\Responses\Created;
-use ADS\Bundle\ApiPlatformEventEngineBundle\Responses\Deleted;
-use ADS\Bundle\ApiPlatformEventEngineBundle\Responses\Ok;
+use ADS\Bundle\EventEngineBundle\Response\Implementation\Created;
+use ADS\Bundle\EventEngineBundle\Response\Implementation\Deleted;
+use ADS\Bundle\EventEngineBundle\Response\Implementation\Ok;
 use ADS\Util\StringUtil;
 use ApiPlatform\Action\PlaceholderAction;
+use LogicException;
 use ReflectionClass;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Request;
@@ -169,6 +170,21 @@ trait DefaultApiPlatformMessage
         }
 
         return $responses;
+    }
+
+    public static function __defaultResponseClass(): string
+    {
+        return match (self::__httpMethod()) {
+            Request::METHOD_POST => Created::class,
+            Request::METHOD_DELETE => Deleted::class,
+            Request::METHOD_PATCH, Request::METHOD_PUT => Ok::class,
+            Request::METHOD_GET, Request::METHOD_OPTIONS => static::__isCollection()
+                ? static::__schemaStatesClass()
+                : static::__schemaStateClass(),
+            default => throw new LogicException(
+                'No response class found',
+            ),
+        };
     }
 
     /** @inheritDoc */
