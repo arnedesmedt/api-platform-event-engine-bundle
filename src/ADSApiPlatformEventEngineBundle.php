@@ -69,7 +69,7 @@ final class ADSApiPlatformEventEngineBundle extends AbstractBundle
 
         $loader = new YamlFileLoader(
             $builder,
-            new FileLocator(__DIR__ . '/../Resources/config'),
+            new FileLocator(__DIR__ . '/Resources/config'),
         );
 
         $loader->load('api_platform_event_engine.yaml');
