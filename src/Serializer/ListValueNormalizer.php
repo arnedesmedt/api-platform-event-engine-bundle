@@ -6,6 +6,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Serializer;
 
 use ADS\ValueObjects\Implementation\ListValue\IterableListValue;
 use ADS\ValueObjects\ListValue;
+use ADS\ValueObjects\ValueObject;
 use ArrayObject;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
@@ -13,8 +14,10 @@ use function assert;
 
 final class ListValueNormalizer implements NormalizerInterface
 {
-    public function __construct(private readonly NormalizerInterface $normalizer)
-    {
+    public function __construct(
+        private readonly ImmutableRecordNormalizer $immutableRecordNormalizer,
+        private readonly ValueObjectNormalizer $valueObjectNormalizer,
+    ) {
     }
 
     /**
@@ -33,7 +36,9 @@ final class ListValueNormalizer implements NormalizerInterface
 
         $normalized = [];
         foreach ($object as $item) {
-            $normalized[] = $this->normalizer->normalize($item, $format, $context);
+            $normalized[] = $item instanceof ValueObject
+                ? $this->valueObjectNormalizer->normalize($item, $format, $context)
+                : $this->immutableRecordNormalizer->normalize($item, $format, $context);
         }
 
         return $normalized;

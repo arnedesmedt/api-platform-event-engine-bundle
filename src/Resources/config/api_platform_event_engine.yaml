@@ -110,6 +110,7 @@ services:
     ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\ListValueNormalizer:
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\ImmutableRecordNormalizer'
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\ValueObjectNormalizer'
         tags:
             - { name: serializer.normalizer }
 
