@@ -15,8 +15,11 @@ class ApiPlatformEventEnginePass implements CompilerPassInterface
     public function process(ContainerBuilder $container): void
     {
         /** @var bool $useMetadataResourceCollectionCache */
-        $useMetadataResourceCollectionCache = $container
-            ->getParameter('api_platform_event_engine.use_metadata_resource_collection_cache');
+        $useMetadataResourceCollectionCache = $container->resolveEnvPlaceholders(
+            $container->getParameter('api_platform_event_engine.use_metadata_resource_collection_cache'),
+            true, // Resolve to actual values
+        );
+
         if (! $useMetadataResourceCollectionCache) {
             $container->getDefinition('api_platform.cache.metadata.resource_collection');
             $container->setDefinition(
