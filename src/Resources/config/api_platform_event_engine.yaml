@@ -245,3 +245,8 @@ services:
         decorates: 'api_platform.metadata.resource.link_factory'
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\LinkFactory\StateLinkFactory.inner'
+
+    ADS\Bundle\ApiPlatformEventEngineBundle\Cache\CacheOrNullAdapter:
+        decorates: 'api_platform.cache.metadata.resource_collection'
+        arguments:
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Cache\CacheOrNullAdapter.inner'

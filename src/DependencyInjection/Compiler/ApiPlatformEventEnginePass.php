@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\DependencyInjection\Compiler;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Loader\ImmutableRecordLoader;
-use Symfony\Component\Cache\Adapter\NullAdapter;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -14,20 +13,6 @@ class ApiPlatformEventEnginePass implements CompilerPassInterface
 {
     public function process(ContainerBuilder $container): void
     {
-        /** @var bool $useMetadataResourceCollectionCache */
-        $useMetadataResourceCollectionCache = $container->resolveEnvPlaceholders(
-            $container->getParameter('api_platform_event_engine.use_metadata_resource_collection_cache'),
-            true, // Resolve to actual values
-        );
-
-        if (! $useMetadataResourceCollectionCache) {
-            $container->getDefinition('api_platform.cache.metadata.resource_collection');
-            $container->setDefinition(
-                'api_platform.cache.metadata.resource_collection',
-                new Definition(NullAdapter::class),
-            );
-        }
-
         $this->immutableRecordLoader($container);
     }
 

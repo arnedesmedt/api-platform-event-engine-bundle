@@ -28,8 +28,6 @@ final class ADSApiPlatformEventEngineBundle extends AbstractBundle
         /** @var ArrayNodeDefinition $rootNode */
         $rootNode = $definition->rootNode();
 
-        $rootNode->children()->booleanNode('use_metadata_resource_collection_cache')->defaultTrue();
-
         $openApi = $rootNode->children()->arrayNode('open_api')->addDefaultsIfNotSet();
 
         $servers = $openApi->children()->arrayNode('servers')->arrayPrototype();
@@ -43,7 +41,7 @@ final class ADSApiPlatformEventEngineBundle extends AbstractBundle
     /**
      * phpcs:disable Generic.Files.LineLength.TooLong
      *
-     * @param array{"open_api": array{"servers": array<string>, "tags": array<string>}, "use_metadata_resource_collection_cache": bool} $config
+     * @param array{"open_api": array{"servers": array<string>, "tags": array<string>}} $config
      *
      *  phpcs:enable Generic.Files.LineLength.TooLong
      */
@@ -60,11 +58,6 @@ final class ADSApiPlatformEventEngineBundle extends AbstractBundle
         $builder->setParameter(
             'api_platform_event_engine.open_api.tags',
             $config['open_api']['tags'],
-        );
-
-        $builder->setParameter(
-            'api_platform_event_engine.use_metadata_resource_collection_cache',
-            $config['use_metadata_resource_collection_cache'],
         );
 
         $loader = new YamlFileLoader(
