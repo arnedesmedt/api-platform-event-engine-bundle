@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory;
 
+use ADS\Bundle\ApiPlatformEventEngineBundle\Documentation\ComplexTypeExtractor;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
-use ADS\Bundle\ApiPlatformEventEngineBundle\TypeFactory\MessageTypeFactory;
 use ADS\JsonImmutableObjects\HasPropertyExamples;
 use ADS\Util\StringUtil;
 use ADS\ValueObjects\ValueObject;
@@ -82,7 +82,7 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
             ->withReadable(true) // ok
             ->withWritable(true) // ok
             ->withReadableLink(true)
-            ->withOpenapiContext(array_filter(['type' => MessageTypeFactory::complexType($className)]));
+            ->withOpenapiContext(array_filter(['type' => ComplexTypeExtractor::isClassComplexType($className)]));
     }
 
     private function default(string $resourceClass, string $property): mixed

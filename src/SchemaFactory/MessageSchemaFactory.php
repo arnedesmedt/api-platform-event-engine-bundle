@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory;
 
+use ADS\Bundle\ApiPlatformEventEngineBundle\Documentation\ComplexTypeExtractor;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
-use ADS\Bundle\ApiPlatformEventEngineBundle\TypeFactory\MessageTypeFactory;
 use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
 use ADS\Bundle\EventEngineBundle\MetadataExtractor\ResponseExtractor;
 use ADS\JsonImmutableObjects\Polymorphism\Discriminator;
@@ -74,15 +74,15 @@ final class MessageSchemaFactory implements SchemaFactoryInterface, SchemaFactor
     ): Schema {
         $schema ??= new Schema();
 
-        if (MessageTypeFactory::isComplexType($className)) {
+        if (ComplexTypeExtractor::isClassComplexType($className)) {
             if ($forceCollection) {
                 $schema['type'] = 'array';
-                $schema['items'] = ['type' => MessageTypeFactory::complexType($className)];
+                $schema['items'] = ['type' => ComplexTypeExtractor::complexType($className)];
 
                 return $schema;
             }
 
-            $schema['type'] = MessageTypeFactory::complexType($className);
+            $schema['type'] = ComplexTypeExtractor::complexType($className);
 
             return $schema;
         }
@@ -155,13 +155,13 @@ final class MessageSchemaFactory implements SchemaFactoryInterface, SchemaFactor
                 $forceCollectionResponse = true;
             }
 
-            if (MessageTypeFactory::isComplexType($responseClass)) {
+            if (ComplexTypeExtractor::isClassComplexType($responseClass)) {
                 $schema['type'] = $forceCollectionResponse
                     ? 'array'
-                    : MessageTypeFactory::complexType($responseClass);
+                    : ComplexTypeExtractor::complexType($responseClass);
 
                 if ($forceCollectionResponse) {
-                    $schema['items'] = ['type' => MessageTypeFactory::complexType($className)];
+                    $schema['items'] = ['type' => ComplexTypeExtractor::complexType($className)];
                 }
             }
 

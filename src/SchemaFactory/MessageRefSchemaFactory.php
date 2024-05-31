@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory;
 
-use ADS\Bundle\ApiPlatformEventEngineBundle\TypeFactory\MessageTypeFactory;
+use ADS\Bundle\ApiPlatformEventEngineBundle\Documentation\ComplexTypeExtractor;
 use ApiPlatform\JsonSchema\Schema;
 use ApiPlatform\JsonSchema\SchemaFactoryInterface;
 use ApiPlatform\Metadata\CollectionOperationInterface;
@@ -42,15 +42,15 @@ final class MessageRefSchemaFactory implements SchemaFactoryInterface
     ): Schema {
         $schema = $schema ? clone $schema : new Schema(Schema::VERSION_OPENAPI);
 
-        if (MessageTypeFactory::isComplexType($className)) {
+        if (ComplexTypeExtractor::isClassComplexType($className)) {
             if ($forceCollection) {
                 $schema['type'] = 'array';
-                $schema['items'] = ['type' => MessageTypeFactory::complexType($className)];
+                $schema['items'] = ['type' => ComplexTypeExtractor::complexType($className)];
 
                 return $schema;
             }
 
-            $schema['type'] = MessageTypeFactory::complexType($className);
+            $schema['type'] = ComplexTypeExtractor::complexType($className);
 
             return $schema;
         }

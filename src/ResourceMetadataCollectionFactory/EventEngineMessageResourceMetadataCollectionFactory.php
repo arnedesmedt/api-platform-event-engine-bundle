@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataCollectionFactory;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Config;
+use ADS\Bundle\ApiPlatformEventEngineBundle\Documentation\ComplexTypeExtractor;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\CacheMessage;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\CallbackMessage;
@@ -13,7 +14,6 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\Provider\DocumentStoreCollectionProv
 use ADS\Bundle\ApiPlatformEventEngineBundle\Provider\DocumentStoreItemProvider;
 use ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageSchemaFactory;
 use ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\OpenApiSchemaFactory;
-use ADS\Bundle\ApiPlatformEventEngineBundle\TypeFactory\MessageTypeFactory;
 use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
 use ADS\Bundle\EventEngineBundle\MetadataExtractor\CommandExtractor;
 use ADS\Bundle\EventEngineBundle\MetadataExtractor\QueryExtractor;
@@ -283,13 +283,13 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
                 /** @var array<string, mixed> $propertySchema */
                 $propertySchema = $pathSchema['properties'][$parameterName];
 
-                if (isset($_GET['complex']) || isset($_SERVER['complex'])) {
+                if (ComplexTypeExtractor::complexTypeWanted()) {
                     $types = $this->propertyInfoExtractor->getTypes($messageClass, $parameterName) ?? [];
                     /** @var Type|null $type */
                     $type = empty($types) ? null : reset($types);
 
-                    if (MessageTypeFactory::isComplexType($type?->getClassName())) {
-                        $propertySchema['type'] = MessageTypeFactory::complexType($type?->getClassName());
+                    if (ComplexTypeExtractor::isClassComplexType($type?->getClassName())) {
+                        $propertySchema['type'] = ComplexTypeExtractor::isClassComplexType($type?->getClassName());
                     }
                 }
 

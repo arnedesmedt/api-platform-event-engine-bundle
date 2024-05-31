@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\TypeFactory;
 
+use ADS\Bundle\ApiPlatformEventEngineBundle\Documentation\ComplexTypeExtractor;
 use ADS\ValueObjects\HasExamples;
 use ApiPlatform\JsonSchema\Schema;
 use ApiPlatform\JsonSchema\TypeFactoryInterface;
@@ -11,13 +12,7 @@ use EventEngine\JsonSchema\ProvidesValidationRules;
 use ReflectionClass;
 use Symfony\Component\PropertyInfo\Type;
 
-use function addslashes;
-use function assert;
-use function is_string;
-use function preg_match;
-use function preg_quote;
 use function reset;
-use function sprintf;
 
 final class MessageTypeFactory implements TypeFactoryInterface
 {
@@ -38,7 +33,7 @@ final class MessageTypeFactory implements TypeFactoryInterface
         array|null $serializerContext = null,
         Schema|null $schema = null,
     ): array {
-        if (self::isComplexType($type->getClassName())) {
+        if (ComplexTypeExtractor::isClassComplexType($type->getClassName())) {
             return [];
         }
 
@@ -81,12 +76,12 @@ final class MessageTypeFactory implements TypeFactoryInterface
 
         $reflectionClass = new ReflectionClass($className);
 
-        if (self::isComplexType($className)) {
+        if (ComplexTypeExtractor::isClassComplexType($className)) {
             if (isset($existingType['$ref'])) {
                 unset($existingType['$ref']);
             }
 
-            $existingType['type'] = self::complexType($className);
+            $existingType['type'] = ComplexTypeExtractor::isClassComplexType($className);
         }
 
         if ($reflectionClass->implementsInterface(ProvidesValidationRules::class)) {
@@ -99,37 +94,5 @@ final class MessageTypeFactory implements TypeFactoryInterface
         }
 
         return $existingType;
-    }
-
-    public static function isComplexType(string|null $className): bool
-    {
-        if (! isset($_GET['complex']) && ! isset($_SERVER['complex'])) {
-            return false;
-        }
-
-        /** @var string $complexMatch */
-        $complexMatch = self::complexMatch();
-
-        return $className
-            && preg_match(
-                sprintf('#%s#', preg_quote($complexMatch, '#')),
-                $className,
-            );
-    }
-
-    public static function complexMatch(): string|null
-    {
-        return $_GET['complex'] ?? $_SERVER['complex'] ?? null;
-    }
-
-    public static function complexType(string|null $className): string|null
-    {
-        if (! self::isComplexType($className)) {
-            return null;
-        }
-
-        assert(is_string($className));
-
-        return '\\' . addslashes($className);
     }
 }
