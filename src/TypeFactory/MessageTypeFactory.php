@@ -81,7 +81,7 @@ final class MessageTypeFactory implements TypeFactoryInterface
                 unset($existingType['$ref']);
             }
 
-            $existingType['type'] = ComplexTypeExtractor::isClassComplexType($className);
+            $existingType['type'] = ComplexTypeExtractor::complexType($className);
         }
 
         if ($reflectionClass->implementsInterface(ProvidesValidationRules::class)) {

@@ -289,7 +289,7 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
                     $type = empty($types) ? null : reset($types);
 
                     if (ComplexTypeExtractor::isClassComplexType($type?->getClassName())) {
-                        $propertySchema['type'] = ComplexTypeExtractor::isClassComplexType($type?->getClassName());
+                        $propertySchema['type'] = ComplexTypeExtractor::complexType($type?->getClassName());
                     }
                 }
 

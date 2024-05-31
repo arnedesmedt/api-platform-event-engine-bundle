@@ -82,7 +82,7 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
             ->withReadable(true) // ok
             ->withWritable(true) // ok
             ->withReadableLink(true)
-            ->withOpenapiContext(array_filter(['type' => ComplexTypeExtractor::isClassComplexType($className)]));
+            ->withOpenapiContext(array_filter(['type' => ComplexTypeExtractor::complexType($className)]));
     }
 
     private function default(string $resourceClass, string $property): mixed
