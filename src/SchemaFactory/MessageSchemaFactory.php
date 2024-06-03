@@ -75,14 +75,43 @@ final class MessageSchemaFactory implements SchemaFactoryInterface, SchemaFactor
         $schema ??= new Schema();
 
         if (ComplexTypeExtractor::isClassComplexType($className)) {
-            if ($forceCollection) {
-                $schema['type'] = 'array';
-                $schema['items'] = ['type' => ComplexTypeExtractor::complexType($className)];
+            if ((new ReflectionClass($className))->implementsInterface(JsonSchemaAwareRecord::class)) {
+                $complexSchema = new Schema();
+
+                $complexSchema['type'] = $forceCollection
+                    ? 'array'
+                    : ComplexTypeExtractor::complexType($className);
+
+                if ($forceCollection) {
+                    $complexSchema['items'] = ['type' => ComplexTypeExtractor::complexType($className)];
+                }
+
+                $schema->setDefinitions(
+                    new ArrayObject(
+                        array_merge(
+                            $schema->getDefinitions()->getArrayCopy(),
+                            [$className::__type() => $complexSchema->getArrayCopy()],
+                        ),
+                    ),
+                );
+
+                $schema['$ref'] = sprintf(
+                    $schema->getVersion() === Schema::VERSION_OPENAPI
+                        ? '#/components/schemas/%s'
+                        : '#/definitions/%s',
+                    $className::__type(),
+                );
 
                 return $schema;
             }
 
-            $schema['type'] = ComplexTypeExtractor::complexType($className);
+            $schema['type'] = $forceCollection
+                ? 'array'
+                : ComplexTypeExtractor::complexType($className);
+
+            if ($forceCollection) {
+                $schema['items'] = ['type' => ComplexTypeExtractor::complexType($className)];
+            }
 
             return $schema;
         }
