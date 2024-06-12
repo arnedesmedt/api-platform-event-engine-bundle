@@ -246,7 +246,14 @@ services:
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\LinkFactory\StateLinkFactory.inner'
 
-    ADS\Bundle\ApiPlatformEventEngineBundle\Cache\CacheOrNullAdapter:
+    ads.cache.metadata.resource_collection:
+        class: 'ADS\Bundle\ApiPlatformEventEngineBundle\Cache\CacheOrNullAdapter'
         decorates: 'api_platform.cache.metadata.resource_collection'
         arguments:
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Cache\CacheOrNullAdapter.inner'
+            - '@ads.cache.metadata.resource_collection.inner'
+
+    ads.cache.metadata.property:
+        class: 'ADS\Bundle\ApiPlatformEventEngineBundle\Cache\CacheOrNullAdapter'
+        decorates: 'api_platform.cache.metadata.property'
+        arguments:
+            - '@ads.cache.metadata.property.inner'
