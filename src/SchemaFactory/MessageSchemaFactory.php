@@ -86,15 +86,7 @@ final class MessageSchemaFactory implements SchemaFactoryInterface, SchemaFactor
                     $complexSchema['items'] = ['type' => ComplexTypeExtractor::complexType($className)];
                 }
 
-                $schema->setDefinitions(
-                    new ArrayObject(
-                        array_merge(
-                            $schema->getDefinitions()->getArrayCopy(),
-                            [$className::__type() => $complexSchema->getArrayCopy()],
-                        ),
-                    ),
-                );
-
+                $schema->getDefinitions()[$className::__type()] = new ArrayObject($complexSchema->getArrayCopy());
                 $schema['$ref'] = sprintf(
                     $schema->getVersion() === Schema::VERSION_OPENAPI
                         ? '#/components/schemas/%s'
