@@ -6,9 +6,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Documentation\ComplexTypeExtractor;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
-use ADS\JsonImmutableObjects\HasPropertyExamples;
 use ADS\Util\StringUtil;
-use ADS\ValueObjects\ValueObject;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\Property\Factory\PropertyMetadataFactoryInterface;
 use EventEngine\Data\ImmutableRecord;
@@ -20,15 +18,14 @@ use phpDocumentor\Reflection\DocBlockFactory;
 use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionNamedType;
-use RuntimeException;
+use Symfony\Component\DependencyInjection\Attribute\AsDecorator;
 use Symfony\Component\HttpFoundation\Request;
 
 use function array_filter;
-use function in_array;
-use function method_exists;
 use function sprintf;
 
-final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactoryInterface
+#[AsDecorator(decorates: 'api_platform.metadata.property.metadata_factory', priority: 11)]
+final class SchemaPropertyMetadataFactory implements PropertyMetadataFactoryInterface
 {
     /** @readonly */
     private DocBlockFactory $docBlockFactory;
@@ -45,9 +42,6 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
      */
     public function create(string $resourceClass, string $property, array $options = []): ApiProperty
     {
-        // todo change the way we work with camelize and decamilize
-        $property = StringUtil::camelize($property);
-
         $apiProperty = $this->decorated->create($resourceClass, $property, $options);
 
         /** @var ReflectionClass<JsonSchemaAwareRecord> $reflectionClass */
@@ -66,7 +60,6 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
 
         return $apiProperty
             ->withSchema($propertySchema)
-            ->withDefault($this->default($resourceClass, $property)) // ok
             ->withDescription( // ok
                 $this->description(
                     $apiProperty,
@@ -76,28 +69,11 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
                     $propertySchema,
                 ) ?? '',
             )
-            ->withExample($this->example($resourceClass, $property, $reflectionClass) ?? null)
             ->withDeprecationReason($this->deprecationReason($property, $reflectionClass)) // ok
-            ->withRequired(in_array($property, $schema['required'] ?? []))
             ->withReadable(true) // ok
             ->withWritable(true) // ok
             ->withReadableLink(true)
             ->withOpenapiContext(array_filter(['type' => ComplexTypeExtractor::complexType($className)]));
-    }
-
-    private function default(string $resourceClass, string $property): mixed
-    {
-        try {
-            if (
-                method_exists($resourceClass, 'propertyDefault')
-                && method_exists($resourceClass, 'defaultProperties')
-            ) {
-                return $resourceClass::propertyDefault($resourceClass::defaultProperties(), $property);
-            }
-        } catch (RuntimeException) {
-        }
-
-        return null;
     }
 
     /**
@@ -158,37 +134,6 @@ final class JsonSchemaPropertyMetadataFactory implements PropertyMetadataFactory
         }
 
         return null;
-    }
-
-    /** @param ReflectionClass<ImmutableRecord> $reflectionClass */
-    private function example(
-        string $resourceClass,
-        string $property,
-        ReflectionClass $reflectionClass,
-    ): mixed {
-        if ($reflectionClass->implementsInterface(HasPropertyExamples::class)) {
-            $examples = $resourceClass::examples();
-            $example = $examples[$property] ?? null;
-
-            if ($example) {
-                if ($example instanceof ValueObject) {
-                    $example = $example->toValue();
-                }
-
-                return $example;
-            }
-        }
-
-        $docTags = $this->docTagsFromProperty($reflectionClass, $property, 'example');
-
-        if (empty($docTags)) {
-            return null;
-        }
-
-        /** @var DocBlock\Tags\Example $exampleTag */
-        $exampleTag = $docTags[0];
-
-        return (string) $exampleTag;
     }
 
     /** @param ReflectionClass<ImmutableRecord> $reflectionClass */

@@ -61,23 +61,24 @@ services:
     # PROPERTY METADATA FACTORY
     ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\DefaultPropertyMetadataFactory:
         decorates: 'api_platform.metadata.property.metadata_factory'
-        decoration_priority: 11
+        decoration_priority: 29 # Just after the default property metadata factory of api platform 30
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\DefaultPropertyMetadataFactory.inner'
             - '@ADS\Bundle\EventEngineBundle\PropertyInfo\PropertyDefaultExtractor'
-            -
+
     ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\ExamplePropertyMetadataFactory:
         decorates: 'api_platform.metadata.property.metadata_factory'
-        decoration_priority: 11
+        decoration_priority: 28
         arguments:
             - '@ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\ExamplePropertyMetadataFactory.inner'
             - '@ADS\Bundle\EventEngineBundle\PropertyInfo\PropertyExampleExtractor'
-
-    ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\JsonSchemaPropertyMetadataFactory:
+            -
+    ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\RequiredPropertyMetadataFactory:
         decorates: 'api_platform.metadata.property.metadata_factory'
-        decoration_priority: -9
+        decoration_priority: 27
         arguments:
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\JsonSchemaPropertyMetadataFactory.inner'
+            - '@ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\RequiredPropertyMetadataFactory.inner'
+            - '@ADS\Bundle\EventEngineBundle\PropertyInfo\PropertyRequiredExtractor'
 
 
     ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\MessageNormalizer:
