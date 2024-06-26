@@ -25,14 +25,7 @@ class ApiPlatformEventEnginePass implements CompilerPassInterface
         $chainLoader = $container->getDefinition('serializer.mapping.chain_loader');
         /** @var array<int, mixed> $serializerLoaders */
         $serializerLoaders = $chainLoader->getArgument(0);
-
-        $immutableRecordLoader = new Definition(
-            ImmutableRecordLoader::class,
-            [$serializerLoaders[0]],
-        );
-        $immutableRecordLoader->setPublic(false);
-
-        $chainLoader->replaceArgument(0, [$immutableRecordLoader]);
-        $container->getDefinition('serializer.mapping.cache_warmer')->replaceArgument(0, $serializerLoaders);
+        $serializerLoaders[] = new Definition(ImmutableRecordLoader::class);
+        $chainLoader->replaceArgument(0, $serializerLoaders);
     }
 }
