@@ -11,15 +11,18 @@ use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Metadata;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Resource\Factory\LinkFactoryInterface;
+use Symfony\Component\DependencyInjection\Attribute\AsDecorator;
 
 use function array_map;
 use function class_implements;
 use function in_array;
 
+#[AsDecorator('api_platform.metadata.resource.link_factory')]
 class StateLinkFactory implements LinkFactoryInterface
 {
-    public function __construct(private readonly LinkFactoryInterface $linkFactory)
-    {
+    public function __construct(
+        private readonly LinkFactoryInterface $linkFactory,
+    ) {
     }
 
     /** @return array<Link> */

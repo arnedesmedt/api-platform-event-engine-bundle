@@ -8,6 +8,7 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
 use ADS\Bundle\EventEngineBundle\Config as EventEngineConfig;
 use ReflectionClass;
 use Symfony\Component\Cache\Adapter\AbstractAdapter;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpKernel\CacheClearer\CacheClearerInterface;
 
 use function array_filter;
@@ -29,7 +30,9 @@ final class Config implements CacheClearerInterface
 
     public function __construct(
         private EventEngineConfig $config,
+        #[Autowire('@event_engine.cache')]
         private AbstractAdapter $cache,
+        #[Autowire('%kernel.environment%')]
         private string $environment,
     ) {
     }

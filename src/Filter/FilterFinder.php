@@ -7,10 +7,12 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Filter;
 use ApiPlatform\Metadata\FilterInterface;
 use ApiPlatform\Metadata\Operation;
 use Psr\Container\ContainerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 class FilterFinder
 {
     public function __construct(
+        #[Autowire('@api_platform.filter_locator')]
         private ContainerInterface $filterLocator,
     ) {
     }

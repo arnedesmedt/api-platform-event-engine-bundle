@@ -14,6 +14,9 @@ use ApiPlatform\Metadata\Resource\Factory\ResourceMetadataCollectionFactoryInter
 use ApiPlatform\Metadata\Util\ResourceClassInfoTrait;
 use EventEngine\Data\ImmutableRecord;
 use RuntimeException;
+use Symfony\Component\DependencyInjection\Attribute\AsDecorator;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\DependencyInjection\Attribute\AutowireDecorated;
 
 use function array_key_first;
 use function assert;
@@ -23,15 +26,21 @@ use function reset;
 use function sprintf;
 use function ucfirst;
 
+#[AsDecorator('api_platform.api.identifiers_extractor')]
 class IdentifierExtractor implements IdentifiersExtractorInterface
 {
     use ResourceClassInfoTrait;
 
     public function __construct(
+        #[AutowireDecorated]
         private readonly IdentifiersExtractorInterface $identifiersExtractor,
+        #[Autowire('@api_platform.metadata.property.name_collection_factory')]
         private readonly PropertyNameCollectionFactoryInterface $propertyNameCollectionFactory,
+        #[Autowire('@api_platform.metadata.property.metadata_factory')]
         private readonly PropertyMetadataFactoryInterface $propertyMetadataFactory,
+        #[Autowire('@api_platform.resource_class_resolver')]
         ResourceClassResolverInterface $resourceClassResolver,
+        #[Autowire('@api_platform.metadata.resource.metadata_collection_factory')]
         ResourceMetadataCollectionFactoryInterface $resourceMetadataCollectionFactory,
     ) {
         $this->resourceClassResolver = $resourceClassResolver;

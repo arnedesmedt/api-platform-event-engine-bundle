@@ -9,25 +9,25 @@ use ApiPlatform\Metadata\Resource\Factory\ResourceMetadataCollectionFactoryInter
 use ApiPlatform\Symfony\EventListener\EventPriorities;
 use ApiPlatform\Util\RequestAttributesExtractor;
 use ApiPlatform\Validator\ValidatorInterface;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 
-final class RequestValidationListener implements EventSubscriberInterface
+#[AsEventListener(
+    event: KernelEvents::REQUEST,
+    method: 'validateMessage',
+    priority: EventPriorities::PRE_READ,
+)]
+final class RequestValidationListener
 {
     public function __construct(
+        #[Autowire('@api_platform.validator')]
         private ValidatorInterface $validator,
+        #[Autowire('@api_platform.metadata.resource.metadata_collection_factory')]
         private ResourceMetadataCollectionFactoryInterface $resourceMetadataCollectionFactory,
     ) {
-    }
-
-    /** @return array<string, mixed> */
-    public static function getSubscribedEvents(): array
-    {
-        return [
-            KernelEvents::REQUEST => ['validateMessage', EventPriorities::PRE_READ],
-        ];
     }
 
     public function validateMessage(RequestEvent $event): void

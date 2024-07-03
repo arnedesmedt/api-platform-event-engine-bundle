@@ -10,6 +10,8 @@ use ApiPlatform\State\Pagination\PartialPaginatorInterface;
 use EventEngine\Data\ImmutableRecord;
 use EventEngine\Messaging\MessageBag;
 use EventEngine\Messaging\MessageProducer;
+use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Traversable;
 
 use function is_array;
@@ -18,10 +20,12 @@ use function is_array;
  * @template T of ImmutableRecord
  * @extends  Provider<T>
  */
+#[AutoconfigureTag('api_platform.state_provider')]
 final class DocumentStoreCollectionProvider extends Provider
 {
     public function __construct(
         private readonly InMemoryFilterResolver $inMemoryFilterResolver,
+        #[Autowire('@ADS\Bundle\EventEngineBundle\Messenger\MessengerMessageProducer')]
         MessageProducer $eventEngine,
     ) {
         parent::__construct($eventEngine);

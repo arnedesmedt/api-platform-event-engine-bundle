@@ -51,21 +51,6 @@ final class OpenApiSchemaFactory
     /**
      * @param array<string, mixed> $jsonSchema
      *
-     * @return Schema<string, mixed>
-     */
-    public static function toApiPlatformSchema(array $jsonSchema, string $version = Schema::VERSION_OPENAPI): Schema
-    {
-        $schema = new Schema($version);
-        foreach (self::toOpenApiSchema($jsonSchema, $version) as $key => $value) {
-            $schema[$key] = $value;
-        }
-
-        return $schema;
-    }
-
-    /**
-     * @param array<string, mixed> $jsonSchema
-     *
      * @return array<string, mixed>
      */
     private static function addNullableProperty(array $jsonSchema, string $version = Schema::VERSION_OPENAPI): array

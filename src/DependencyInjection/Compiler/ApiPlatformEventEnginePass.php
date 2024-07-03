@@ -14,6 +14,21 @@ class ApiPlatformEventEnginePass implements CompilerPassInterface
     public function process(ContainerBuilder $container): void
     {
         $this->immutableRecordLoader($container);
+
+        $eventEngineMessageResourceMetadataCollectionFactoryId = 'ADS\Bundle\ApiPlatformEventEngineBundle\\' .
+            'ResourceMetadataCollectionFactory\EventEngineMessageResourceMetadataCollectionFactory';
+        $container->setAlias(
+            'api_platform.metadata.resource.metadata_collection_factory',
+            $eventEngineMessageResourceMetadataCollectionFactoryId,
+        );
+
+//        $container->getDefinition(
+//            $eventEngineMessageResourceMetadataCollectionFactoryId,
+//        )
+//            ->replaceArgument(
+//                0,
+//                $container->getDefinition('api_platform.metadata.resource.metadata_collection_factory.attributes'),
+//            );
     }
 
     /**

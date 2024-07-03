@@ -28,7 +28,10 @@ final class CustomContextBuilder implements SerializerContextBuilderInterface
     /**
      * @param array<mixed>|null $extractedAttributes
      *
-     * @return array<mixed>
+     * @return array{
+     *     message?: MessageBag|null,
+     *     query_parameters: array<string, mixed>,
+     * }
      */
     public function createFromRequest(
         Request $request,

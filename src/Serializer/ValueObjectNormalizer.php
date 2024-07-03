@@ -6,6 +6,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Serializer;
 
 use ADS\ValueObjects\ValueObject;
 use ArrayObject;
+use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
@@ -13,6 +14,7 @@ use function assert;
 use function class_exists;
 use function is_subclass_of;
 
+#[AutoconfigureTag('serializer.normalizer')]
 final class ValueObjectNormalizer implements NormalizerInterface, DenormalizerInterface
 {
     /**

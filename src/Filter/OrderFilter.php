@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\FilterInterface;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use ReflectionClass;
 use RuntimeException;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 use function array_fill_keys;
 use function array_key_exists;
@@ -20,6 +21,7 @@ class OrderFilter implements FilterInterface
 {
     /** @param array<string|null>|null $properties */
     public function __construct(
+        #[Autowire('%api_platform.collection.order_parameter_name%')]
         private string $orderParameterName = 'order',
         protected array|null $properties = null,
     ) {

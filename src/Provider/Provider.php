@@ -9,6 +9,7 @@ use ApiPlatform\State\ProviderInterface;
 use EventEngine\Data\ImmutableRecord;
 use EventEngine\Messaging\Message;
 use EventEngine\Messaging\MessageProducer;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 /**
  * @template T of ImmutableRecord
@@ -16,8 +17,10 @@ use EventEngine\Messaging\MessageProducer;
  */
 abstract class Provider implements ProviderInterface
 {
-    public function __construct(protected MessageProducer $eventEngine)
-    {
+    public function __construct(
+        #[Autowire('@ADS\Bundle\EventEngineBundle\Messenger\MessengerMessageProducer')]
+        protected MessageProducer $eventEngine,
+    ) {
     }
 
     /** @param array<mixed> $context */

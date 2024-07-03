@@ -18,6 +18,8 @@ use EventEngine\Data\ImmutableRecord;
 use EventEngine\EventEngine;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use RuntimeException;
+use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 use function array_diff_key;
@@ -27,15 +29,20 @@ use function assert;
 use function is_array;
 use function method_exists;
 
+#[AutoconfigureTag('serializer.normalizer', ['priority' => -889])]
 final class MessageNormalizer implements DenormalizerInterface
 {
     public function __construct(
         private EventEngine $eventEngine,
         private FilterFinder $filterFinder,
+        #[Autowire('@ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\ImmutableRecordNormalizer')]
         private readonly DenormalizerInterface $denormalizer,
         private readonly RequestIdStorage $requestIdStorage,
+        #[Autowire('%api_platform.collection.pagination.page_parameter_name%')]
         private string $pageParameterName = 'page',
+        #[Autowire('%api_platform.collection.order_parameter_name%')]
         private string $orderParameterName = 'order',
+        #[Autowire('%api_platform.collection.pagination.items_per_page_parameter_name%')]
         private string $itemsPerPageParameterName = 'items-per-page',
     ) {
     }

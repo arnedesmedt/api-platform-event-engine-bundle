@@ -104,21 +104,9 @@ trait DefaultApiPlatformMessage
         };
     }
 
-    public static function __requirements(): array|null
-    {
-        return null;
-    }
-
     public static function __apiPlatformController(): string
     {
         return PlaceholderAction::class;
-    }
-
-    public static function __processor(): string|null
-    {
-        return method_exists(static::class, '__customProcessor')
-            ? static::__customProcessor()
-            : null;
     }
 
     public static function __schemaStateClass(): string
@@ -185,18 +173,6 @@ trait DefaultApiPlatformMessage
                 'No response class found',
             ),
         };
-    }
-
-    /** @inheritDoc */
-    public static function __normalizationContext(): array
-    {
-        return [];
-    }
-
-    /** @inheritDoc */
-    public static function __denormalizationContext(): array
-    {
-        return [];
     }
 
     public static function __overrideDefaultApiPlatformResponse(): bool

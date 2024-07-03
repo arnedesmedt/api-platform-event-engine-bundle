@@ -1,96 +1,11 @@
 services:
-    ADS\Bundle\ApiPlatformEventEngineBundle\Config:
-        arguments:
-            - '@ADS\Bundle\EventEngineBundle\Config'
-            - '@event_engine.cache'
-            - "%kernel.environment%"
+    _defaults:
+        autowire: true
+        autoconfigure: true
 
-    ADS\Bundle\ApiPlatformEventEngineBundle\Message\Finder:
-        arguments:
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Config'
-
-    # PROCESSOR
-    ADS\Bundle\ApiPlatformEventEngineBundle\Processor\CommandProcessor:
-        arguments:
-            - '@ADS\Bundle\EventEngineBundle\Messenger\MessengerMessageProducer'
-        tags:
-            - 'api_platform.state_processor'
-
-    # PROVIDER
-    ADS\Bundle\ApiPlatformEventEngineBundle\Provider\DocumentStoreCollectionProvider:
-        arguments:
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Resolver\InMemoryFilterResolver'
-            - '@ADS\Bundle\EventEngineBundle\Messenger\MessengerMessageProducer'
-        tags:
-            - 'api_platform.state_provider'
-
-    ADS\Bundle\ApiPlatformEventEngineBundle\Provider\DocumentStoreItemProvider:
-        arguments:
-            - '@ADS\Bundle\EventEngineBundle\Messenger\MessengerMessageProducer'
-        tags:
-            - 'api_platform.state_provider'
-
-    # RESOURCE METADATA COLLECTION FACTORY
-    ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataCollectionFactory\EventEngineMessageResourceMetadataCollectionFactory:
-        decorates: 'api_platform.metadata.resource.metadata_collection_factory'
-        decoration_priority: 990
-        arguments:
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataCollectionFactory\EventEngineMessageResourceMetadataCollectionFactory.inner'
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Config'
-            - '@property_info'
-            - '@ADS\Bundle\EventEngineBundle\MetadataExtractor\CommandExtractor'
-            - '@ADS\Bundle\EventEngineBundle\MetadataExtractor\QueryExtractor'
-            - '@ADS\Bundle\EventEngineBundle\MetadataExtractor\ResponseExtractor'
-
-    ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataCollectionFactory\ResponseRefResourceMetadataCollectionFactory:
-        decorates: 'api_platform.metadata.resource.metadata_collection_factory'
-        decoration_priority: 100
-        arguments:
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataCollectionFactory\ResponseRefResourceMetadataCollectionFactory.inner'
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageRefSchemaFactory'
-            - '@ADS\Bundle\EventEngineBundle\MetadataExtractor\ResponseExtractor'
-
-    ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataCollectionFactory\RequestBodyRefResourceMetadataCollectionFactory:
-        decorates: 'api_platform.metadata.resource.metadata_collection_factory'
-        decoration_priority: 100
-        arguments:
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataCollectionFactory\RequestBodyRefResourceMetadataCollectionFactory.inner'
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageRefSchemaFactory'
-            - '@ADS\Bundle\EventEngineBundle\MetadataExtractor\CommandExtractor'
-
-    # PROPERTY METADATA FACTORY
-    ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\DefaultPropertyMetadataFactory:
-        decorates: 'api_platform.metadata.property.metadata_factory'
-        decoration_priority: 29 # Just after the default property metadata factory of api platform 30
-        arguments:
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\DefaultPropertyMetadataFactory.inner'
-            - '@ADS\Bundle\EventEngineBundle\PropertyInfo\PropertyDefaultExtractor'
-
-    ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\ExamplePropertyMetadataFactory:
-        decorates: 'api_platform.metadata.property.metadata_factory'
-        decoration_priority: 28
-        arguments:
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\ExamplePropertyMetadataFactory.inner'
-            - '@ADS\Bundle\EventEngineBundle\PropertyInfo\PropertyExampleExtractor'
-            -
-    ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\RequiredPropertyMetadataFactory:
-        decorates: 'api_platform.metadata.property.metadata_factory'
-        decoration_priority: 27
-        arguments:
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory\RequiredPropertyMetadataFactory.inner'
-            - '@ADS\Bundle\EventEngineBundle\PropertyInfo\PropertyRequiredExtractor'
-
-
-    ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\MessageNormalizer:
-        arguments:
-            - '@EventEngine\EventEngine'
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Filter\FilterFinder'
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\ImmutableRecordNormalizer'
-            - '@Chrisguitarguy\RequestId\RequestIdStorage'
-            - '%api_platform.collection.pagination.page_parameter_name%'
-            - '%api_platform.collection.order_parameter_name%'
-        tags:
-            - { name: serializer.normalizer, priority: -889 }
+    ADS\Bundle\ApiPlatformEventEngineBundle\:
+        resource: '../../../src/*'
+        exclude: '../../../src/{Resources, DependencyInjection}'
 
     ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\ImmutableRecordNormalizer:
         arguments:
@@ -103,149 +18,31 @@ services:
             $classMetadataFactory: '@serializer.mapping.class_metadata_factory'
             $defaultContext: []
             $resourceMetadataCollectionFactory: '@api_platform.metadata.resource.metadata_collection_factory'
-        tags:
-            - { name: serializer.normalizer, priority: -890 }
 
-    ADS\Bundle\ApiPlatformEventEngineBundle\PropertyAccessor\ImmutableRecordPropertyAccessor: ~
-
-    ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\ListValueNormalizer:
-        arguments:
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\ImmutableRecordNormalizer'
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\ValueObjectNormalizer'
-        tags:
-            - { name: serializer.normalizer }
-
-    ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\EmptyResponseNormalizer:
-        tags:
-            - { name: serializer.normalizer }
-
-    ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\ValueObjectNormalizer:
-        tags:
-            - { name: serializer.normalizer }
-
-    ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\ArrayPaginatorNormalizer:
-      arguments:
-        - '@ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\ImmutableRecordNormalizer'
-      tags:
-        - { name: serializer.normalizer, priority: -900 }
-
-    ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageSchemaFactory:
-        decorates: 'api_platform.json_schema.schema_factory'
-        decoration_priority: 1
-        arguments:
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageSchemaFactory.inner'
-            - '@api_platform.metadata.resource.metadata_collection_factory'
-            - '@ADS\Bundle\EventEngineBundle\MetadataExtractor\ResponseExtractor'
-
-    ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageRefSchemaFactory: ~
-
-    api_platform.hydra.json_schema.message_schema_factory:
-        class: 'ApiPlatform\Hydra\JsonSchema\SchemaFactory'
-        decorates: 'ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageRefSchemaFactory'
-        arguments:
-            - '@api_platform.hydra.json_schema.message_schema_factory.inner'
-
-    api_platform.hal.json_schema.message_schema_factory:
-        class: 'ApiPlatform\Hal\JsonSchema\SchemaFactory'
-        decorates: 'ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageRefSchemaFactory'
-        arguments:
-            - '@api_platform.hal.json_schema.message_schema_factory.inner'
-
-    ADS\Bundle\ApiPlatformEventEngineBundle\SymfonyCommand\ApiMappingMessageCommand:
-        arguments:
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Config'
-        tags:
-            - console.command
+#    api_platform.hydra.json_schema.message_schema_factory:
+#        class: 'ApiPlatform\Hydra\JsonSchema\SchemaFactory'
+#        decorates: 'ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageRefSchemaFactory'
+#        arguments:
+#            - '@api_platform.hydra.json_schema.message_schema_factory.inner'
+#
+#    api_platform.hal.json_schema.message_schema_factory:
+#        class: 'ApiPlatform\Hal\JsonSchema\SchemaFactory'
+#        decorates: 'ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageRefSchemaFactory'
+#        arguments:
+#            - '@api_platform.hal.json_schema.message_schema_factory.inner'
 
     api_platform.serializer.context_builder:
         class: ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\CustomContextBuilder
-        arguments:
-            - '@ApiPlatform\Serializer\SerializerContextBuilder'
-            - '@ADS\Bundle\EventEngineBundle\MetadataExtractor\QueryExtractor'
-            - '@ADS\Bundle\EventEngineBundle\MetadataExtractor\CommandExtractor'
 
     ApiPlatform\Serializer\SerializerContextBuilder:
         arguments:
             - '@api_platform.metadata.resource.metadata_collection_factory'
 
-    ADS\Bundle\ApiPlatformEventEngineBundle\EventSubscriber\DeleteDeserializeSubscriber:
-        arguments:
-            - '@api_platform.serializer'
-            - '@api_platform.serializer.context_builder'
-        tags:
-            - { name: kernel.event_subscriber, event: kernel.request }
-
-    ADS\Bundle\ApiPlatformEventEngineBundle\EventSubscriber\MessageDeserializeSubscriber:
-        arguments:
-            - '@api_platform.serializer.context_builder'
-            - '@api_platform.serializer'
-        tags:
-            - { name: kernel.event_subscriber, event: kernel.request }
-
-    ADS\Bundle\ApiPlatformEventEngineBundle\Validation\RequestValidationListener:
-        arguments:
-            - '@api_platform.validator'
-            - '@api_platform.metadata.resource.metadata_collection_factory'
-        tags:
-            - { name: kernel.event_subscriber, event: kernel.request }
-
-    ADS\Bundle\ApiPlatformEventEngineBundle\Resource\IdentifierExtractor:
-        decorates: 'api_platform.api.identifiers_extractor'
-        arguments:
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Resource\IdentifierExtractor.inner'
-            - '@api_platform.metadata.property.name_collection_factory'
-            - '@api_platform.metadata.property.metadata_factory'
-            - '@api_platform.resource_class_resolver'
-            - '@api_platform.metadata.resource.metadata_collection_factory'
-
-    ADS\Bundle\ApiPlatformEventEngineBundle\Documentation\OpenApiFactory:
-        decorates: 'api_platform.openapi.factory'
-        arguments:
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Documentation\OpenApiFactory.inner'
-            - '%api_platform_event_engine.open_api.servers%'
-            - '%api_platform_event_engine.open_api.tags%'
-
-    ADS\Bundle\ApiPlatformEventEngineBundle\Filter\FilterConverter:
-        arguments:
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Filter\FilterFinder'
-            - '%api_platform.collection.pagination.page_parameter_name%'
-            - '%api_platform.collection.pagination.items_per_page_parameter_name%'
-            - '%api_platform.collection.order_parameter_name%'
-
-    ADS\Bundle\ApiPlatformEventEngineBundle\Filter\FilterFinder:
-        arguments:
-            - '@api_platform.filter_locator'
-
-    ADS\Bundle\ApiPlatformEventEngineBundle\Filter\DocumentStoreFilterConverter:
-        parent: 'ADS\Bundle\ApiPlatformEventEngineBundle\Filter\FilterConverter'
-
-    ADS\Bundle\ApiPlatformEventEngineBundle\Filter\InMemoryFilterConverter:
-        parent: 'ADS\Bundle\ApiPlatformEventEngineBundle\Filter\FilterConverter'
-
-    ADS\Bundle\ApiPlatformEventEngineBundle\Resolver\InMemoryFilterResolver:
-        arguments:
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Filter\InMemoryFilterConverter'
-    ADS\Bundle\ApiPlatformEventEngineBundle\Resolver\StatesFilterResolver:
-        arguments:
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\Filter\DocumentStoreFilterConverter'
-
     api_platform.event_engine.order_filter:
         class: ADS\Bundle\ApiPlatformEventEngineBundle\Filter\OrderFilter
-        arguments:
-            - $oderParameterName: '%api_platform.collection.order_parameter_name%'
 
     api_platform.event_engine.search_filter:
         class: ADS\Bundle\ApiPlatformEventEngineBundle\Filter\SearchFilter
-
-    ADS\Bundle\ApiPlatformEventEngineBundle\TypeFactory\MessageTypeFactory:
-        decorates: 'api_platform.json_schema.type_factory'
-        arguments:
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\TypeFactory\MessageTypeFactory.inner'
-
-    ADS\Bundle\ApiPlatformEventEngineBundle\LinkFactory\StateLinkFactory:
-        decorates: 'api_platform.metadata.resource.link_factory'
-        arguments:
-            - '@ADS\Bundle\ApiPlatformEventEngineBundle\LinkFactory\StateLinkFactory.inner'
 
     ads.cache.metadata.resource_collection:
         class: 'ADS\Bundle\ApiPlatformEventEngineBundle\Cache\CacheOrNullAdapter'

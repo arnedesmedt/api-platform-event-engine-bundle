@@ -7,9 +7,11 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Serializer;
 use ArrayObject;
 use EventEngine\Messaging\CommandDispatchResult;
 use EventEngine\Messaging\CommandDispatchResultCollection;
+use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
+#[AutoconfigureTag('serializer.normalizer')]
 final class EmptyResponseNormalizer implements NormalizerInterface
 {
     /**

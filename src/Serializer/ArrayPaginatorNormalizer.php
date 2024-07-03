@@ -6,14 +6,19 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Serializer;
 
 use ApiPlatform\State\Pagination\ArrayPaginator;
 use ArrayObject;
+use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 use function assert;
 
+#[AutoconfigureTag('serializer.normalizer', ['priority' => -900])]
 final class ArrayPaginatorNormalizer implements NormalizerInterface
 {
-    public function __construct(private readonly NormalizerInterface $normalizer)
-    {
+    public function __construct(
+        #[Autowire('@ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\ImmutableRecordNormalizer')]
+        private readonly NormalizerInterface $normalizer,
+    ) {
     }
 
     /**

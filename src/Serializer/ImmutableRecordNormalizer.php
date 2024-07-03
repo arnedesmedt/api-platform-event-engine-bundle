@@ -10,6 +10,7 @@ use ArrayObject;
 use EventEngine\Data\ImmutableRecord;
 use ReflectionClass;
 use stdClass;
+use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 
 use function array_keys;
@@ -19,6 +20,7 @@ use function in_array;
 use function is_array;
 use function is_object;
 
+#[AutoconfigureTag('serializer.normalizer', ['priority' => -890])]
 final class ImmutableRecordNormalizer extends AbstractItemNormalizer
 {
     /** @var array<string, mixed> */

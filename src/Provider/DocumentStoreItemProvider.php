@@ -6,11 +6,13 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Provider;
 
 use ApiPlatform\Metadata\Operation;
 use EventEngine\Data\ImmutableRecord;
+use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
  * @template T of ImmutableRecord
  * @extends Provider<T>
  */
+#[AutoconfigureTag('api_platform.state_provider')]
 final class DocumentStoreItemProvider extends Provider
 {
     /**

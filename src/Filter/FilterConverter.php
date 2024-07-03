@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Filter;
 
 use ApiPlatform\Metadata\Operation;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 use function intval;
 
@@ -12,8 +13,11 @@ abstract class FilterConverter
 {
     public function __construct(
         protected FilterFinder $filterFinder,
+        #[Autowire('%api_platform.collection.pagination.page_parameter_name%')]
         protected string $pageParameterName = 'page',
+        #[Autowire('%api_platform.collection.pagination.items_per_page_parameter_name%')]
         protected string $itemsPerPageParameterName = 'items-per-page',
+        #[Autowire('%api_platform.collection.order_parameter_name%')]
         protected string $orderParameterName = 'order',
     ) {
     }

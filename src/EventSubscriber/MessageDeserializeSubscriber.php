@@ -8,7 +8,8 @@ use ApiPlatform\Api\FormatMatcher;
 use ApiPlatform\Serializer\SerializerContextBuilderInterface;
 use ApiPlatform\State\Util\OperationRequestInitiatorTrait;
 use ApiPlatform\Util\RequestAttributesExtractor;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Exception\UnsupportedMediaTypeHttpException;
@@ -20,22 +21,21 @@ use Symfony\Component\Serializer\SerializerInterface;
 use function implode;
 use function sprintf;
 
-final class MessageDeserializeSubscriber implements EventSubscriberInterface
+#[AsEventListener(
+    event: KernelEvents::REQUEST,
+    method: 'messageDeserialize',
+    priority: 6, // PRE_PRE_READ
+)]
+final class MessageDeserializeSubscriber
 {
     use OperationRequestInitiatorTrait;
 
     public function __construct(
+        #[Autowire('@api_platform.serializer.context_builder')]
         private SerializerContextBuilderInterface $serializerContextBuilder,
+        #[Autowire('@api_platform.serializer')]
         private SerializerInterface $deserializer,
     ) {
-    }
-
-    /** @return array<string, array<mixed>> */
-    public static function getSubscribedEvents(): array
-    {
-        return [
-            KernelEvents::REQUEST => ['messageDeserialize', 6], // PRE_PRE_READ
-        ];
     }
 
     public function messageDeserialize(RequestEvent $event): void
@@ -78,7 +78,7 @@ final class MessageDeserializeSubscriber implements EventSubscriberInterface
 
         $request->attributes->set(
             'data',
-            $this->deserializer->deserialize($content, $context['resource_class'], $format, $context),
+            $this->deserializer->deserialize($content, $context['resource_class'] ?? '', $format, $context),
         );
     }
 

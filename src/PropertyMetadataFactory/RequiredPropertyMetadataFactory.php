@@ -7,7 +7,9 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory;
 use ADS\Bundle\EventEngineBundle\PropertyInfo\PropertyRequiredExtractor;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\Property\Factory\PropertyMetadataFactoryInterface;
+use Symfony\Component\DependencyInjection\Attribute\AsDecorator;
 
+#[AsDecorator(decorates: 'api_platform.metadata.property.metadata_factory', priority: 27)]
 class RequiredPropertyMetadataFactory implements PropertyMetadataFactoryInterface
 {
     public function __construct(

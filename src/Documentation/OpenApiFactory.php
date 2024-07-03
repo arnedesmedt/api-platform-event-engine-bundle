@@ -8,6 +8,9 @@ use ApiPlatform\OpenApi\Factory\OpenApiFactoryInterface;
 use ApiPlatform\OpenApi\Model\Paths;
 use ApiPlatform\OpenApi\Model\Server;
 use ApiPlatform\OpenApi\OpenApi;
+use Symfony\Component\DependencyInjection\Attribute\AsDecorator;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\DependencyInjection\Attribute\AutowireDecorated;
 
 use function array_map;
 use function ceil;
@@ -18,6 +21,7 @@ use function str_starts_with;
 use function substr;
 use function usort;
 
+#[AsDecorator('api_platform.openapi.factory')]
 final class OpenApiFactory implements OpenApiFactoryInterface
 {
     /**
@@ -37,8 +41,11 @@ final class OpenApiFactory implements OpenApiFactoryInterface
      * @param array<string, array<string>> $tags
      */
     public function __construct(
+        #[AutowireDecorated]
         private OpenApiFactoryInterface $openApiFactory,
+        #[Autowire('%api_platform_event_engine.open_api.servers%')]
         array $servers = [],
+        #[Autowire('%api_platform_event_engine.open_api.tags%')]
         array $tags = [],
     ) {
         if (isset($_SERVER['HTTP_HOST'])) {
@@ -77,7 +84,6 @@ final class OpenApiFactory implements OpenApiFactoryInterface
         $openApi = ($this->openApiFactory)($context);
 
         $paths = new Paths();
-
         foreach ($openApi->getPaths()->getPaths() as $path => $operation) {
             if (str_starts_with($path, '/api')) {
                 $path = substr($path, 4);

@@ -7,7 +7,8 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\EventSubscriber;
 use ApiPlatform\Serializer\SerializerContextBuilderInterface;
 use ApiPlatform\Symfony\EventListener\EventPriorities;
 use ApiPlatform\Util\RequestAttributesExtractor;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
@@ -17,20 +18,19 @@ use function json_encode;
 
 use const JSON_THROW_ON_ERROR;
 
-final class DeleteDeserializeSubscriber implements EventSubscriberInterface
+#[AsEventListener(
+    event: KernelEvents::REQUEST,
+    method: 'deserializeForDelete',
+    priority: EventPriorities::POST_DESERIALIZE,
+)]
+final class DeleteDeserializeSubscriber
 {
     public function __construct(
+        #[Autowire('@api_platform.serializer')]
         private SerializerInterface $serializer,
+        #[Autowire('@api_platform.serializer.context_builder')]
         private SerializerContextBuilderInterface $serializerContextBuilder,
     ) {
-    }
-
-    /** @return array<string, array<mixed>> */
-    public static function getSubscribedEvents(): array
-    {
-        return [
-            KernelEvents::REQUEST => ['deserializeForDelete', EventPriorities::POST_DESERIALIZE],
-        ];
     }
 
     public function deserializeForDelete(RequestEvent $requestEvent): void
@@ -55,8 +55,8 @@ final class DeleteDeserializeSubscriber implements EventSubscriberInterface
         $request->attributes->set(
             'data',
             $this->serializer->deserialize(
-                (string) json_encode($context['path_parameters'], JSON_THROW_ON_ERROR),
-                $context['resource_class'],
+                (string) json_encode($context['path_parameters'] ?? '', JSON_THROW_ON_ERROR),
+                $context['resource_class'] ?? '',
                 'json',
                 $context,
             ),

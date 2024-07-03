@@ -8,12 +8,17 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use EventEngine\Messaging\Message;
 use EventEngine\Messaging\MessageProducer;
+use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
-/** @implements ProcessorInterface<Message, array<mixed>|object|null> */
+/** @implements ProcessorInterface<Message,array<mixed>|object|null> */
+#[AutoconfigureTag('api_platform.state_processor')]
 final class CommandProcessor implements ProcessorInterface
 {
-    public function __construct(private MessageProducer $eventEngine)
-    {
+    public function __construct(
+        #[Autowire('@ADS\Bundle\EventEngineBundle\Messenger\MessengerMessageProducer')]
+        private MessageProducer $eventEngine,
+    ) {
     }
 
     /**

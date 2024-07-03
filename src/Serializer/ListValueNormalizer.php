@@ -8,10 +8,12 @@ use ADS\ValueObjects\Implementation\ListValue\IterableListValue;
 use ADS\ValueObjects\ListValue;
 use ADS\ValueObjects\ValueObject;
 use ArrayObject;
+use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 use function assert;
 
+#[AutoconfigureTag('serializer.normalizer')]
 final class ListValueNormalizer implements NormalizerInterface
 {
     public function __construct(

@@ -2,6 +2,9 @@ parameters:
     level: max
     paths:
         - src
+    excludePaths:
+        - src/Attribute/Options.php
+        - src/Documentation/ApiPlatformOpenApiFactory.php
 services:
 	-
 		class: ADS\JsonImmutableObjects\PhpStan\PropertiesExtension

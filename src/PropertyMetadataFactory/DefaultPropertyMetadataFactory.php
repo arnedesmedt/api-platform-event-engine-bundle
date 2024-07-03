@@ -7,10 +7,14 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\PropertyMetadataFactory;
 use ADS\Bundle\EventEngineBundle\PropertyInfo\PropertyDefaultExtractor;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\Property\Factory\PropertyMetadataFactoryInterface;
+use Symfony\Component\DependencyInjection\Attribute\AsDecorator;
+use Symfony\Component\DependencyInjection\Attribute\AutowireDecorated;
 
+#[AsDecorator(decorates: 'api_platform.metadata.property.metadata_factory', priority: 29)]
 class DefaultPropertyMetadataFactory implements PropertyMetadataFactoryInterface
 {
     public function __construct(
+        #[AutowireDecorated]
         private readonly PropertyMetadataFactoryInterface $decorated,
         private readonly PropertyDefaultExtractor $defaultExtractor,
     ) {
