@@ -6,7 +6,6 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataCollectionFact
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Attribute\EventEngineState;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Config;
-use ADS\Bundle\ApiPlatformEventEngineBundle\Documentation\ComplexTypeExtractor;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\CallbackMessage;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Processor\CommandProcessor;
@@ -18,6 +17,7 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
 use ADS\Bundle\EventEngineBundle\MetadataExtractor\CommandExtractor;
 use ADS\Bundle\EventEngineBundle\MetadataExtractor\QueryExtractor;
 use ADS\Bundle\EventEngineBundle\MetadataExtractor\ResponseExtractor;
+use ADS\Bundle\EventEngineBundle\Type\ComplexTypeExtractor;
 use ApiPlatform\Metadata\CollectionOperationInterface;
 use ApiPlatform\Metadata\HttpOperation;
 use ApiPlatform\Metadata\Operation;

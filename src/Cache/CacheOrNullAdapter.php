@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Cache;
 
-use ADS\Bundle\ApiPlatformEventEngineBundle\Documentation\ComplexTypeExtractor;
+use ADS\Bundle\EventEngineBundle\Type\ComplexTypeExtractor;
 use Psr\Cache\CacheItemInterface;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\Cache\Adapter\NullAdapter;

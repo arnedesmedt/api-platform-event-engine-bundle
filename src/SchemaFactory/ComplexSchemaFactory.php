@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory;
 
-use ADS\Bundle\ApiPlatformEventEngineBundle\Documentation\ComplexTypeExtractor;
+use ADS\Bundle\EventEngineBundle\Type\ComplexTypeExtractor;
 use ADS\JsonImmutableObjects\Polymorphism\Discriminator;
 use ApiPlatform\JsonSchema\Schema;
 use ApiPlatform\JsonSchema\SchemaFactoryAwareInterface;
