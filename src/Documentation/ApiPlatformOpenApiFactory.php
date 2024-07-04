@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Documentation;
 
+use ADS\Bundle\ApiPlatformEventEngineBundle\Attribute\EventEngineState;
 use ApiPlatform\Doctrine\Odm\State\Options as DoctrineODMOptions;
 use ApiPlatform\Doctrine\Orm\State\Options as DoctrineOptions;
 use ApiPlatform\JsonSchema\Schema;
@@ -401,7 +402,8 @@ final class ApiPlatformOpenApiFactory implements OpenApiFactoryInterface
                 );
                 $openapiOperation = $openapiOperation->withRequestBody(new RequestBody($contextRequestBody['description'] ?? '', new \ArrayObject($contextRequestBody['content']), $contextRequestBody['required'] ?? false));
             } elseif (
-                null === $openapiOperation->getRequestBody() && \in_array($method, ['PATCH', 'PUT', 'POST', 'DELETE'], true) // No request body for DELETE
+                null === $openapiOperation->getRequestBody()
+                && (\in_array($method, ['PATCH', 'PUT', 'POST'], true) || $method === 'DELETE' && $resource instanceof EventEngineState) // No request body for DELETE
                 && !(false === ($input = $operation->getInput()) || (\is_array($input) && null === $input['class']))
             ) {
                 $operationInputSchemas = [];

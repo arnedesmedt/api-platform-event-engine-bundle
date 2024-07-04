@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory;
 
+use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
 use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
 use ADS\JsonImmutableObjects\Polymorphism\Discriminator;
 use ADS\Util\ArrayUtil;
+use ADS\ValueObjects\ListValue;
 use ApiPlatform\JsonSchema\Schema;
 use ApiPlatform\JsonSchema\SchemaFactory;
 use ApiPlatform\JsonSchema\SchemaFactoryAwareInterface;
@@ -17,7 +19,9 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Util\ResourceClassInfoTrait;
 use ArrayObject;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
+use LogicException;
 use ReflectionClass;
+use ReflectionNamedType;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\Attribute\AsDecorator;
 use Symfony\Component\DependencyInjection\Attribute\AutowireDecorated;
@@ -64,11 +68,19 @@ final class RequestMessageSchemaFactory implements SchemaFactoryInterface, Schem
 
         $input = $operation?->getInput();
         $messageClass = $input['class'] ?? null;
+        /** @var ReflectionClass<ApiPlatformMessage>|null $reflectionClass */
         $reflectionClass = $messageClass ? new ReflectionClass($messageClass) : null;
 
-        if ($operation instanceof Delete) { // we need request bodies for delete operations
-            // @see vendor/api-platform/core/src/JsonSchema/SchemaFactory#L87
-            $serializerContext[SchemaFactory::FORCE_SUBSCHEMA] = true;
+        if ($type === Schema::TYPE_INPUT) {
+            if (
+                $operation instanceof Delete
+                && $reflectionClass?->implementsInterface(JsonSchemaAwareRecord::class)
+            ) { // we need request bodies for delete operations
+                // @see vendor/api-platform/core/src/JsonSchema/SchemaFactory#L87
+                $serializerContext[SchemaFactory::FORCE_SUBSCHEMA] = true;
+            }
+
+            $this->updateInputClass($operation, $forceCollection, $reflectionClass);
         }
 
         $schema = $this->schemaFactory->buildSchema(
@@ -113,6 +125,42 @@ final class RequestMessageSchemaFactory implements SchemaFactoryInterface, Schem
         $schema->setDefinitions(new ArrayObject([...$definitions, ...$inputDefinitions]));
 
         return $schema;
+    }
+
+    /** @param ReflectionClass<ApiPlatformMessage>|null $reflectionClass */
+    private function updateInputClass(
+        Operation|null &$operation,
+        bool &$forceCollection,
+        ReflectionClass|null $reflectionClass,
+    ): void {
+        if ($operation === null || $reflectionClass === null) {
+            return;
+        }
+
+        /** @var class-string<ApiPlatformMessage> $messageClass */
+        $messageClass = $reflectionClass->getName();
+        $requestBodyArrayProperty = $messageClass::__requestBodyArrayProperty();
+        if (! $requestBodyArrayProperty) {
+            return;
+        }
+
+        $arrayProperty = $reflectionClass->getProperty($requestBodyArrayProperty);
+        /** @var ReflectionNamedType|null $reflectionNamedType */
+        $reflectionNamedType = $arrayProperty->getType();
+        /** @var class-string<ListValue<object>>|null $listClass */
+        $listClass = $reflectionNamedType?->getName();
+
+        if ($listClass === null) {
+            throw new LogicException(
+                sprintf(
+                    'No class type found for property \'%s\'.',
+                    $requestBodyArrayProperty,
+                ),
+            );
+        }
+
+        $operation = $operation->withInput(['class' => $listClass::itemType()]);
+        $forceCollection = true;
     }
 
     /**

@@ -19,6 +19,7 @@ use ADS\Bundle\EventEngineBundle\MetadataExtractor\QueryExtractor;
 use ADS\Bundle\EventEngineBundle\MetadataExtractor\ResponseExtractor;
 use ADS\Bundle\EventEngineBundle\Type\ComplexTypeExtractor;
 use ApiPlatform\Metadata\CollectionOperationInterface;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\HttpOperation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Operations;
@@ -129,36 +130,6 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
                 $operationAttribute = reset($operationAttributes);
                 $operation = $operationAttribute->newInstance()->withName($messageClass::__operationId());
 
-                $inputClass = $messageClass;
-
-//                $requestBodyArrayProperty = $messageClass::__requestBodyArrayProperty();
-//                if ($requestBodyArrayProperty) {
-//                    $arrayProperty = $messageReflectionClass->getProperty($requestBodyArrayProperty);
-//                    /** @var ReflectionNamedType|null $reflectionNamedType */
-//                    $reflectionNamedType = $arrayProperty->getType();
-//                    /** @var class-string<ListValue<object>>|null $listClass */
-//                    $listClass = $reflectionNamedType?->getName();
-//
-//                    if ($listClass === null) {
-//                        throw new LogicException(
-//                            sprintf(
-//                                'No class type found for property \'%s\'.',
-//                                $requestBodyArrayProperty,
-//                            ),
-//                        );
-//                    }
-//
-//                    $inputClass = $listClass;
-
-//                    if (in_array(ListValue::class, class_implements($listClass) ?: [])) {
-//                        $listClass = $listClass::itemType();
-//                    }
-//
-//                    /** @var HttpOperation $operation */
-//                    $operation = $operation->withInput(array_merge($operation, ['class' => $listClass]));
-//                    $forceCollection = true;
-//                }
-
                 /** @var array<class-string> $messageInterfaces */
                 $messageInterfaces = class_implements($messageClass) ?: [];
 
@@ -177,7 +148,7 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
 //                    ->withSerialize(null) // todo
 //                    ->withValidate(null) // todo
                     ->withStatus($this->defaultStatusCode($messageReflectionClass))
-                    ->withInput(['class' => $inputClass])
+                    ->withInput(['class' => $messageClass])
                     ->withOutput(
                         $resourceClass !== $messageClass::__schemaStateClass()
                             ? ['class' => $messageClass::__schemaStateClass()]
@@ -222,7 +193,7 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
             summary: $summary,
             description: implode('\n', $description),
             callbacks: $this->buildCallbacks($messageClass, $messageInterfaces),
-            parameters: $this->parameters($messageClass),
+            parameters: $this->parameters($messageClass, $operation),
         );
 
         $operation = $operation->withOpenapi($openApiOperation);
@@ -283,6 +254,7 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
      */
     private function parameters(
         string $messageClass,
+        HttpOperation &$operation,
     ): array|null {
         $pathUri = Uri::fromString($messageClass::__uriTemplate());
         $schema = $messageClass::__schema()->toArray();
@@ -292,6 +264,10 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
 
         /** @var array<string, array<string, mixed>>|null $pathSchema */
         $pathSchema = RequestMessageSchemaFactory::filterParameters($schema, $allParameterNames);
+
+        if (count($pathParameterNames) === count($schema['properties'] ?? []) && $operation instanceof Delete) {
+            $operation = $operation->withInput(false);
+        }
 
         if ($pathSchema === null && ! empty($allParameterNames)) {
             throw new RuntimeException(
