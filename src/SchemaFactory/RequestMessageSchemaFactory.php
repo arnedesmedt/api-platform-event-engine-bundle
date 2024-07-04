@@ -72,10 +72,7 @@ final class RequestMessageSchemaFactory implements SchemaFactoryInterface, Schem
         $reflectionClass = $messageClass ? new ReflectionClass($messageClass) : null;
 
         if ($type === Schema::TYPE_INPUT) {
-            if (
-                $operation instanceof Delete
-                && $reflectionClass?->implementsInterface(JsonSchemaAwareRecord::class)
-            ) { // we need request bodies for delete operations
+            if ($operation instanceof Delete) { // we need request bodies for delete operations
                 // @see vendor/api-platform/core/src/JsonSchema/SchemaFactory#L87
                 $serializerContext[SchemaFactory::FORCE_SUBSCHEMA] = true;
             }
