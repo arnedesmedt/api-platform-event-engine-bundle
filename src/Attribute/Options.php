@@ -126,7 +126,7 @@ final class Options extends HttpOperation implements CollectionOperationInterfac
             links: $links,
             shortName: $shortName,
             class: $class,
-            paginationEnabled: $paginationEnabled,
+            paginationEnabled: false,
             paginationType: $paginationType,
             paginationItemsPerPage: $paginationItemsPerPage,
             paginationMaximumItemsPerPage: $paginationMaximumItemsPerPage,
