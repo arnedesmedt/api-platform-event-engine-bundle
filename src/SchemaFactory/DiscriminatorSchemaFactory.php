@@ -66,7 +66,7 @@ final class DiscriminatorSchemaFactory implements SchemaFactoryInterface, Schema
             );
         }
 
-        $schema ??= new Schema();
+        $schema ??= new Schema(Schema::VERSION_OPENAPI);
 
         $definitionName = $className::__type() . ($format === 'json' ? '' : '.' . $format);
         $ref = sprintf(

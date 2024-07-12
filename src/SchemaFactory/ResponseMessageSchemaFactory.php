@@ -53,7 +53,7 @@ final class ResponseMessageSchemaFactory implements SchemaFactoryInterface, Sche
         array|null $serializerContext = null,
         bool $forceCollection = false,
     ): Schema {
-        $schema ??= new Schema();
+        $schema ??= new Schema(Schema::VERSION_OPENAPI);
 
         $input = $operation?->getInput();
         $messageClass = $input['class'] ?? null;

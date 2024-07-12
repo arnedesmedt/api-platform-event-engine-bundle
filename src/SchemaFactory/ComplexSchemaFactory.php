@@ -66,7 +66,7 @@ final class ComplexSchemaFactory implements SchemaFactoryInterface, SchemaFactor
         }
 
         if ((new ReflectionClass($className))->implementsInterface(JsonSchemaAwareRecord::class)) {
-            $complexSchema = new Schema();
+            $complexSchema = new Schema(Schema::VERSION_OPENAPI);
 
             $complexSchema['type'] = $forceCollection
                 ? 'array'
