@@ -130,7 +130,11 @@ final class RequestMessageSchemaFactory implements SchemaFactoryInterface, Schem
         bool &$forceCollection,
         ReflectionClass|null $reflectionClass,
     ): void {
-        if ($operation === null || $reflectionClass === null) {
+        if (
+            $operation === null
+            || $reflectionClass === null
+            || ! $reflectionClass->implementsInterface(ApiPlatformMessage::class)
+        ) {
             return;
         }
 
