@@ -365,7 +365,9 @@ final class ApiPlatformOpenApiFactory implements OpenApiFactoryInterface
                     case 'DELETE':
                         $successStatus = (string) $operation->getStatus() ?: 204;
 
-                        $openapiOperation = $this->buildOpenApiResponse($existingResponses, $successStatus, sprintf('%s resource deleted', $resourceShortName), $openapiOperation);
+                        $openapiOperation = $resource instanceof EventEngineState
+                            ? $this->buildOpenApiResponse($existingResponses, $successStatus, sprintf('%s resource deleted', $resourceShortName), $openapiOperation, $operation, $responseMimeTypes, $operationOutputSchemas, $resourceMetadataCollection)
+                            : $this->buildOpenApiResponse($existingResponses, $successStatus, sprintf('%s resource deleted', $resourceShortName), $openapiOperation);
 
                         break;
                 }
@@ -393,6 +395,8 @@ final class ApiPlatformOpenApiFactory implements OpenApiFactoryInterface
                 }
             }
 
+            $input = $operation->getInput();
+            $inputClass = is_array($input) ? $input['class'] : $input;
             if ($contextRequestBody = $operation->getOpenapiContext()['requestBody'] ?? false) {
                 // TODO Remove this "elseif" in 4.0
                 trigger_deprecation(
@@ -403,7 +407,7 @@ final class ApiPlatformOpenApiFactory implements OpenApiFactoryInterface
                 $openapiOperation = $openapiOperation->withRequestBody(new RequestBody($contextRequestBody['description'] ?? '', new \ArrayObject($contextRequestBody['content']), $contextRequestBody['required'] ?? false));
             } elseif (
                 null === $openapiOperation->getRequestBody()
-                && (\in_array($method, ['PATCH', 'PUT', 'POST'], true) || $method === 'DELETE' && $resource instanceof EventEngineState) // No request body for DELETE
+                && (\in_array($method, ['PATCH', 'PUT', 'POST'], true) || $method === 'DELETE' && $resource instanceof EventEngineState && count($operation->getUriVariables() ?? []) !== count($inputClass::__schema()->toArray()['properties'])) // No request body for DELETE
                 && !(false === ($input = $operation->getInput()) || (\is_array($input) && null === $input['class']))
             ) {
                 $operationInputSchemas = [];
