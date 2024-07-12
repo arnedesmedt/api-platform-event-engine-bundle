@@ -19,7 +19,6 @@ use ADS\Bundle\EventEngineBundle\MetadataExtractor\QueryExtractor;
 use ADS\Bundle\EventEngineBundle\MetadataExtractor\ResponseExtractor;
 use ADS\Bundle\EventEngineBundle\Type\ComplexTypeExtractor;
 use ApiPlatform\Metadata\CollectionOperationInterface;
-use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\HttpOperation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Operations;
@@ -264,10 +263,6 @@ final class EventEngineMessageResourceMetadataCollectionFactory implements Resou
 
         /** @var array<string, array<string, mixed>>|null $pathSchema */
         $pathSchema = RequestMessageSchemaFactory::filterParameters($schema, $allParameterNames);
-
-        if (count($pathParameterNames) === count($schema['properties'] ?? []) && $operation instanceof Delete) {
-            $operation = $operation->withInput(false);
-        }
 
         if ($pathSchema === null && ! empty($allParameterNames)) {
             throw new RuntimeException(
