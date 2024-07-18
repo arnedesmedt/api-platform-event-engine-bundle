@@ -10,7 +10,6 @@ use RuntimeException;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use Symfony\Component\PropertyAccess\PropertyPathInterface;
 
-use function array_search;
 use function assert;
 use function is_string;
 use function method_exists;
@@ -32,13 +31,8 @@ class ImmutableRecordPropertyAccessor implements PropertyAccessorInterface
     {
         assert($objectOrArray instanceof ImmutableRecord);
 
-        if ($objectOrArray instanceof SpecialKeySupport && method_exists($objectOrArray, 'keyMapping')) {
-            $keyMapping = $objectOrArray->keyMapping();
-            $newPropertyPath = array_search($propertyPath, $keyMapping, true);
-
-            if ($newPropertyPath) {
-                $propertyPath = $newPropertyPath;
-            }
+        if ($objectOrArray instanceof SpecialKeySupport) {
+            $propertyPath = $objectOrArray->convertKeyForArray((string) $propertyPath);
         }
 
         $data = $objectOrArray->toArray();
