@@ -6,6 +6,7 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory;
 
 use ADS\Bundle\EventEngineBundle\Type\ComplexTypeExtractor;
 use ADS\JsonImmutableObjects\Polymorphism\Discriminator;
+use ApiPlatform\JsonSchema\DefinitionNameFactory;
 use ApiPlatform\JsonSchema\Schema;
 use ApiPlatform\JsonSchema\SchemaFactoryAwareInterface;
 use ApiPlatform\JsonSchema\SchemaFactoryInterface;
@@ -15,6 +16,7 @@ use ArrayObject;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use ReflectionClass;
 use Symfony\Component\DependencyInjection\Attribute\AsDecorator;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\DependencyInjection\Attribute\AutowireDecorated;
 
 use function sprintf;
@@ -27,6 +29,8 @@ final class ComplexSchemaFactory implements SchemaFactoryInterface, SchemaFactor
     public function __construct(
         #[AutowireDecorated]
         private SchemaFactoryInterface $schemaFactory,
+        #[Autowire('@api_platform.json_schema.definition_name_factory')]
+        private readonly DefinitionNameFactory $definitionNameFactory,
     ) {
         if (! ($this->schemaFactory instanceof SchemaFactoryAwareInterface)) {
             return;
@@ -51,8 +55,6 @@ final class ComplexSchemaFactory implements SchemaFactoryInterface, SchemaFactor
         array|null $serializerContext = null,
         bool $forceCollection = false,
     ): Schema {
-        $schema ??= new Schema(Schema::VERSION_OPENAPI);
-
         if (! ComplexTypeExtractor::isClassComplexType($className)) {
             return $this->schemaFactory->buildSchema(
                 $className,
@@ -65,24 +67,32 @@ final class ComplexSchemaFactory implements SchemaFactoryInterface, SchemaFactor
             );
         }
 
+        $schema = $schema ? clone $schema : new Schema(Schema::VERSION_OPENAPI);
+
         if ((new ReflectionClass($className))->implementsInterface(JsonSchemaAwareRecord::class)) {
-            $complexSchema = new Schema(Schema::VERSION_OPENAPI);
+            $definitionName = $this->definitionNameFactory->create($className, $format);
+            $definitions = $schema->getDefinitions();
 
-            $complexSchema['type'] = $forceCollection
-                ? 'array'
-                : ComplexTypeExtractor::complexType($className);
+            if (! ($definitions[$definitionName] ?? false)) {
+                $complexSchema = new Schema(Schema::VERSION_OPENAPI);
+                $complexSchema['type'] = ComplexTypeExtractor::complexType($className);
 
-            if ($forceCollection) {
-                $complexSchema['items'] = ['type' => ComplexTypeExtractor::complexType($className)];
+                $definitions[$definitionName] = new ArrayObject($complexSchema->getArrayCopy());
             }
 
-            $schema->getDefinitions()[$className::__type()] = new ArrayObject($complexSchema->getArrayCopy());
-            $schema['$ref'] = sprintf(
+            $ref = sprintf(
                 $schema->getVersion() === Schema::VERSION_OPENAPI
                     ? '#/components/schemas/%s'
                     : '#/definitions/%s',
-                $className::__type(),
+                $definitionName,
             );
+
+            if ($forceCollection) {
+                $schema['type'] = 'array';
+                $schema['items'] = ['$ref' => $ref];
+            } else {
+                $schema['$ref'] = $ref;
+            }
 
             return $schema;
         }
