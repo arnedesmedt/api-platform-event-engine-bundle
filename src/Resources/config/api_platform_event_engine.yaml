@@ -19,18 +19,6 @@ services:
             $defaultContext: []
             $resourceMetadataCollectionFactory: '@api_platform.metadata.resource.metadata_collection_factory'
 
-#    api_platform.hydra.json_schema.message_schema_factory:
-#        class: 'ApiPlatform\Hydra\JsonSchema\SchemaFactory'
-#        decorates: 'ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageRefSchemaFactory'
-#        arguments:
-#            - '@api_platform.hydra.json_schema.message_schema_factory.inner'
-#
-#    api_platform.hal.json_schema.message_schema_factory:
-#        class: 'ApiPlatform\Hal\JsonSchema\SchemaFactory'
-#        decorates: 'ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory\MessageRefSchemaFactory'
-#        arguments:
-#            - '@api_platform.hal.json_schema.message_schema_factory.inner'
-
     api_platform.serializer.context_builder:
         class: ADS\Bundle\ApiPlatformEventEngineBundle\Serializer\CustomContextBuilder
 
