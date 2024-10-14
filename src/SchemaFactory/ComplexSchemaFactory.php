@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory;
 
 use ADS\Bundle\EventEngineBundle\Type\ComplexTypeExtractor;
-use ADS\JsonImmutableObjects\Polymorphism\Discriminator;
 use ApiPlatform\JsonSchema\DefinitionNameFactory;
 use ApiPlatform\JsonSchema\Schema;
 use ApiPlatform\JsonSchema\SchemaFactoryAwareInterface;
@@ -18,6 +17,7 @@ use ReflectionClass;
 use Symfony\Component\DependencyInjection\Attribute\AsDecorator;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\DependencyInjection\Attribute\AutowireDecorated;
+use TeamBlue\JsonImmutableObjects\Polymorphism\Discriminator;
 
 use function sprintf;
 

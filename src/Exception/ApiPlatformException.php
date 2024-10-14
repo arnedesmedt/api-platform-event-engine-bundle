@@ -6,10 +6,10 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Exception;
 
 use ADS\Bundle\EventEngineBundle\Type\AnnotatedTypeRef;
 use ADS\Bundle\EventEngineBundle\Type\Type;
-use ADS\JsonImmutableObjects\JsonSchemaAwareRecordLogic;
 use EventEngine\JsonSchema\AnnotatedType;
 use EventEngine\JsonSchema\JsonSchema;
 use EventEngine\Schema\TypeSchema;
+use TeamBlue\JsonImmutableObjects\JsonSchemaAwareRecordLogic;
 
 class ApiPlatformException implements Type
 {

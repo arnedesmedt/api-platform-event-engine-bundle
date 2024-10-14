@@ -6,8 +6,8 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Message\Callback\ImmutableObje
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\Callback\ValueObject\CallbackEvent;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\Callback\ValueObject\CallbackMessage;
-use ADS\JsonImmutableObjects\JsonSchemaAwareRecordLogic;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
+use TeamBlue\JsonImmutableObjects\JsonSchemaAwareRecordLogic;
 
 class CallbackRequestBody implements JsonSchemaAwareRecord
 {

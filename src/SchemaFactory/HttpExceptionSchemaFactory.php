@@ -4,31 +4,25 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory;
 
-use ADS\Bundle\EventEngineBundle\MetadataExtractor\ResponseExtractor;
-use ADS\ValueObjects\ListValue;
+use ADS\Bundle\EventEngineBundle\MetadataExtractor\ExceptionExtractor;
 use ApiPlatform\JsonSchema\Schema;
 use ApiPlatform\JsonSchema\SchemaFactoryAwareInterface;
 use ApiPlatform\JsonSchema\SchemaFactoryInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Util\ResourceClassInfoTrait;
+use ArrayObject;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
-use ReflectionClass;
-use Symfony\Component\DependencyInjection\Attribute\AsDecorator;
 use Symfony\Component\DependencyInjection\Attribute\AutowireDecorated;
 use TeamBlue\JsonImmutableObjects\Polymorphism\Discriminator;
 
-use function class_implements;
-use function in_array;
-
-#[AsDecorator('api_platform.json_schema.schema_factory', priority: 1)]
-final class ResponseMessageSchemaFactory implements SchemaFactoryInterface, SchemaFactoryAwareInterface
+class HttpExceptionSchemaFactory implements SchemaFactoryInterface, SchemaFactoryAwareInterface
 {
     use ResourceClassInfoTrait;
 
     public function __construct(
         #[AutowireDecorated]
         private SchemaFactoryInterface $schemaFactory,
-        private readonly ResponseExtractor $responseExtractor,
+        private readonly ExceptionExtractor $exceptionExtractor,
     ) {
         if (! ($this->schemaFactory instanceof SchemaFactoryAwareInterface)) {
             return;
@@ -39,10 +33,12 @@ final class ResponseMessageSchemaFactory implements SchemaFactoryInterface, Sche
 
     /**
      * @param class-string<JsonSchemaAwareRecord|Discriminator> $className
-     * @param array<string, mixed>|null $serializerContext
-     * @param Schema<mixed>|null $schema
+     * @param array<string, mixed>|null                         $serializerContext
+     * @param Schema<mixed>|null                                $schema
      *
      * @return Schema<mixed>
+     *
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
     public function buildSchema(
         string $className,
@@ -53,29 +49,7 @@ final class ResponseMessageSchemaFactory implements SchemaFactoryInterface, Sche
         array|null $serializerContext = null,
         bool $forceCollection = false,
     ): Schema {
-        $schema ??= new Schema(Schema::VERSION_OPENAPI);
-
-        $input = $operation?->getInput();
-        $messageClass = $input['class'] ?? null;
-        $reflectionClass = $messageClass ? new ReflectionClass($messageClass) : null;
-
-        if (
-            $type === Schema::TYPE_OUTPUT
-            && $reflectionClass !== null
-            && $this->responseExtractor->hasResponsesFromReflectionClass($reflectionClass)
-        ) {
-            $className = $this->responseExtractor->defaultResponseClassFromReflectionClass($reflectionClass);
-
-            if (in_array(ListValue::class, class_implements($className) ?: [])) {
-                // @phpstan-ignore-next-line
-                $className = $className::itemType();
-                $forceCollection = true;
-            }
-
-            $serializerContext = null;
-        }
-
-        return $this->schemaFactory->buildSchema(
+        $schema = $this->schemaFactory->buildSchema(
             $className,
             $format,
             $type,
@@ -84,6 +58,26 @@ final class ResponseMessageSchemaFactory implements SchemaFactoryInterface, Sche
             $serializerContext,
             $forceCollection,
         );
+
+        $messageClass = $operation?->getInput()['class'] ?? null;
+
+        if ($messageClass === null || $type !== Schema::TYPE_OUTPUT) {
+            return $schema;
+        }
+
+        $definitions = $schema->getDefinitions();
+
+        foreach ($this->exceptionExtractor->extract($messageClass) as $exceptionClass) {
+            $schemaName = $exceptionClass::__type();
+
+            if (isset($definitions[$schemaName])) {
+                continue;
+            }
+
+            $definitions[$schemaName] = new ArrayObject($exceptionClass::__schema()->toArray());
+        }
+
+        return $schema;
     }
 
     public function setSchemaFactory(SchemaFactoryInterface $schemaFactory): void
