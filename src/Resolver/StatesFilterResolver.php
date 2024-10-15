@@ -7,8 +7,6 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Resolver;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\DocumentStoreFilterConverter;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\Paginator;
 use ADS\Bundle\EventEngineBundle\Repository\DefaultStateRepository;
-use ADS\ValueObjects\Implementation\ListValue\IterableListValue;
-use ADS\ValueObjects\ValueObject;
 use EventEngine\DocumentStore\Filter\AndFilter;
 use EventEngine\DocumentStore\Filter\AnyFilter;
 use EventEngine\DocumentStore\Filter\Filter;
@@ -16,6 +14,8 @@ use EventEngine\DocumentStore\OrderBy\AndOrder;
 use EventEngine\DocumentStore\OrderBy\OrderBy;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use RuntimeException;
+use TeamBlue\ValueObjects\Implementation\ListValue\IterableListValue;
+use TeamBlue\ValueObjects\ValueObject;
 
 /**
  * @template TStates of IterableListValue

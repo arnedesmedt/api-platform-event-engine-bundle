@@ -18,10 +18,11 @@
         "arnedesmedt/event-engine-symfony-bundle": "^0.7.15",
         "chrisguitarguy/request-id-bundle": "~6.0",
         "symfony/security-core": "~6.0 || ~7.0",
-        "team-blue/php-json-immutable-objects": "^0.5.5"
+        "team-blue/php-json-immutable-objects": "^0.5.6",
+        "team-blue/php-util": "^0.4.4",
+        "team-blue/php-value-objects": "^0.5.5"
     },
     "require-dev": {
-        "arnedesmedt/openapi-codegen-php-client": "~1.0",
         "benjaminfavre/oauth2-http-client": "~3.0",
         "doctrine/coding-standard": "~11.0",
         "jetbrains/phpstorm-attributes": "~1.0",
@@ -30,6 +31,7 @@
         "rector/rector": "~0.1",
         "roave/security-advisories": "dev-master",
         "squizlabs/php_codesniffer": "~3.0",
+        "team-blue/java-openapi-codegen-php-client": "^1.7",
         "zenstruck/messenger-test": "~1.0"
     },
     "repositories": {

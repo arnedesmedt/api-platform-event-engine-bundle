@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Serializer;
 
-use ADS\Util\ArrayUtil;
 use ApiPlatform\Serializer\AbstractItemNormalizer;
 use ArrayObject;
 use EventEngine\Data\ImmutableRecord;
@@ -12,6 +11,7 @@ use ReflectionClass;
 use stdClass;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
+use TeamBlue\Util\ArrayUtil;
 
 use function array_keys;
 use function assert;

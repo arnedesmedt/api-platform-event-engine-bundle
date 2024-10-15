@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject;
 
-use ADS\Util\ArrayUtil;
-use ADS\ValueObjects\Implementation\String\StringValue;
+use TeamBlue\Util\ArrayUtil;
+use TeamBlue\ValueObjects\Implementation\String\StringValue;
 
 use function array_diff_key;
 use function array_flip;

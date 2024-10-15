@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Resource;
 
-use ADS\ValueObjects\ValueObject;
 use ApiPlatform\Api\IdentifiersExtractorInterface;
 use ApiPlatform\Api\ResourceClassResolverInterface;
 use ApiPlatform\Metadata\Operation;
@@ -17,6 +16,7 @@ use RuntimeException;
 use Symfony\Component\DependencyInjection\Attribute\AsDecorator;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\DependencyInjection\Attribute\AutowireDecorated;
+use TeamBlue\ValueObjects\ValueObject;
 
 use function array_key_first;
 use function assert;

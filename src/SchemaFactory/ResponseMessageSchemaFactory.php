@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory;
 
 use ADS\Bundle\EventEngineBundle\MetadataExtractor\ResponseExtractor;
-use ADS\ValueObjects\ListValue;
 use ApiPlatform\JsonSchema\Schema;
 use ApiPlatform\JsonSchema\SchemaFactoryAwareInterface;
 use ApiPlatform\JsonSchema\SchemaFactoryInterface;
@@ -16,6 +15,7 @@ use ReflectionClass;
 use Symfony\Component\DependencyInjection\Attribute\AsDecorator;
 use Symfony\Component\DependencyInjection\Attribute\AutowireDecorated;
 use TeamBlue\JsonImmutableObjects\Polymorphism\Discriminator;
+use TeamBlue\ValueObjects\ListValue;
 
 use function class_implements;
 use function in_array;

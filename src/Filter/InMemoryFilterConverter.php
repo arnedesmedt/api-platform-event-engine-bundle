@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Filter;
 
-use ADS\ValueObjects\ListValue;
 use ApiPlatform\Doctrine\Common\Filter\OrderFilterInterface;
 use ApiPlatform\Metadata\Operation;
 use Closure;
 use LogicException;
+use TeamBlue\ValueObjects\ListValue;
 use Traversable;
 
 use function array_column;

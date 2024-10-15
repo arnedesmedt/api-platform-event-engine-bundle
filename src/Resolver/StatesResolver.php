@@ -6,10 +6,10 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Resolver;
 
 use ADS\Bundle\EventEngineBundle\Repository\DefaultStateRepository;
 use ADS\Bundle\EventEngineBundle\Resolver\MetaDataResolver;
-use ADS\ValueObjects\Implementation\ListValue\IterableListValue;
-use ADS\ValueObjects\ValueObject;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
 use Symfony\Contracts\Service\Attribute\Required;
+use TeamBlue\ValueObjects\Implementation\ListValue\IterableListValue;
+use TeamBlue\ValueObjects\ValueObject;
 
 /**
  * @template TStates of IterableListValue

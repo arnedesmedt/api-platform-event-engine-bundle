@@ -10,7 +10,6 @@ use ADS\Bundle\ApiPlatformEventEngineBundle\Filter\SearchFilter;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
 use ADS\Bundle\EventEngineBundle\Command\Command;
 use ADS\Bundle\EventEngineBundle\Query\Query;
-use ADS\ValueObjects\Exception\PatternException;
 use ApiPlatform\Metadata\HttpOperation;
 use ApiPlatform\Metadata\Operation;
 use Chrisguitarguy\RequestId\RequestIdStorage;
@@ -21,6 +20,7 @@ use RuntimeException;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
+use TeamBlue\ValueObjects\Exception\PatternException;
 
 use function array_diff_key;
 use function array_key_exists;

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Serializer;
 
-use ADS\ValueObjects\ValueObject;
 use ArrayObject;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+use TeamBlue\ValueObjects\ValueObject;
 
 use function assert;
 use function class_exists;

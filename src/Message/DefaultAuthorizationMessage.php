@@ -7,10 +7,10 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\Message;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Responses\Forbidden;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Responses\Unauthorized;
 use ADS\Bundle\ApiPlatformEventEngineBundle\Util;
-use ADS\Util\StringUtil;
 use ReflectionClass;
 use ReflectionMethod;
 use Symfony\Component\HttpFoundation\Response;
+use TeamBlue\Util\StringUtil;
 
 use function array_filter;
 use function array_merge;

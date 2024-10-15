@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Message;
 
-use ADS\Util\StringUtil;
+use TeamBlue\Util\StringUtil;
 
 use function sprintf;
 

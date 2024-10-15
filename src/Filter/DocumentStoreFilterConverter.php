@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Filter;
 
-use ADS\Util\StringUtil;
 use ApiPlatform\Doctrine\Common\Filter\SearchFilterInterface;
 use ApiPlatform\Metadata\Operation;
 use EventEngine\DocumentStore\Filter\AndFilter;
@@ -14,6 +13,7 @@ use EventEngine\DocumentStore\Filter\LikeFilter;
 use EventEngine\DocumentStore\Filter\OrFilter;
 use EventEngine\DocumentStore\OrderBy\AndOrder;
 use EventEngine\DocumentStore\OrderBy\OrderBy;
+use TeamBlue\Util\StringUtil;
 
 use function array_filter;
 use function array_intersect_key;

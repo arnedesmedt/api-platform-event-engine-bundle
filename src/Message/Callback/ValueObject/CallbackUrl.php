@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Message\Callback\ValueObject;
 
-use ADS\ValueObjects\Implementation\String\UrlValue;
+use TeamBlue\ValueObjects\Implementation\String\UrlValue;
 
 final class CallbackUrl extends UrlValue
 {

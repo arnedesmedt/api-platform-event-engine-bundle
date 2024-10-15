@@ -6,8 +6,6 @@ namespace ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory;
 
 use ADS\Bundle\ApiPlatformEventEngineBundle\Message\ApiPlatformMessage;
 use ADS\Bundle\ApiPlatformEventEngineBundle\ValueObject\Uri;
-use ADS\Util\ArrayUtil;
-use ADS\ValueObjects\ListValue;
 use ApiPlatform\JsonSchema\Schema;
 use ApiPlatform\JsonSchema\SchemaFactory;
 use ApiPlatform\JsonSchema\SchemaFactoryAwareInterface;
@@ -25,6 +23,8 @@ use RuntimeException;
 use Symfony\Component\DependencyInjection\Attribute\AsDecorator;
 use Symfony\Component\DependencyInjection\Attribute\AutowireDecorated;
 use TeamBlue\JsonImmutableObjects\Polymorphism\Discriminator;
+use TeamBlue\Util\ArrayUtil;
+use TeamBlue\ValueObjects\ListValue;
 
 use function array_flip;
 use function array_values;

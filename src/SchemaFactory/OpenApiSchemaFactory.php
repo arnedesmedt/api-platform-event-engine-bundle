@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory;
 
-use ADS\Util\StringUtil;
+use TeamBlue\Util\StringUtil;
 
 use function array_filter;
 use function array_map;

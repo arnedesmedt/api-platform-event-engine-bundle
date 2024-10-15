@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\Message\Callback\ValueObject;
 
-use ADS\ValueObjects\Implementation\String\StringValue;
+use TeamBlue\ValueObjects\Implementation\String\StringValue;
 
 final class CallbackEvent extends StringValue
 {
