@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\ResourceMetadataCollectionFactory;
 
-use ADS\Bundle\EventEngineBundle\MetadataExtractor\ExceptionExtractor;
+use ADS\Bundle\EventEngineBundle\Exception\ExceptionExtractor;
 use ApiPlatform\Metadata\HttpOperation;
 use ApiPlatform\Metadata\Resource\Factory\ResourceMetadataCollectionFactoryInterface;
 use ApiPlatform\Metadata\Resource\ResourceMetadataCollection;
