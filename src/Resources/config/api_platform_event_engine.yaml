@@ -43,3 +43,12 @@ services:
         decorates: 'api_platform.cache.metadata.property'
         arguments:
             - '@ads.cache.metadata.property.inner'
+
+    api_platform.action.exception:
+        class: ADS\Bundle\ApiPlatformEventEngineBundle\Controller\ExceptionAction
+        public: true
+        arguments:
+            - '@serializer'
+            - '%api_platform.error_formats%'
+            - '%api_platform.exception_to_status%'
+            - '@api_platform.metadata.resource.metadata_collection_factory.cached'
