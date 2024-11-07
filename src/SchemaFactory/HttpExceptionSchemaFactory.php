@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ADS\Bundle\ApiPlatformEventEngineBundle\SchemaFactory;
 
-use ADS\Bundle\EventEngineBundle\MetadataExtractor\ExceptionExtractor;
+use ADS\Bundle\EventEngineBundle\Exception\ExceptionExtractor;
 use ApiPlatform\JsonSchema\Schema;
 use ApiPlatform\JsonSchema\SchemaFactoryAwareInterface;
 use ApiPlatform\JsonSchema\SchemaFactoryInterface;
@@ -12,9 +12,11 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Util\ResourceClassInfoTrait;
 use ArrayObject;
 use EventEngine\JsonSchema\JsonSchemaAwareRecord;
+use Symfony\Component\DependencyInjection\Attribute\AsDecorator;
 use Symfony\Component\DependencyInjection\Attribute\AutowireDecorated;
 use TeamBlue\JsonImmutableObjects\Polymorphism\Discriminator;
 
+#[AsDecorator('api_platform.json_schema.schema_factory')]
 class HttpExceptionSchemaFactory implements SchemaFactoryInterface, SchemaFactoryAwareInterface
 {
     use ResourceClassInfoTrait;
