@@ -11,6 +11,7 @@ use ReflectionClass;
 use stdClass;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
+use TeamBlue\JsonImmutableObjects\Polymorphism\Discriminator;
 use TeamBlue\Util\ArrayUtil;
 
 use function array_keys;
@@ -84,6 +85,10 @@ final class ImmutableRecordNormalizer extends AbstractItemNormalizer
     ): array|string|int|float|bool|ArrayObject|null {
         if (! isset($context['resource_class']) && is_object($object)) {
             $context['resource_class'] = $object::class;
+        }
+
+        if ($object instanceof Discriminator) {
+            $object = $object->value();
         }
 
         return parent::normalize($object, $format, $context);
